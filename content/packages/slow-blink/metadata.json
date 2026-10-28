@@ -1,0 +1,49 @@
+{
+  "schema_version": 1,
+  "package_id": "slow-blink",
+  "platform": "youtube",
+  "format": "short",
+  "title": "What a Cat's Slow Blink Really Means",
+  "description": "In two experiments, cats showed more eye narrowing and half-blinks when a human slow-blinked at them, and they were more likely to approach an unfamiliar experimenter after a slow blink.\n\nA slow blink may be a low-pressure greeting, but it is not a guaranteed sign of trust; read the cat's whole response.\n\nSources:\n- Humphrey, T. et al. (2020). The role of cat eye narrowing movements in cat-human communication. Scientific Reports 10(1), 16503. https://doi.org/10.1038/s41598-020-73426-0\n\nIllustrative, AI-assisted visuals; not documentary footage. Educational content, not veterinary advice. Consult a veterinarian for health concerns.\n\n#Cats #CatBehavior #AnimalScience #Shorts",
+  "hashtags": [
+    "#Cats",
+    "#CatBehavior",
+    "#AnimalScience",
+    "#Shorts"
+  ],
+  "tags": [
+    "cat slow blink",
+    "cat behavior",
+    "cat communication",
+    "slow blink study",
+    "cat eye narrowing",
+    "feline science",
+    "cats",
+    "pet science",
+    "documentary short"
+  ],
+  "category": "Pets & Animals",
+  "category_id": "15",
+  "language": "en",
+  "visibility": "private",
+  "made_for_kids": false,
+  "contains_synthetic_media": true,
+  "synthetic_media_disclosure": "Illustrative, AI-assisted visuals; not documentary footage.",
+  "educational_disclaimer": "Educational content, not veterinary advice. Consult a veterinarian for health concerns.",
+  "manual_upload_required": true,
+  "duration_s": 45,
+  "aspect_ratio": "9:16",
+  "resolution": "1080x1920",
+  "sources": [
+    {
+      "id": "humphrey-2020",
+      "citation": "Humphrey, T. et al. (2020). The role of cat eye narrowing movements in cat-human communication. Scientific Reports 10(1), 16503. https://doi.org/10.1038/s41598-020-73426-0",
+      "url": "https://doi.org/10.1038/s41598-020-73426-0",
+      "doi": "10.1038/s41598-020-73426-0",
+      "pmid": "33020542"
+    }
+  ],
+  "youtube_video_id": null,
+  "youtube_url": null,
+  "upload_status": "not_uploaded_manual_only"
+}

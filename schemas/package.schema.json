@@ -1,0 +1,354 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://cats-dogs-documentary.local/schemas/package.schema.json",
+  "title": "Cats and Dogs Documentary package",
+  "description": "One source-checked 9:16 documentary Short package before rendering or human sign-off.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "id",
+    "batch_id",
+    "pillar",
+    "title",
+    "central_question",
+    "central_fact",
+    "takeaway",
+    "hook",
+    "target_duration_s",
+    "scenes",
+    "claims",
+    "visual_policy",
+    "youtube",
+    "editorial",
+    "risk_notes",
+    "created_at",
+    "updated_at"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "id": {
+      "$ref": "#/$defs/slug"
+    },
+    "batch_id": {
+      "$ref": "#/$defs/slug"
+    },
+    "pillar": {
+      "type": "string",
+      "enum": [
+        "behavior",
+        "surprising_fact",
+        "real_story",
+        "history",
+        "senses",
+        "famous_animal",
+        "welfare"
+      ]
+    },
+    "title": {
+      "type": "string",
+      "minLength": 8,
+      "maxLength": 100
+    },
+    "central_question": {
+      "type": "string",
+      "minLength": 8
+    },
+    "central_fact": {
+      "type": "string",
+      "minLength": 8
+    },
+    "takeaway": {
+      "type": "string",
+      "minLength": 8
+    },
+    "hook": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["text", "duration_s"],
+      "properties": {
+        "text": {
+          "type": "string",
+          "minLength": 8
+        },
+        "duration_s": {
+          "type": "number",
+          "minimum": 1,
+          "maximum": 3
+        }
+      }
+    },
+    "target_duration_s": {
+      "type": "number",
+      "minimum": 30,
+      "maximum": 60
+    },
+    "scenes": {
+      "type": "array",
+      "minItems": 4,
+      "maxItems": 8,
+      "items": {
+        "$ref": "#/$defs/scene"
+      }
+    },
+    "claims": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/claim"
+      }
+    },
+    "visual_policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["style", "anatomy", "welfare", "continuity", "disclosure"],
+      "properties": {
+        "style": {
+          "type": "string",
+          "minLength": 15
+        },
+        "anatomy": {
+          "type": "string",
+          "minLength": 15
+        },
+        "welfare": {
+          "type": "string",
+          "minLength": 15
+        },
+        "continuity": {
+          "type": "string",
+          "minLength": 15
+        },
+        "disclosure": {
+          "type": "string",
+          "pattern": "[Nn]ot documentary footage"
+        }
+      }
+    },
+    "youtube": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "title",
+        "hashtags",
+        "tags",
+        "category",
+        "category_id",
+        "visibility"
+      ],
+      "properties": {
+        "title": {
+          "type": "string",
+          "minLength": 8,
+          "maxLength": 100
+        },
+        "hashtags": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 15,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "pattern": "^#[A-Za-z0-9_]+$"
+          },
+          "contains": {
+            "const": "#Shorts"
+          }
+        },
+        "tags": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "category": {
+          "type": "string",
+          "minLength": 1
+        },
+        "category_id": {
+          "type": "string",
+          "pattern": "^[0-9]+$"
+        },
+        "visibility": {
+          "enum": ["private", "unlisted", "public"]
+        }
+      }
+    },
+    "editorial": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "human_review_required",
+        "human_signoff",
+        "sources_verified_at",
+        "notes"
+      ],
+      "properties": {
+        "status": {
+          "const": "source-checked"
+        },
+        "human_review_required": {
+          "const": true
+        },
+        "human_signoff": {
+          "const": false
+        },
+        "sources_verified_at": {
+          "$ref": "#/$defs/date"
+        },
+        "notes": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "minLength": 10
+          }
+        }
+      }
+    },
+    "risk_notes": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "minLength": 10
+      }
+    },
+    "created_at": {
+      "$ref": "#/$defs/date"
+    },
+    "updated_at": {
+      "$ref": "#/$defs/date"
+    }
+  },
+  "$defs": {
+    "slug": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+    },
+    "date": {
+      "type": "string",
+      "format": "date"
+    },
+    "visual": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "description",
+        "shot_type",
+        "subject",
+        "motion",
+        "framing",
+        "continuity",
+        "avoid"
+      ],
+      "properties": {
+        "description": {
+          "type": "string",
+          "minLength": 40
+        },
+        "shot_type": {
+          "type": "string",
+          "minLength": 3
+        },
+        "subject": {
+          "type": "string",
+          "minLength": 3
+        },
+        "motion": {
+          "type": "string",
+          "minLength": 3
+        },
+        "framing": {
+          "type": "string",
+          "minLength": 4,
+          "pattern": "9:16"
+        },
+        "continuity": {
+          "type": "string",
+          "minLength": 10
+        },
+        "avoid": {
+          "type": "array",
+          "minItems": 2,
+          "items": {
+            "type": "string",
+            "minLength": 2
+          }
+        }
+      }
+    },
+    "scene": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "start_s",
+        "duration_s",
+        "narration",
+        "visual",
+        "transition"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/slug"
+        },
+        "start_s": {
+          "type": "number",
+          "minimum": 0
+        },
+        "duration_s": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "narration": {
+          "type": "string",
+          "minLength": 10
+        },
+        "visual": {
+          "$ref": "#/$defs/visual"
+        },
+        "transition": {
+          "type": "string",
+          "minLength": 3
+        }
+      }
+    },
+    "claim": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "text", "source_ids", "evidence_level", "limits"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^c[0-9]+$"
+        },
+        "text": {
+          "type": "string",
+          "minLength": 10
+        },
+        "source_ids": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/slug"
+          }
+        },
+        "evidence_level": {
+          "type": "string",
+          "minLength": 5
+        },
+        "limits": {
+          "type": "string",
+          "minLength": 10
+        }
+      }
+    }
+  }
+}

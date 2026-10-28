@@ -1,0 +1,198 @@
+{
+  "schema_version": 1,
+  "id": "dog-nose",
+  "batch_id": "2026-10-29-cats-dogs-01",
+  "pillar": "senses",
+  "title": "Why a Dog's Nose Works in Stereo",
+  "central_question": "How does a dog's nose separate smelling from breathing?",
+  "central_fact": "A computer model built from MRI scans showed that a dog's nasal airflow splits into separate olfactory and respiratory paths, and each nostril samples a spatially separate patch of air.",
+  "takeaway": "A dog's nose is a routing system as well as a sensor; its shape helps scent reach the olfactory region and may support comparing samples from two nostrils.",
+  "hook": {
+    "text": "A dog's nose splits air into two jobs.",
+    "duration_s": 2.5
+  },
+  "target_duration_s": 45,
+  "scenes": [
+    {
+      "id": "s1",
+      "start_s": 0,
+      "duration_s": 2.5,
+      "narration": "A dog's nose splits air into two jobs.",
+      "visual": {
+        "description": "A black Labrador mix with a graying muzzle lowers its nose to a fallen leaf on a garden path. The camera frames the snout and one relaxed eye, with soft green foliage blurred behind. The dog sniffs calmly and lifts its head slightly.",
+        "shot_type": "low-angle close-up",
+        "subject": "one black Labrador mix with a graying muzzle and a glossy black nose",
+        "motion": "slow push-in as the dog sniffs the leaf",
+        "framing": "vertical 9:16, nose in the lower middle third, eye on the upper-third line",
+        "continuity": "same black dog, red collar, and garden path in every scene",
+        "avoid": ["human face", "leash tugging", "wet or injured nose", "text overlays"]
+      },
+      "transition": "cut"
+    },
+    {
+      "id": "s2",
+      "start_s": 2.5,
+      "duration_s": 7.5,
+      "narration": "When a dog sniffs, air does not take one simple path through the nose. It splits.",
+      "visual": {
+        "description": "The same black dog holds its nose close to the leaf while two faint, translucent ribbons of air curl toward the nostrils. One ribbon rises along the upper snout, the other runs lower. The dog stays still and curious, and the garden light is soft.",
+        "shot_type": "macro three-quarter view of the snout",
+        "subject": "the same black dog's nose and muzzle, with two abstract airflow ribbons",
+        "motion": "very slow lateral drift; the ribbons divide and settle",
+        "framing": "vertical 9:16, nostrils centered, ribbons flowing into the upper and lower thirds",
+        "continuity": "same glossy nose, graying muzzle, and red collar edge",
+        "avoid": ["smoke", "fire", "human hands", "text overlays"]
+      },
+      "transition": "cut"
+    },
+    {
+      "id": "s3",
+      "start_s": 10.0,
+      "duration_s": 8.0,
+      "narration": "A 2010 study built a computer model of a dog's nasal airway from MRI scans.",
+      "visual": {
+        "description": "A translucent, glass-like model of a dog's head rotates slowly above a dark studio surface. The snout is anatomically correct, and a soft amber light suggests the internal nasal airway without opening the body. No labels or readable marks appear.",
+        "shot_type": "studio product-style medium shot",
+        "subject": "one translucent canine head model with a detailed snout",
+        "motion": "slow orbital rotation, then a gentle hold",
+        "framing": "vertical 9:16, model centered with generous dark negative space",
+        "continuity": "same amber palette and dark background throughout the model sequence",
+        "avoid": ["dissection", "blood", "medical labels", "text overlays"]
+      },
+      "transition": "cut"
+    },
+    {
+      "id": "s4",
+      "start_s": 18.0,
+      "duration_s": 8.0,
+      "narration": "The simulation showed two separate flows: one for breathing, and one that carries odor molecules to the olfactory region.",
+      "visual": {
+        "description": "An abstract view of two smooth ribbons of light moving through a dark amber space. The upper ribbon curves toward the rear and slows into a fine mesh; the lower ribbon runs straighter and wider toward the throat. The shapes are non-literal and unlabeled.",
+        "shot_type": "abstract macro animation",
+        "subject": "two separate airflow ribbons, one high and narrow, one low and broad",
+        "motion": "slow forward drift; the upper ribbon spreads into a delicate mesh",
+        "framing": "vertical 9:16, both ribbons centered with clear separation",
+        "continuity": "same amber palette, grain, and dark background as the model scene",
+        "avoid": ["readable characters", "medical diagram", "flashing lights", "text overlays"]
+      },
+      "transition": "cut"
+    },
+    {
+      "id": "s5",
+      "start_s": 26.0,
+      "duration_s": 9.0,
+      "narration": "Each nostril also draws from its own patch of air, because the nose's reach is smaller than the gap between the nostrils.",
+      "visual": {
+        "description": "A front macro view of the same black dog's nose. Two separate pale ribbons curl in from different directions, one toward each nostril, with a clear gap between them. The muzzle is relaxed and the whiskers are still.",
+        "shot_type": "front macro close-up",
+        "subject": "the same black dog's two nostrils and muzzle, with two separate air ribbons",
+        "motion": "static camera; the ribbons pulse gently inward",
+        "framing": "vertical 9:16, nose centered, one ribbon entering from each side",
+        "continuity": "same glossy nose, graying muzzle, and red collar edge",
+        "avoid": ["merged nostrils", "smoke", "human hands", "text overlays"]
+      },
+      "transition": "cut"
+    },
+    {
+      "id": "s6",
+      "start_s": 35.0,
+      "duration_s": 10.0,
+      "narration": "That may help a dog compare scent strength on each side. The nose is a routing system, not just a detector. Its shape helps scent reach the receptors.",
+      "visual": {
+        "description": "The same black dog stands on the garden path beside an owner's open hand, nose lifted toward a light breeze. The dog's posture is relaxed and its tail is loose. The camera pulls back slowly to reveal the green garden, then fades.",
+        "shot_type": "medium shot, then slow pull-back",
+        "subject": "the same black dog and an owner's open hand",
+        "motion": "slow pull-back; the dog lifts its nose and holds",
+        "framing": "vertical 9:16, dog in the lower middle third, open garden above",
+        "continuity": "same dog, red collar, garden path, and soft daylight; no other animals",
+        "avoid": ["human face", "leash tugging", "hybrid animals", "text overlays"]
+      },
+      "transition": "fade out"
+    }
+  ],
+  "claims": [
+    {
+      "id": "c1",
+      "text": "Seven dogs weighing 6.8-52.9 kg were trained to sniff while wearing a flow-measuring muzzle; their sniff frequency was 4-7 Hz.",
+      "source_ids": ["craven-2010"],
+      "evidence_level": "peer-reviewed experimental measurement",
+      "limits": "Seven dogs is a small sample, and the muzzle was a specialized measurement device rather than a natural tracking setup."
+    },
+    {
+      "id": "c2",
+      "text": "The computational model was reconstructed from high-resolution MRI scans of the left nasal airway of a 29.5 kg female Labrador retriever mixed-breed dog.",
+      "source_ids": ["craven-2010"],
+      "evidence_level": "peer-reviewed anatomical model",
+      "limits": "The model represents one dog's anatomy and is described by the authors as generally representative of a mesaticephalic canine nasal cavity."
+    },
+    {
+      "id": "c3",
+      "text": "The simulation showed separate olfactory and respiratory airflow paths; in the modeled relaxed, undilated nostril case, about 12-13% of inspired air reached the chemosensory region.",
+      "source_ids": ["craven-2010"],
+      "evidence_level": "peer-reviewed computational fluid dynamics",
+      "limits": "The percentage comes from a simulation with a relaxed nostril; the authors note that realistic nostril motion could change it."
+    },
+    {
+      "id": "c4",
+      "text": "At peak inspiration, each nostril's reach was about 1 cm, smaller than the separation between the nostrils, yielding spatially separate air samples that may support bilateral comparison and odor source localization.",
+      "source_ids": ["craven-2010"],
+      "evidence_level": "peer-reviewed computational fluid dynamics",
+      "limits": "The bilateral comparison and localization functions are proposed interpretations, not direct behavioral measurements in this study."
+    },
+    {
+      "id": "c5",
+      "text": "The expiratory jet was directed ventrolaterally, which the authors propose can mix nearby odorants and reduce blow-off directly ahead of the nostril.",
+      "source_ids": ["craven-2010"],
+      "evidence_level": "peer-reviewed computational fluid dynamics",
+      "limits": "The expiratory flow was modeled and described qualitatively; the mixing benefit is an interpretation of the airflow pattern."
+    },
+    {
+      "id": "c6",
+      "text": "The study proposes that nasal airflow architecture helps explain canine olfactory acuity, but it does not show that airflow alone accounts for every difference between dogs and other species.",
+      "source_ids": ["craven-2010"],
+      "evidence_level": "authors' interpretation of peer-reviewed evidence",
+      "limits": "The study combines flow measurements and a single anatomical model; it does not test all possible contributors to olfactory performance."
+    }
+  ],
+  "visual_policy": {
+    "style": "Naturalistic garden documentary illustration with macro nose detail and two restrained amber airflow visualizations.",
+    "anatomy": "One black Labrador mix with a graying muzzle, glossy black nose, two symmetrical nostrils, natural whiskers, and a red collar. The translucent model is a separate anatomical representation, not a living animal or a hybrid.",
+    "welfare": "The dog is calm, curious, and unrestrained in a quiet garden. No leash jerking, force, injury, or distress. The model sequence contains no dissection or animal tissue.",
+    "continuity": "Same black dog, red collar, garden path, and soft daylight. The abstract airflow scenes keep the same amber palette and dark background.",
+    "disclosure": "Illustrative, AI-assisted visuals; not documentary footage."
+  },
+  "youtube": {
+    "title": "Why a Dog's Nose Works in Stereo",
+    "hashtags": ["#Dogs", "#DogScience", "#AnimalScience", "#Shorts"],
+    "tags": [
+      "dog nose",
+      "dog smell",
+      "canine olfaction",
+      "dog science",
+      "how dogs smell",
+      "nasal airflow",
+      "Craven 2010",
+      "dogs",
+      "documentary short"
+    ],
+    "category": "Pets & Animals",
+    "category_id": "15",
+    "visibility": "private"
+  },
+  "editorial": {
+    "status": "source-checked",
+    "human_review_required": true,
+    "human_signoff": false,
+    "sources_verified_at": "2026-10-29",
+    "notes": [
+      "The stereo-sampling and airflow-routing functions are proposed explanations, not a complete account of canine scent ability.",
+      "Do not show dissection or imply that the translucent model is a real specimen."
+    ]
+  },
+  "risk_notes": [
+    "The CFD model is based on one dog's anatomy; avoid presenting its percentages as universal canine values.",
+    "Do not claim dogs smell in 'stereo' exactly like human hearing; the video uses stereo as a metaphor for two spatially separate samples."
+  ],
+  "created_at": "2026-10-29",
+  "updated_at": "2026-10-29"
+}

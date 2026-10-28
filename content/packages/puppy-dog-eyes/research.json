@@ -1,0 +1,77 @@
+{
+  "schema_version": 1,
+  "package_id": "puppy-dog-eyes",
+  "question": "Why do dogs have that expressive inner-eyebrow look?",
+  "short_answer": "Dogs have a facial muscle that raises the inner eyebrow, and the studied dogs used that movement more often and intensely than wolves. Human-driven selection is the authors' hypothesis.",
+  "verification": {
+    "researched_at": "2026-10-29",
+    "method": "Read the open-access PNAS article on PMC and checked the dissection sample, behavioral sample, facial-movement coding, statistical results, and the authors' hypothesis against the DOI and PubMed records.",
+    "source_access": "Open-access full text on PMC plus PubMed record",
+    "myth_or_anecdote": "The common claim that dogs deliberately evolved a 'manipulative' sad face. The study documents anatomy and behavior; the selection story is explicitly a hypothesis.",
+    "uncertainties": [
+      "Only four wolves and six dogs were dissected, and one husky specimen lacked a locatable LAOM.",
+      "The behavioral groups differed in setting and composition: shelter dogs versus park wolves, mostly Staffordshire Bull Terriers in the dog sample.",
+      "The study did not measure human selection or reproductive fitness over generations."
+    ]
+  },
+  "sources": [
+    {
+      "id": "kaminski-2019",
+      "type": "peer-reviewed study",
+      "title": "Evolution of facial muscle anatomy in dogs",
+      "authors": [
+        "Kaminski, J.",
+        "Waller, B. M.",
+        "Diogo, R.",
+        "Hartstone-Rose, A.",
+        "Burrows, A. M."
+      ],
+      "year": 2019,
+      "journal": "Proceedings of the National Academy of Sciences",
+      "volume": "116",
+      "issue": "29",
+      "pages": "14677-14681",
+      "doi": "10.1073/pnas.1820653116",
+      "pmid": "31209036",
+      "pmcid": "PMC6642381",
+      "url": "https://doi.org/10.1073/pnas.1820653116",
+      "accessed": "2026-10-29",
+      "tier": 1,
+      "verified": true,
+      "evidence": "Dissections compared four gray wolves and six domestic dogs. The levator anguli oculi medialis (LAOM), which raises the inner eyebrow, was consistently present in the dogs and was not present as a separate muscle in the wolves. Behavioral coding of 27 dogs and 9 wolves found that dogs produced the AU101 inner-eyebrow movement more often (median 10 vs 2) and at higher intensity; the highest intensities were produced only by dogs. The authors hypothesize a selection advantage from human preference for the paedomorphic, sadness-like expression.",
+      "limitations": "Small anatomical sample; one husky lacked a locatable LAOM. The behavioral samples came from different settings (shelters vs wolf parks) and the dog sample was mostly Staffordshire Bull Terriers. The evolutionary selection mechanism was not directly tested."
+    }
+  ],
+  "claim_checks": [
+    {
+      "claim_id": "c1",
+      "verdict": "supported",
+      "notes": "The dissection table reports LAOM present in the dog sample and absent as a separate muscle in the wolf sample; the husky exception is disclosed in the methods."
+    },
+    {
+      "claim_id": "c2",
+      "verdict": "supported",
+      "notes": "The behavioral analysis reports significantly more AU101 movements in dogs and higher-intensity movements at higher frequencies."
+    },
+    {
+      "claim_id": "c3",
+      "verdict": "supported",
+      "notes": "The paper states that intensity levels D and E were produced exclusively by dogs in the observed sample."
+    },
+    {
+      "claim_id": "c4",
+      "verdict": "interpretation",
+      "notes": "This is the authors' explicitly labeled hypothesis, supported by the anatomy and behavior pattern but not by a direct selection experiment."
+    },
+    {
+      "claim_id": "c5",
+      "verdict": "supported",
+      "notes": "The anatomical difference is directly observed; the video keeps the evolutionary cause framed as a hypothesis."
+    }
+  ],
+  "open_questions": [
+    "Would the same muscle and movement pattern appear in a larger, more varied sample of dog breeds?",
+    "Can human preference for the expression be measured directly in adoption or caregiving decisions?",
+    "How much of the difference is anatomy versus learned use in human-facing contexts?"
+  ]
+}

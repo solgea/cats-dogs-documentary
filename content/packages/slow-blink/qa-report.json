@@ -1,0 +1,554 @@
+{
+  "schema_version": 1,
+  "package_id": "slow-blink",
+  "batch_id": "2026-10-29-cats-dogs-01",
+  "generated_at": "2026-10-28T21:53:50Z",
+  "status": "PASS",
+  "publish_ready": false,
+  "render_status": "NOT_RENDERED",
+  "summary": {
+    "PASS": 87,
+    "WARN": 0,
+    "FAIL": 0,
+    "SKIP": 1
+  },
+  "checks": [
+    {
+      "id": "package.schema",
+      "label": "Package schema version",
+      "status": "PASS",
+      "detail": "schema_version=1"
+    },
+    {
+      "id": "package.id",
+      "label": "Package id matches folder and slug format",
+      "status": "PASS",
+      "detail": "id='slow-blink', folder='slow-blink'"
+    },
+    {
+      "id": "package.batch",
+      "label": "Package belongs to a valid batch id",
+      "status": "PASS",
+      "detail": "batch_id='2026-10-29-cats-dogs-01'"
+    },
+    {
+      "id": "package.pillar",
+      "label": "Content pillar is defined",
+      "status": "PASS",
+      "detail": "pillar='behavior'"
+    },
+    {
+      "id": "package.title",
+      "label": "Package title",
+      "status": "PASS",
+      "detail": "title=\"What a Cat's Slow Blink Really Means\""
+    },
+    {
+      "id": "package.central_question",
+      "label": "Package central_question",
+      "status": "PASS",
+      "detail": "central_question='Do cats understand a human slow blink?'"
+    },
+    {
+      "id": "package.central_fact",
+      "label": "Package central_fact",
+      "status": "PASS",
+      "detail": "central_fact='In two experiments, cats showed more eye narrowing and half-blinks when a human slow-blinked at them, and they were more'"
+    },
+    {
+      "id": "package.takeaway",
+      "label": "Package takeaway",
+      "status": "PASS",
+      "detail": "takeaway=\"A slow blink may be a low-pressure greeting, but it is not a guaranteed sign of trust; read the cat's whole response.\""
+    },
+    {
+      "id": "package.title.length",
+      "label": "Working title fits YouTube's title limit",
+      "status": "PASS",
+      "detail": "36 chars"
+    },
+    {
+      "id": "package.placeholder_text",
+      "label": "No placeholder text in editorial fields",
+      "status": "PASS",
+      "detail": "scanned title, question, fact, and takeaway"
+    },
+    {
+      "id": "package.editorial",
+      "label": "Editorial status and human-review gate",
+      "status": "PASS",
+      "detail": "status='source-checked', human_signoff=False"
+    },
+    {
+      "id": "scenes.count",
+      "label": "Scene count is within the channel range",
+      "status": "PASS",
+      "detail": "6 scenes (allowed 4-8)"
+    },
+    {
+      "id": "hook.duration",
+      "label": "Hook lasts 1-3 seconds",
+      "status": "PASS",
+      "detail": "duration=2.5s"
+    },
+    {
+      "id": "hook.text",
+      "label": "Hook is a short, concrete spoken line",
+      "status": "PASS",
+      "detail": "8 words: \"Your cat's slow blink might be a reply.\""
+    },
+    {
+      "id": "hook.first_scene",
+      "label": "Hook is the first scene and matches its narration",
+      "status": "PASS",
+      "detail": "scene s1 must open at 0 and use the hook text/duration"
+    },
+    {
+      "id": "scene.s1.id",
+      "label": "Scene s1 has a unique id",
+      "status": "PASS",
+      "detail": "id='s1'"
+    },
+    {
+      "id": "scene.s1.timing",
+      "label": "Scene s1 starts where the previous scene ended",
+      "status": "PASS",
+      "detail": "start=0, expected=0.0, duration=2.5"
+    },
+    {
+      "id": "scene.s1.narration",
+      "label": "Scene s1 has original narration",
+      "status": "PASS",
+      "detail": "8 words"
+    },
+    {
+      "id": "scene.s1.pace",
+      "label": "Scene s1 narration fits its duration",
+      "status": "PASS",
+      "detail": "3.20 words/s (allowed 1.40-4.40)"
+    },
+    {
+      "id": "scene.s1.visual",
+      "label": "Scene s1 has a specific visual instruction",
+      "status": "PASS",
+      "detail": "description >=40 chars, subject/motion/continuity set, 9:16 framing, >=2 avoid notes"
+    },
+    {
+      "id": "scene.s1.welfare",
+      "label": "Scene s1 does not request distress or aggression",
+      "status": "PASS",
+      "detail": "no banned distress/aggression terms"
+    },
+    {
+      "id": "scene.s2.id",
+      "label": "Scene s2 has a unique id",
+      "status": "PASS",
+      "detail": "id='s2'"
+    },
+    {
+      "id": "scene.s2.timing",
+      "label": "Scene s2 starts where the previous scene ended",
+      "status": "PASS",
+      "detail": "start=2.5, expected=2.5, duration=7.5"
+    },
+    {
+      "id": "scene.s2.narration",
+      "label": "Scene s2 has original narration",
+      "status": "PASS",
+      "detail": "24 words"
+    },
+    {
+      "id": "scene.s2.pace",
+      "label": "Scene s2 narration fits its duration",
+      "status": "PASS",
+      "detail": "3.20 words/s (allowed 1.70-3.30)"
+    },
+    {
+      "id": "scene.s2.visual",
+      "label": "Scene s2 has a specific visual instruction",
+      "status": "PASS",
+      "detail": "description >=40 chars, subject/motion/continuity set, 9:16 framing, >=2 avoid notes"
+    },
+    {
+      "id": "scene.s2.welfare",
+      "label": "Scene s2 does not request distress or aggression",
+      "status": "PASS",
+      "detail": "no banned distress/aggression terms"
+    },
+    {
+      "id": "scene.s3.id",
+      "label": "Scene s3 has a unique id",
+      "status": "PASS",
+      "detail": "id='s3'"
+    },
+    {
+      "id": "scene.s3.timing",
+      "label": "Scene s3 starts where the previous scene ended",
+      "status": "PASS",
+      "detail": "start=10.0, expected=10.0, duration=8.0"
+    },
+    {
+      "id": "scene.s3.narration",
+      "label": "Scene s3 has original narration",
+      "status": "PASS",
+      "detail": "26 words"
+    },
+    {
+      "id": "scene.s3.pace",
+      "label": "Scene s3 narration fits its duration",
+      "status": "PASS",
+      "detail": "3.25 words/s (allowed 1.70-3.30)"
+    },
+    {
+      "id": "scene.s3.visual",
+      "label": "Scene s3 has a specific visual instruction",
+      "status": "PASS",
+      "detail": "description >=40 chars, subject/motion/continuity set, 9:16 framing, >=2 avoid notes"
+    },
+    {
+      "id": "scene.s3.welfare",
+      "label": "Scene s3 does not request distress or aggression",
+      "status": "PASS",
+      "detail": "no banned distress/aggression terms"
+    },
+    {
+      "id": "scene.s4.id",
+      "label": "Scene s4 has a unique id",
+      "status": "PASS",
+      "detail": "id='s4'"
+    },
+    {
+      "id": "scene.s4.timing",
+      "label": "Scene s4 starts where the previous scene ended",
+      "status": "PASS",
+      "detail": "start=18.0, expected=18.0, duration=8.0"
+    },
+    {
+      "id": "scene.s4.narration",
+      "label": "Scene s4 has original narration",
+      "status": "PASS",
+      "detail": "25 words"
+    },
+    {
+      "id": "scene.s4.pace",
+      "label": "Scene s4 narration fits its duration",
+      "status": "PASS",
+      "detail": "3.12 words/s (allowed 1.70-3.30)"
+    },
+    {
+      "id": "scene.s4.visual",
+      "label": "Scene s4 has a specific visual instruction",
+      "status": "PASS",
+      "detail": "description >=40 chars, subject/motion/continuity set, 9:16 framing, >=2 avoid notes"
+    },
+    {
+      "id": "scene.s4.welfare",
+      "label": "Scene s4 does not request distress or aggression",
+      "status": "PASS",
+      "detail": "no banned distress/aggression terms"
+    },
+    {
+      "id": "scene.s5.id",
+      "label": "Scene s5 has a unique id",
+      "status": "PASS",
+      "detail": "id='s5'"
+    },
+    {
+      "id": "scene.s5.timing",
+      "label": "Scene s5 starts where the previous scene ended",
+      "status": "PASS",
+      "detail": "start=26.0, expected=26.0, duration=9.0"
+    },
+    {
+      "id": "scene.s5.narration",
+      "label": "Scene s5 has original narration",
+      "status": "PASS",
+      "detail": "24 words"
+    },
+    {
+      "id": "scene.s5.pace",
+      "label": "Scene s5 narration fits its duration",
+      "status": "PASS",
+      "detail": "2.67 words/s (allowed 1.70-3.30)"
+    },
+    {
+      "id": "scene.s5.visual",
+      "label": "Scene s5 has a specific visual instruction",
+      "status": "PASS",
+      "detail": "description >=40 chars, subject/motion/continuity set, 9:16 framing, >=2 avoid notes"
+    },
+    {
+      "id": "scene.s5.welfare",
+      "label": "Scene s5 does not request distress or aggression",
+      "status": "PASS",
+      "detail": "no banned distress/aggression terms"
+    },
+    {
+      "id": "scene.s6.id",
+      "label": "Scene s6 has a unique id",
+      "status": "PASS",
+      "detail": "id='s6'"
+    },
+    {
+      "id": "scene.s6.timing",
+      "label": "Scene s6 starts where the previous scene ended",
+      "status": "PASS",
+      "detail": "start=35.0, expected=35.0, duration=10.0"
+    },
+    {
+      "id": "scene.s6.narration",
+      "label": "Scene s6 has original narration",
+      "status": "PASS",
+      "detail": "30 words"
+    },
+    {
+      "id": "scene.s6.pace",
+      "label": "Scene s6 narration fits its duration",
+      "status": "PASS",
+      "detail": "3.00 words/s (allowed 1.70-3.30)"
+    },
+    {
+      "id": "scene.s6.visual",
+      "label": "Scene s6 has a specific visual instruction",
+      "status": "PASS",
+      "detail": "description >=40 chars, subject/motion/continuity set, 9:16 framing, >=2 avoid notes"
+    },
+    {
+      "id": "scene.s6.welfare",
+      "label": "Scene s6 does not request distress or aggression",
+      "status": "PASS",
+      "detail": "no banned distress/aggression terms"
+    },
+    {
+      "id": "scenes.unique_narration",
+      "label": "Scenes do not repeat the same narration",
+      "status": "PASS",
+      "detail": "6 scene narrations"
+    },
+    {
+      "id": "timing.total",
+      "label": "Scene durations sum to the target duration",
+      "status": "PASS",
+      "detail": "sum=45.0s, target=45s"
+    },
+    {
+      "id": "timing.channel",
+      "label": "Target duration is inside the channel range",
+      "status": "PASS",
+      "detail": "target=45s (allowed 30-60)"
+    },
+    {
+      "id": "narration.medical_claims",
+      "label": "Narration avoids veterinary advice language",
+      "status": "PASS",
+      "detail": "no medical-advice patterns matched"
+    },
+    {
+      "id": "narration.overclaim",
+      "label": "Narration avoids unsupported certainty language",
+      "status": "PASS",
+      "detail": "no overclaim phrases"
+    },
+    {
+      "id": "visual.policy",
+      "label": "Package carries a visual style, anatomy, welfare, and disclosure policy",
+      "status": "PASS",
+      "detail": "style/anatomy/welfare/disclosure must all be present"
+    },
+    {
+      "id": "visual.negative_prompt",
+      "label": "Global negative prompt covers anatomy and welfare risks",
+      "status": "PASS",
+      "detail": "channel negative prompt includes anatomy and distress controls"
+    },
+    {
+      "id": "claims.present",
+      "label": "Package states its evidence-backed claims",
+      "status": "PASS",
+      "detail": "6 claims"
+    },
+    {
+      "id": "claims.unique",
+      "label": "Claim ids are unique",
+      "status": "PASS",
+      "detail": "6 claim ids"
+    },
+    {
+      "id": "claim.c1.structure",
+      "label": "Claim c1 has text, evidence level, limits, and valid sources",
+      "status": "PASS",
+      "detail": "source_ids=['humphrey-2020'], missing=[]"
+    },
+    {
+      "id": "claim.c2.structure",
+      "label": "Claim c2 has text, evidence level, limits, and valid sources",
+      "status": "PASS",
+      "detail": "source_ids=['humphrey-2020'], missing=[]"
+    },
+    {
+      "id": "claim.c3.structure",
+      "label": "Claim c3 has text, evidence level, limits, and valid sources",
+      "status": "PASS",
+      "detail": "source_ids=['humphrey-2020'], missing=[]"
+    },
+    {
+      "id": "claim.c4.structure",
+      "label": "Claim c4 has text, evidence level, limits, and valid sources",
+      "status": "PASS",
+      "detail": "source_ids=['humphrey-2020'], missing=[]"
+    },
+    {
+      "id": "claim.c5.structure",
+      "label": "Claim c5 has text, evidence level, limits, and valid sources",
+      "status": "PASS",
+      "detail": "source_ids=['humphrey-2020'], missing=[]"
+    },
+    {
+      "id": "claim.c6.structure",
+      "label": "Claim c6 has text, evidence level, limits, and valid sources",
+      "status": "PASS",
+      "detail": "source_ids=['humphrey-2020'], missing=[]"
+    },
+    {
+      "id": "claims.sources_used",
+      "label": "Every research source supports at least one claim",
+      "status": "PASS",
+      "detail": "unused=[], unknown=[]"
+    },
+    {
+      "id": "research.package_id",
+      "label": "Research record matches the package",
+      "status": "PASS",
+      "detail": "package_id='slow-blink'"
+    },
+    {
+      "id": "research.verification",
+      "label": "Research record documents method and uncertainty",
+      "status": "PASS",
+      "detail": "researched_at, method, source_access, myth_or_anecdote, and uncertainties are required"
+    },
+    {
+      "id": "research.question",
+      "label": "Research question matches the package",
+      "status": "PASS",
+      "detail": "research.question must equal package.central_question"
+    },
+    {
+      "id": "research.source_count",
+      "label": "Research uses at least one primary source",
+      "status": "PASS",
+      "detail": "1 sources"
+    },
+    {
+      "id": "research.source_ids",
+      "label": "Source ids are unique and valid",
+      "status": "PASS",
+      "detail": "1 source ids"
+    },
+    {
+      "id": "research.source.humphrey-2020",
+      "label": "Source humphrey-2020 is verifiable and correctly cited",
+      "status": "PASS",
+      "detail": "doi.org, tier 1, accessed 2026-10-29"
+    },
+    {
+      "id": "research.claim_checks",
+      "label": "Every claim has a recorded verification verdict",
+      "status": "PASS",
+      "detail": "checked=['c1', 'c2', 'c3', 'c4', 'c5', 'c6'], claims=['c1', 'c2', 'c3', 'c4', 'c5', 'c6']"
+    },
+    {
+      "id": "research.claim_check.c1",
+      "label": "Claim check c1 has a valid verdict and notes",
+      "status": "PASS",
+      "detail": "verdict='supported'"
+    },
+    {
+      "id": "research.claim_check.c2",
+      "label": "Claim check c2 has a valid verdict and notes",
+      "status": "PASS",
+      "detail": "verdict='supported'"
+    },
+    {
+      "id": "research.claim_check.c3",
+      "label": "Claim check c3 has a valid verdict and notes",
+      "status": "PASS",
+      "detail": "verdict='supported'"
+    },
+    {
+      "id": "research.claim_check.c4",
+      "label": "Claim check c4 has a valid verdict and notes",
+      "status": "PASS",
+      "detail": "verdict='supported'"
+    },
+    {
+      "id": "research.claim_check.c5",
+      "label": "Claim check c5 has a valid verdict and notes",
+      "status": "PASS",
+      "detail": "verdict='interpretation'"
+    },
+    {
+      "id": "research.claim_check.c6",
+      "label": "Claim check c6 has a valid verdict and notes",
+      "status": "PASS",
+      "detail": "verdict='interpretation'"
+    },
+    {
+      "id": "metadata.valid",
+      "label": "YouTube metadata is complete and policy-compliant",
+      "status": "PASS",
+      "detail": "metadata checks passed"
+    },
+    {
+      "id": "subtitles.valid",
+      "label": "Subtitles are synchronized, readable, and complete",
+      "status": "PASS",
+      "detail": "{'cues': 15, 'total_duration_s': 45.0, 'max_chars_per_second': 19.6, 'mean_cue_duration_s': 3.0}"
+    },
+    {
+      "id": "subtitles.srt_roundtrip",
+      "label": "subtitles.srt parses back to the generated cues",
+      "status": "PASS",
+      "detail": "round-trip OK"
+    },
+    {
+      "id": "history.dedup",
+      "label": "Topic history duplicate check",
+      "status": "PASS",
+      "detail": "no duplicate or near-duplicate topic found"
+    },
+    {
+      "id": "render.artifact",
+      "label": "Rendered MP4",
+      "status": "SKIP",
+      "detail": "not rendered yet; live ViewMade rendering is a separate gated stage"
+    },
+    {
+      "id": "artifacts.hashes",
+      "label": "Generated artifacts were hashed for integrity",
+      "status": "PASS",
+      "detail": "7 files"
+    },
+    {
+      "id": "artifacts.required",
+      "label": "All source and generated artifacts exist",
+      "status": "PASS",
+      "detail": "7 files present"
+    },
+    {
+      "id": "artifacts.request_state",
+      "label": "ViewMade request is honest about submission state",
+      "status": "PASS",
+      "detail": "status='NOT_SUBMITTED'"
+    }
+  ],
+  "artifacts": {
+    "package.json": "3a1b561aa937397acf833d3033059e743d86303d014e40dfa63abc3e9933a94c",
+    "research.json": "78a189c9b9adfe4283b9de52d2c1143a13f9475412f65a13b817eb188214aedb",
+    "script.md": "a8a6ebfa4518c654a27b849881fa0ad6152d226c7bfc7120910150bc95bd8215",
+    "subtitles.srt": "c0507c94fa37e7a6a6157d92aff29c914023bb682798c73fdd9a390478a81378",
+    "metadata.json": "d9bb21d18dd25821f0fb8f79b994dc6a766319a61dfa7d3f5c93a2bc8422e3bf",
+    "visual-plan.md": "fee8dcf8c3f7097650f00449d601ab6fa4f094651e48e49b7e360d41460167c6",
+    "viewmade-request.json": "4be4742d9b449400d756ed79c735db5cb6e94d61547a4b2818757c733b88257f"
+  }
+}

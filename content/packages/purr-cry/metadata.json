@@ -1,0 +1,49 @@
+{
+  "schema_version": 1,
+  "package_id": "purr-cry",
+  "platform": "youtube",
+  "format": "short",
+  "title": "The Cry Hidden in a Cat's Purr",
+  "description": "In a 2009 study, solicitation purrs contained a pronounced high-frequency component around 380 Hz, and listeners rated them more urgent and less pleasant than ordinary purrs.\n\nThe cry is a real acoustic feature, but it does not prove that a cat is calculating or suffering.\n\nSources:\n- McComb, K. et al. (2009). The cry embedded within the purr. Current Biology 19(13), R507-R508. https://doi.org/10.1016/j.cub.2009.05.033\n\nIllustrative, AI-assisted visuals; not documentary footage. Educational content, not veterinary advice. Consult a veterinarian for health concerns.\n\n#Cats #CatBehavior #AnimalScience #Shorts",
+  "hashtags": [
+    "#Cats",
+    "#CatBehavior",
+    "#AnimalScience",
+    "#Shorts"
+  ],
+  "tags": [
+    "cat purr",
+    "solicitation purr",
+    "cat communication",
+    "why cats purr",
+    "cat sounds",
+    "cat science",
+    "McComb 2009",
+    "cats",
+    "documentary short"
+  ],
+  "category": "Pets & Animals",
+  "category_id": "15",
+  "language": "en",
+  "visibility": "private",
+  "made_for_kids": false,
+  "contains_synthetic_media": true,
+  "synthetic_media_disclosure": "Illustrative, AI-assisted visuals; not documentary footage.",
+  "educational_disclaimer": "Educational content, not veterinary advice. Consult a veterinarian for health concerns.",
+  "manual_upload_required": true,
+  "duration_s": 45,
+  "aspect_ratio": "9:16",
+  "resolution": "1080x1920",
+  "sources": [
+    {
+      "id": "mccomb-2009",
+      "citation": "McComb, K. et al. (2009). The cry embedded within the purr. Current Biology 19(13), R507-R508. https://doi.org/10.1016/j.cub.2009.05.033",
+      "url": "https://doi.org/10.1016/j.cub.2009.05.033",
+      "doi": "10.1016/j.cub.2009.05.033",
+      "pmid": "19602409"
+    }
+  ],
+  "youtube_video_id": null,
+  "youtube_url": null,
+  "upload_status": "not_uploaded_manual_only"
+}

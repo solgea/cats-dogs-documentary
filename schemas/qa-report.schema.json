@@ -1,0 +1,105 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://cats-dogs-documentary.local/schemas/qa-report.schema.json",
+  "title": "Cats and Dogs Documentary QA report",
+  "description": "Machine-readable result of the fail-closed package gates. A PASS report is not publication approval.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "package_id",
+    "batch_id",
+    "generated_at",
+    "status",
+    "publish_ready",
+    "render_status",
+    "summary",
+    "checks",
+    "artifacts"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "package_id": {
+      "$ref": "#/$defs/slug"
+    },
+    "batch_id": {
+      "$ref": "#/$defs/slug"
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "status": {
+      "enum": ["PASS", "WARN", "FAIL"]
+    },
+    "publish_ready": {
+      "type": "boolean"
+    },
+    "render_status": {
+      "enum": ["NOT_RENDERED", "PASS", "FAIL"]
+    },
+    "summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["PASS", "WARN", "FAIL", "SKIP"],
+      "properties": {
+        "PASS": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "WARN": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "FAIL": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "SKIP": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "checks": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "label", "status", "detail"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "label": {
+            "type": "string",
+            "minLength": 1
+          },
+          "status": {
+            "enum": ["PASS", "WARN", "FAIL", "SKIP"]
+          },
+          "detail": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "artifacts": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string",
+        "pattern": "^[a-f0-9]{64}$"
+      }
+    }
+  },
+  "$defs": {
+    "slug": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+    }
+  }
+}

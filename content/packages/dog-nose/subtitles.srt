@@ -1,0 +1,51 @@
+1
+00:00:00,000 --> 00:00:02,500
+A dog's nose splits air into two jobs.
+
+2
+00:00:02,500 --> 00:00:09,062
+When a dog sniffs, air does not take
+one simple path through the nose.
+
+3
+00:00:09,062 --> 00:00:10,000
+It splits.
+
+4
+00:00:10,000 --> 00:00:18,000
+A 2010 study built a computer model of
+a dog's nasal airway from MRI scans.
+
+5
+00:00:18,000 --> 00:00:22,000
+The simulation showed two
+separate flows: one for breathing,
+
+6
+00:00:22,000 --> 00:00:26,000
+and one that carries odor
+molecules to the olfactory region.
+
+7
+00:00:26,000 --> 00:00:30,350
+Each nostril also draws from
+its own patch of air, because
+
+8
+00:00:30,350 --> 00:00:35,000
+the nose's reach is smaller than
+the gap between the nostrils.
+
+9
+00:00:35,000 --> 00:00:38,784
+That may help a dog compare
+scent strength on each side.
+
+10
+00:00:38,784 --> 00:00:42,162
+The nose is a routing
+system, not just a detector.
+
+11
+00:00:42,162 --> 00:00:45,000
+Its shape helps scent reach the receptors.

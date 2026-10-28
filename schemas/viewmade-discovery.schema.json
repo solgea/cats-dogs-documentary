@@ -1,0 +1,81 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://cats-dogs-documentary.local/schemas/viewmade-discovery.schema.json",
+  "title": "Cats and Dogs Documentary ViewMade MCP discovery snapshot",
+  "description": "Sanitised tools/list snapshot from the official ViewMade MCP endpoint. It contains no access token or authorization header.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "endpoint",
+    "provider",
+    "fetched_at",
+    "protocol_version",
+    "server_info",
+    "capabilities",
+    "session_id_present",
+    "tools",
+    "tool_names",
+    "initialize"
+  ],
+  "properties": {
+    "endpoint": {
+      "type": "string",
+      "pattern": "^https://"
+    },
+    "provider": {
+      "const": "viewmade"
+    },
+    "fetched_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "protocol_version": {
+      "type": "string",
+      "minLength": 3
+    },
+    "server_info": {
+      "type": "object"
+    },
+    "capabilities": {
+      "type": "object"
+    },
+    "session_id_present": {
+      "type": "boolean"
+    },
+    "tools": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["name"],
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "description": {
+            "type": "string"
+          },
+          "inputSchema": {
+            "type": "object"
+          },
+          "input_schema": {
+            "type": "object"
+          }
+        }
+      }
+    },
+    "tool_names": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "initialize": {
+      "type": "object"
+    }
+  }
+}

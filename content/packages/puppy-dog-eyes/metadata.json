@@ -1,0 +1,49 @@
+{
+  "schema_version": 1,
+  "package_id": "puppy-dog-eyes",
+  "platform": "youtube",
+  "format": "short",
+  "title": "The Muscle Behind Puppy-Dog Eyes",
+  "description": "Dogs have a facial muscle that raises the inner eyebrow, and the dogs studied produced that movement more often and intensely than wolves.\n\nPuppy-dog eyes are built into dog anatomy. The idea that humans selected for them is a strong hypothesis, not a proven cause.\n\nSources:\n- Kaminski, J. et al. (2019). Evolution of facial muscle anatomy in dogs. Proceedings of the National Academy of Sciences 116(29), 14677-14681. https://doi.org/10.1073/pnas.1820653116\n\nIllustrative, AI-assisted visuals; not documentary footage. Educational content, not veterinary advice. Consult a veterinarian for health concerns.\n\n#Dogs #DogEvolution #AnimalScience #Shorts",
+  "hashtags": [
+    "#Dogs",
+    "#DogEvolution",
+    "#AnimalScience",
+    "#Shorts"
+  ],
+  "tags": [
+    "puppy dog eyes",
+    "dog eyebrow muscle",
+    "dog evolution",
+    "levator anguli oculi medialis",
+    "dog facial expression",
+    "wolves vs dogs",
+    "dog science",
+    "domestication",
+    "documentary short"
+  ],
+  "category": "Pets & Animals",
+  "category_id": "15",
+  "language": "en",
+  "visibility": "private",
+  "made_for_kids": false,
+  "contains_synthetic_media": true,
+  "synthetic_media_disclosure": "Illustrative, AI-assisted visuals; not documentary footage.",
+  "educational_disclaimer": "Educational content, not veterinary advice. Consult a veterinarian for health concerns.",
+  "manual_upload_required": true,
+  "duration_s": 45,
+  "aspect_ratio": "9:16",
+  "resolution": "1080x1920",
+  "sources": [
+    {
+      "id": "kaminski-2019",
+      "citation": "Kaminski, J. et al. (2019). Evolution of facial muscle anatomy in dogs. Proceedings of the National Academy of Sciences 116(29), 14677-14681. https://doi.org/10.1073/pnas.1820653116",
+      "url": "https://doi.org/10.1073/pnas.1820653116",
+      "doi": "10.1073/pnas.1820653116",
+      "pmid": "31209036"
+    }
+  ],
+  "youtube_video_id": null,
+  "youtube_url": null,
+  "upload_status": "not_uploaded_manual_only"
+}

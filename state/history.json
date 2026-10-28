@@ -1,0 +1,92 @@
+{
+  "schema_version": 1,
+  "description": "Committed topic history for cross-batch duplicate detection.",
+  "topics": [
+    {
+      "id": "cat-sweetness",
+      "slug": "cat-sweetness",
+      "batch_id": "2026-10-29-cats-dogs-01",
+      "title": "Why Cats Can't Taste Sweetness",
+      "central_question": "Why can't cats taste sweetness?",
+      "central_fact": "Domestic cats carry an unexpressed Tas1r2 pseudogene, so the two-part sweet-taste receptor cannot form.",
+      "source_ids": [
+        "li-2005"
+      ],
+      "status": "PASS",
+      "created_at": "2026-10-28T21:37:25Z"
+    },
+    {
+      "id": "dog-guilty-look",
+      "slug": "dog-guilty-look",
+      "batch_id": "2026-10-29-cats-dogs-01",
+      "title": "The Guilty Look Isn't Guilt",
+      "central_question": "Does a dog's guilty look mean the dog feels guilty?",
+      "central_fact": "A dog's guilty look is influenced by owner cues and scolding, not by whether the dog actually disobeyed.",
+      "source_ids": [
+        "horowitz-2009"
+      ],
+      "status": "PASS",
+      "created_at": "2026-10-28T21:37:25Z"
+    },
+    {
+      "id": "dog-nose",
+      "slug": "dog-nose",
+      "batch_id": "2026-10-29-cats-dogs-01",
+      "title": "Why a Dog's Nose Works in Stereo",
+      "central_question": "How does a dog's nose separate smelling from breathing?",
+      "central_fact": "A computer model built from MRI scans showed that a dog's nasal airflow splits into separate olfactory and respiratory paths, and each nostril samples a spatially separate patch of air.",
+      "source_ids": [
+        "craven-2010"
+      ],
+      "status": "PASS",
+      "created_at": "2026-10-28T21:37:25Z"
+    },
+    {
+      "id": "puppy-dog-eyes",
+      "slug": "puppy-dog-eyes",
+      "batch_id": "2026-10-29-cats-dogs-01",
+      "title": "The Muscle Behind Puppy-Dog Eyes",
+      "central_question": "Why do dogs have that expressive inner-eyebrow look?",
+      "central_fact": "Dogs have a facial muscle that raises the inner eyebrow, and the dogs studied produced that movement more often and intensely than wolves.",
+      "source_ids": [
+        "kaminski-2019"
+      ],
+      "status": "PASS",
+      "created_at": "2026-10-28T21:37:25Z"
+    },
+    {
+      "id": "purr-cry",
+      "slug": "purr-cry",
+      "batch_id": "2026-10-29-cats-dogs-01",
+      "title": "The Cry Hidden in a Cat's Purr",
+      "central_question": "Why does a hungry cat's purr sound so urgent?",
+      "central_fact": "In a 2009 study, solicitation purrs contained a pronounced high-frequency component around 380 Hz, and listeners rated them more urgent and less pleasant than ordinary purrs.",
+      "source_ids": [
+        "mccomb-2009"
+      ],
+      "status": "PASS",
+      "created_at": "2026-10-28T21:37:25Z"
+    },
+    {
+      "id": "slow-blink",
+      "slug": "slow-blink",
+      "batch_id": "2026-10-29-cats-dogs-01",
+      "title": "What a Cat's Slow Blink Really Means",
+      "central_question": "Do cats understand a human slow blink?",
+      "central_fact": "In two experiments, cats showed more eye narrowing and half-blinks when a human slow-blinked at them, and they were more likely to approach an unfamiliar experimenter after a slow blink.",
+      "source_ids": [
+        "humphrey-2020"
+      ],
+      "status": "PASS",
+      "created_at": "2026-10-28T21:37:25Z"
+    }
+  ],
+  "batches": [
+    {
+      "batch_id": "2026-10-29-cats-dogs-01",
+      "package_count": 6,
+      "status": "PASS",
+      "created_at": "2026-10-28T21:36:49Z"
+    }
+  ]
+}

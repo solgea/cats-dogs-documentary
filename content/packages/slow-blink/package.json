@@ -1,0 +1,198 @@
+{
+  "schema_version": 1,
+  "id": "slow-blink",
+  "batch_id": "2026-10-29-cats-dogs-01",
+  "pillar": "behavior",
+  "title": "What a Cat's Slow Blink Really Means",
+  "central_question": "Do cats understand a human slow blink?",
+  "central_fact": "In two experiments, cats showed more eye narrowing and half-blinks when a human slow-blinked at them, and they were more likely to approach an unfamiliar experimenter after a slow blink.",
+  "takeaway": "A slow blink may be a low-pressure greeting, but it is not a guaranteed sign of trust; read the cat's whole response.",
+  "hook": {
+    "text": "Your cat's slow blink might be a reply.",
+    "duration_s": 2.5
+  },
+  "target_duration_s": 45,
+  "scenes": [
+    {
+      "id": "s1",
+      "start_s": 0,
+      "duration_s": 2.5,
+      "narration": "Your cat's slow blink might be a reply.",
+      "visual": {
+        "description": "A gray tabby cat sits on a cushioned window seat in a quiet living room, facing the camera with relaxed eyes. The cat performs one slow half-blink, then holds a calm, soft gaze. Morning light falls across its face, and the background is gently out of focus.",
+        "shot_type": "eye-level close-up",
+        "subject": "one gray tabby cat with dark stripes, pale green eyes, and a white chin",
+        "motion": "slow push-in; the cat half-closes its eyes once",
+        "framing": "vertical 9:16, the cat's face in the upper middle third, caption-safe lower third",
+        "continuity": "same gray tabby, window seat, and warm living room in every scene",
+        "avoid": ["human face", "forced eye contact", "startled expression", "text overlays"]
+      },
+      "transition": "cut"
+    },
+    {
+      "id": "s2",
+      "start_s": 2.5,
+      "duration_s": 7.5,
+      "narration": "In one experiment, owners slow-blinked at their cats. Cats half-blinked and narrowed their eyes more than when owners sat nearby without interacting.",
+      "visual": {
+        "description": "The same gray tabby rests on the window seat while a seated owner's face stays out of frame. The owner's visible eyes perform a slow blink, and the cat answers with a half-blink of its own. The room is still, and both subjects remain relaxed.",
+        "shot_type": "over-the-shoulder two-shot from behind the owner",
+        "subject": "the same gray tabby and an owner's relaxed face seen only from the brow down",
+        "motion": "steady camera; one human slow blink, then one cat half-blink",
+        "framing": "vertical 9:16, cat centered, owner's brow and cheek as a soft foreground edge",
+        "continuity": "same cat, window seat, and oatmeal sweater; no other animals",
+        "avoid": ["direct stare", "human face fully visible", "grabbing the cat", "text overlays"]
+      },
+      "transition": "cut"
+    },
+    {
+      "id": "s3",
+      "start_s": 10.0,
+      "duration_s": 8.0,
+      "narration": "In a second experiment, an unfamiliar researcher slow-blinked at cats. The cats were then more likely to approach her hand than after a neutral face.",
+      "visual": {
+        "description": "The same gray tabby stands on a living-room floor, watching a seated researcher whose face is out of frame. The researcher's open hand rests on the floor a short distance away. After a slow blink from the researcher, the cat steps forward and sniffs the hand calmly.",
+        "shot_type": "low-angle medium shot",
+        "subject": "the same gray tabby and a researcher's open hand, no visible face",
+        "motion": "gentle lateral follow as the cat takes two steps forward",
+        "framing": "vertical 9:16, cat in the middle third, hand in the lower third with clear floor space",
+        "continuity": "same cat and living room; the researcher wears a plain blue shirt",
+        "avoid": ["reaching or grabbing", "human face", "cornering the cat", "text overlays"]
+      },
+      "transition": "cut"
+    },
+    {
+      "id": "s4",
+      "start_s": 18.0,
+      "duration_s": 8.0,
+      "narration": "A slow blink is not one long stare. It is a series of half-blinks, then a prolonged narrowing or full closure of the eyes.",
+      "visual": {
+        "description": "An extreme macro view of the same gray tabby's eyes. The upper and lower lids meet in a soft half-blink, open briefly, then narrow into a prolonged relaxed squint. Fur detail and whiskers stay natural, and the lighting remains warm and even.",
+        "shot_type": "macro close-up",
+        "subject": "the same gray tabby's eyes, lids, and whiskers",
+        "motion": "very slow push-in, one complete half-blink sequence",
+        "framing": "vertical 9:16, both eyes on the upper-third line, whiskers inside frame",
+        "continuity": "same eye color, stripe pattern, and window light as the opening",
+        "avoid": ["human-like eyelids", "extra whiskers", "tears", "text overlays"]
+      },
+      "transition": "cut"
+    },
+    {
+      "id": "s5",
+      "start_s": 26.0,
+      "duration_s": 9.0,
+      "narration": "The authors suggest this may be positive communication. They also caution that more research is needed before firm conclusions about the cat's emotional state.",
+      "visual": {
+        "description": "The same gray tabby lies along the window seat with its chin resting on a folded blanket. The cat's eyes are half closed and its ears are relaxed. Sunlight moves slowly across the fur while the cat breathes evenly, then the camera eases back to show the quiet room.",
+        "shot_type": "medium close-up, then slow pull-back",
+        "subject": "the same gray tabby resting on the window seat",
+        "motion": "slow pull-back with no sudden movement",
+        "framing": "vertical 9:16, cat in the lower middle third, soft negative space above",
+        "continuity": "same blanket, window seat, and morning light; no new animals",
+        "avoid": ["awkward sleeping pose", "human face", "startling sound cue", "text overlays"]
+      },
+      "transition": "cut"
+    },
+    {
+      "id": "s6",
+      "start_s": 35.0,
+      "duration_s": 10.0,
+      "narration": "So try one slow blink from a comfortable distance, then watch. If the cat looks away or stays tense, give it space. The blink is an invitation, not a demand.",
+      "visual": {
+        "description": "The same gray tabby sits at the far end of the window seat while an owner's hand rests open on the cushion nearby. The cat looks at the hand, blinks slowly once, and stays in place. The owner does not reach closer, and the room remains calm.",
+        "shot_type": "medium two-shot, owner seen only as a hand and sleeve",
+        "subject": "the same gray tabby and an owner's open hand",
+        "motion": "static camera; the cat blinks once and settles",
+        "framing": "vertical 9:16, cat and hand in the lower middle third, caption-safe top",
+        "continuity": "same cat, window seat, blanket, and oatmeal sleeve",
+        "avoid": ["chasing the cat", "restraint", "human face", "text overlays"]
+      },
+      "transition": "fade out"
+    }
+  ],
+  "claims": [
+    {
+      "id": "c1",
+      "text": "Experiment 1 included 21 cats from 14 households; after excluding three outlier dyads, the analysis used 18 cat-owner pairs.",
+      "source_ids": ["humphrey-2020"],
+      "evidence_level": "peer-reviewed behavioral experiment",
+      "limits": "Home-based naturalistic study with a modest sample; three dyads were excluded as outliers."
+    },
+    {
+      "id": "c2",
+      "text": "In Experiment 1, cats showed higher rates of half-blinking and eye narrowing during owner slow-blink trials than during no-interaction trials.",
+      "source_ids": ["humphrey-2020"],
+      "evidence_level": "peer-reviewed behavioral experiment",
+      "limits": "Owners varied in how they delivered the slow blink, and the control condition differed in social engagement."
+    },
+    {
+      "id": "c3",
+      "text": "In Experiment 2, 24 cats were recruited and 18 were analyzed; slow blinking by an unfamiliar experimenter was associated with more half-blinks and eye narrowing than a neutral face without direct eye contact.",
+      "source_ids": ["humphrey-2020"],
+      "evidence_level": "peer-reviewed behavioral experiment",
+      "limits": "Six cats were excluded as outliers; the neutral control avoided direct eye contact, which may have influenced the response."
+    },
+    {
+      "id": "c4",
+      "text": "In Experiment 2, cats had a higher approach score toward the experimenter's hand after the slow-blink interaction than after the neutral-face condition.",
+      "source_ids": ["humphrey-2020"],
+      "evidence_level": "peer-reviewed behavioral experiment",
+      "limits": "Approach is an indirect indicator and does not by itself establish a specific emotional state."
+    },
+    {
+      "id": "c5",
+      "text": "The authors interpret the results as evidence that slow blinking may function as positive emotional communication, while cautioning that firm conclusions about emotion require further research.",
+      "source_ids": ["humphrey-2020"],
+      "evidence_level": "authors' interpretation of peer-reviewed evidence",
+      "limits": "The study measured behavior and approach, not a direct assay of the cat's internal state."
+    },
+    {
+      "id": "c6",
+      "text": "A slow blink is not a guarantee of feline trust; the response depends on the individual cat and the situation.",
+      "source_ids": ["humphrey-2020"],
+      "evidence_level": "interpretation of peer-reviewed evidence",
+      "limits": "The experiments used specific home settings and a small number of cats; they cannot predict every cat's reaction."
+    }
+  ],
+  "visual_policy": {
+    "style": "Warm, quiet documentary-style illustration with natural window light, realistic fur, and restrained close-ups.",
+    "anatomy": "One gray tabby with dark stripes, pale green eyes, a white chin, natural eyelids, and symmetrical whiskers. Keep markings, eye color, and body proportions identical in every scene.",
+    "welfare": "The cat is calm and free to look away or leave. No restraint, chasing, forced eye contact, or staged fear. The owner's hand stays open and still.",
+    "continuity": "Same gray tabby, window seat, folded blanket, living room, and morning light throughout. The owner appears only as a brow, hand, or sleeve.",
+    "disclosure": "Illustrative, AI-assisted visuals; not documentary footage."
+  },
+  "youtube": {
+    "title": "What a Cat's Slow Blink Really Means",
+    "hashtags": ["#Cats", "#CatBehavior", "#AnimalScience", "#Shorts"],
+    "tags": [
+      "cat slow blink",
+      "cat behavior",
+      "cat communication",
+      "slow blink study",
+      "cat eye narrowing",
+      "feline science",
+      "cats",
+      "pet science",
+      "documentary short"
+    ],
+    "category": "Pets & Animals",
+    "category_id": "15",
+    "visibility": "private"
+  },
+  "editorial": {
+    "status": "source-checked",
+    "human_review_required": true,
+    "human_signoff": false,
+    "sources_verified_at": "2026-10-29",
+    "notes": [
+      "Do not present the slow blink as a universal password to feline trust; the authors explicitly caution against firm emotional conclusions.",
+      "Keep the owner's hand still and open. A reaching hand would turn a low-pressure invitation into a forced interaction."
+    ]
+  },
+  "risk_notes": [
+    "The study is home-based and modest in size; avoid generalizing the effect to every cat.",
+    "Do not imply that a cat which fails to blink back is unfriendly or unhealthy."
+  ],
+  "created_at": "2026-10-29",
+  "updated_at": "2026-10-29"
+}

@@ -1,0 +1,263 @@
+{
+  "schema_version": 1,
+  "package_id": "dog-guilty-look",
+  "provider": "viewmade",
+  "provider_endpoint": "https://mcp.viewmade.com/mcp",
+  "status": "NOT_SUBMITTED",
+  "submission_allowed": false,
+  "blocked_reason": "ViewMade OAuth and official MCP tool bindings are not both ready. Run `cddocs viewmade login`, `cddocs viewmade discover`, and `cddocs viewmade bind`.",
+  "preflight": {
+    "tool_bindings_complete": false,
+    "authentication": "not_checked_by_build",
+    "live_authorisation": "required_at_render_time"
+  },
+  "request": {
+    "title": "The Guilty Look Isn't Guilt",
+    "format": "youtube_shorts",
+    "duration_s": 45,
+    "aspect_ratio": "9:16",
+    "resolution": "1080x1920",
+    "language": "en",
+    "narration": "That guilty look? It isn't a confession. In a 2009 study, fourteen dogs were left with food. Sometimes owners were told the dog had eaten, even when it hadn't. When owners returned, the guilty look tracked the scolding. Dogs looked guiltier when scolded, whether or not they had taken the food. In other words, the look tracked the owner's cues, not a reliable inner sense of guilt. The dogs were reading the moment. The paper describes the look as lowered head, flattened ears, and a tucked tail — a package humans readily read as guilt. So skip the interrogation. Check what actually happened, and respond to the behavior you can see. The look is real; the guilt story is the guess.",
+    "scenes": [
+      {
+        "id": "s1",
+        "start_s": 0,
+        "duration_s": 2.5,
+        "narration": "That guilty look? It isn't a confession.",
+        "visual": {
+          "description": "A medium-sized brown mixed-breed dog sits on a soft rug in a calm living room, looking up toward an off-screen owner with ears slightly back and tail tucked low. Soft window light, shallow depth of field, restrained documentary mood.",
+          "shot_type": "eye-level medium close-up",
+          "subject": "one brown mixed-breed dog with floppy ears and a white chest patch",
+          "motion": "slow push-in, dog holds the look and blinks once",
+          "framing": "vertical 9:16, dog's face in the upper middle third, caption-safe lower third",
+          "continuity": "same dog, rug, and warm living room as every later scene; no collar changes",
+          "avoid": [
+            "human face",
+            "raised hand",
+            "crying or cowering",
+            "text overlays"
+          ]
+        },
+        "transition": "cut"
+      },
+      {
+        "id": "s2",
+        "start_s": 2.5,
+        "duration_s": 7.5,
+        "narration": "In a 2009 study, fourteen dogs were left with food. Sometimes owners were told the dog had eaten, even when it hadn't.",
+        "visual": {
+          "description": "A simple kitchen scene: a metal food bowl sits on a tiled floor while the same brown dog watches from a respectful distance. An owner's hand enters frame and places the bowl, then withdraws. The dog stays calm and curious.",
+          "shot_type": "low-angle wide shot",
+          "subject": "the same brown dog and a human hand, no visible face",
+          "motion": "gentle lateral slide from bowl to dog",
+          "framing": "vertical 9:16, bowl in lower third, dog in middle third, clear floor space",
+          "continuity": "same dog and coat markings; kitchen adjacent to the living room; bowl is brushed steel",
+          "avoid": [
+            "food aggression",
+            "snarling",
+            "human face",
+            "messy food"
+          ]
+        },
+        "transition": "cut"
+      },
+      {
+        "id": "s3",
+        "start_s": 10.0,
+        "duration_s": 8.0,
+        "narration": "When owners returned, the guilty look tracked the scolding. Dogs looked guiltier when scolded, whether or not they had taken the food.",
+        "visual": {
+          "description": "The same dog looks up at a seated owner whose face is out of frame. The owner's open hands move in a calm, conversational gesture. The dog lowers its head slightly, ears back, while the camera stays respectful and non-threatening.",
+          "shot_type": "over-the-shoulder medium shot from behind the owner",
+          "subject": "the same brown dog; owner visible only as a shoulder and open hands",
+          "motion": "subtle handheld drift, no sudden movement",
+          "framing": "vertical 9:16, dog's face centered, owner's shoulder as a soft foreground edge",
+          "continuity": "same living room, rug, and dog; owner wears a plain oatmeal sweater",
+          "avoid": [
+            "shouting",
+            "pointing finger",
+            "hitting",
+            "fear grimace",
+            "text overlays"
+          ]
+        },
+        "transition": "cut"
+      },
+      {
+        "id": "s4",
+        "start_s": 18.0,
+        "duration_s": 8.0,
+        "narration": "In other words, the look tracked the owner's cues, not a reliable inner sense of guilt. The dogs were reading the moment.",
+        "visual": {
+          "description": "A tight, quiet close-up of the same dog's eyes and relaxed ears. Reflections of window light move across the iris. The dog glances toward the owner's voice, then back toward the camera with a soft, ordinary expression.",
+          "shot_type": "macro close-up",
+          "subject": "the same brown dog's eyes and ears",
+          "motion": "very slow rack focus from ear to eye",
+          "framing": "vertical 9:16, one eye on the upper-third line, fur detail crisp",
+          "continuity": "same eye color, white chest patch visible at frame edge, no collar change",
+          "avoid": [
+            "human-like tears",
+            "glowing eyes",
+            "extra eyelids",
+            "text overlays"
+          ]
+        },
+        "transition": "cut"
+      },
+      {
+        "id": "s5",
+        "start_s": 26.0,
+        "duration_s": 9.0,
+        "narration": "The paper describes the look as lowered head, flattened ears, and a tucked tail — a package humans readily read as guilt.",
+        "visual": {
+          "description": "Side profile of the same dog standing on the rug, head lowered, ears back, tail tucked gently against its hind legs. The pose is ambiguous and calm rather than frightened. Warm afternoon light and a soft shadow behind the dog.",
+          "shot_type": "side-profile full-body shot",
+          "subject": "the same brown dog, full body and tail visible",
+          "motion": "static camera, dog shifts weight and exhales",
+          "framing": "vertical 9:16, full dog inside frame with space above the tail",
+          "continuity": "same coat, body proportions, and rug; tail remains natural and anatomically correct",
+          "avoid": [
+            "trembling",
+            "urine",
+            "cowering on back",
+            "extra tail",
+            "text overlays"
+          ]
+        },
+        "transition": "cut"
+      },
+      {
+        "id": "s6",
+        "start_s": 35.0,
+        "duration_s": 10.0,
+        "narration": "So skip the interrogation. Check what actually happened, and respond to the behavior you can see. The look is real; the guilt story is the guess.",
+        "visual": {
+          "description": "The same dog lies relaxed on the rug beside a seated owner's legs. The owner's hand rests open on the floor, and the dog rests a chin near it. The room is quiet, and the dog's breathing is visible but calm.",
+          "shot_type": "high-angle medium shot",
+          "subject": "the same brown dog and an owner's relaxed hand",
+          "motion": "slow pull-back to reveal the calm room",
+          "framing": "vertical 9:16, dog and hand in the lower middle third, caption-safe top",
+          "continuity": "same rug, sweater, and dog; no new people or animals",
+          "avoid": [
+            "sad music cue",
+            "human face",
+            "leash tugging",
+            "text overlays"
+          ]
+        },
+        "transition": "fade out"
+      }
+    ],
+    "captions": {
+      "mode": "burned_in",
+      "srt_file": "subtitles.srt",
+      "cues": [
+        {
+          "index": 1,
+          "start_s": 0.0,
+          "end_s": 1.09,
+          "text": "That guilty look?"
+        },
+        {
+          "index": 2,
+          "start_s": 1.09,
+          "end_s": 2.5,
+          "text": "It isn't a confession."
+        },
+        {
+          "index": 3,
+          "start_s": 2.5,
+          "end_s": 5.769,
+          "text": "In a 2009 study, fourteen dogs were left with food."
+        },
+        {
+          "index": 4,
+          "start_s": 5.769,
+          "end_s": 10.0,
+          "text": "Sometimes owners were told the dog had eaten, even when it hadn't."
+        },
+        {
+          "index": 5,
+          "start_s": 10.0,
+          "end_s": 13.549,
+          "text": "When owners returned, the guilty look tracked the scolding."
+        },
+        {
+          "index": 6,
+          "start_s": 13.549,
+          "end_s": 18.0,
+          "text": "Dogs looked guiltier when scolded, whether or not they had taken the food."
+        },
+        {
+          "index": 7,
+          "start_s": 18.0,
+          "end_s": 20.958,
+          "text": "In other words, the look tracked the owner's"
+        },
+        {
+          "index": 8,
+          "start_s": 20.958,
+          "end_s": 23.782,
+          "text": "cues, not a reliable inner sense of guilt."
+        },
+        {
+          "index": 9,
+          "start_s": 23.782,
+          "end_s": 26.0,
+          "text": "The dogs were reading the moment."
+        },
+        {
+          "index": 10,
+          "start_s": 26.0,
+          "end_s": 30.575,
+          "text": "The paper describes the look as lowered head, flattened ears,"
+        },
+        {
+          "index": 11,
+          "start_s": 30.575,
+          "end_s": 35.0,
+          "text": "and a tucked tail — a package humans readily read as guilt."
+        },
+        {
+          "index": 12,
+          "start_s": 35.0,
+          "end_s": 36.818,
+          "text": "So skip the interrogation."
+        },
+        {
+          "index": 13,
+          "start_s": 36.818,
+          "end_s": 41.713,
+          "text": "Check what actually happened, and respond to the behavior you can see."
+        },
+        {
+          "index": 14,
+          "start_s": 41.713,
+          "end_s": 45.0,
+          "text": "The look is real; the guilt story is the guess."
+        }
+      ]
+    },
+    "voice": "natural English narration, warm and measured",
+    "music": "subtle, low, non-distracting documentary bed",
+    "visual_style": "Cinematic documentary-style illustration with natural light, realistic fur, species-correct anatomy, and calm, non-staged behavior.",
+    "negative_prompt": "No extra limbs, no extra ears, no extra tails, no distorted eyes, no human hands merging with fur, no text artifacts, no logos, no watermarks, no photorealistic claim of archival footage, no distressed animals, no staged aggression.",
+    "disclosure": "Illustrative, AI-assisted visuals; not documentary footage.",
+    "output": {
+      "container": "mp4",
+      "width": 1080,
+      "height": 1920,
+      "fps": 30,
+      "audio": true
+    }
+  },
+  "submission": null,
+  "job_id": null,
+  "render_path": null,
+  "notes": [
+    "This is a local request specification, not evidence that ViewMade accepted a job.",
+    "No MCP tool name is hardcoded. The adapter uses the official discovered and bound tools.",
+    "A render is COMPLETE only after the downloaded MP4 passes local media validation."
+  ]
+}

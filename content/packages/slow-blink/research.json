@@ -1,0 +1,77 @@
+{
+  "schema_version": 1,
+  "package_id": "slow-blink",
+  "question": "Do cats understand a human slow blink?",
+  "short_answer": "The experiments show that cats respond to a human slow blink with more eye narrowing and half-blinks, and they are more likely to approach an unfamiliar person after a slow blink. That is evidence of communication, not proof of what the cat feels.",
+  "verification": {
+    "researched_at": "2026-10-29",
+    "method": "Read the open-access Scientific Reports paper and its PubMed record, then checked the sample sizes, exclusions, experimental conditions, behavioral measures, and the authors' caution about emotional conclusions against the DOI, PMID, and PMC metadata.",
+    "source_access": "PubMed abstract plus PMC full text and DOI record",
+    "myth_or_anecdote": "The popular claim that a slow blink is a secret cat password that always means trust and affection. The experiments show a measurable response tendency, but the authors say firm conclusions about the cat's emotional state need more research.",
+    "uncertainties": [
+      "Both experiments were conducted in homes with modest samples; 18 dyads or cats were analyzed in each experiment after outlier exclusions.",
+      "Owners varied in how they performed the slow blink, and the no-interaction control differed from the slow-blink condition in social engagement.",
+      "In Experiment 2 the neutral control avoided direct eye contact, so gaze direction or attentiveness may have contributed to the approach difference.",
+      "Approach behavior is an indirect indicator of valence and does not directly measure an internal emotional state."
+    ]
+  },
+  "sources": [
+    {
+      "id": "humphrey-2020",
+      "type": "peer-reviewed study",
+      "title": "The role of cat eye narrowing movements in cat-human communication",
+      "authors": ["Humphrey, T.", "Proops, L.", "Forman, J.", "Spooner, R.", "McComb, K."],
+      "year": 2020,
+      "journal": "Scientific Reports",
+      "volume": "10",
+      "issue": "1",
+      "pages": "16503",
+      "doi": "10.1038/s41598-020-73426-0",
+      "pmid": "33020542",
+      "pmcid": "PMC7536207",
+      "url": "https://doi.org/10.1038/s41598-020-73426-0",
+      "accessed": "2026-10-29",
+      "tier": 1,
+      "verified": true,
+      "evidence": "Experiment 1 used 21 cats from 14 households; after excluding three outlier dyads, 18 cat-owner pairs were analyzed. Cats half-blinked and narrowed their eyes more during owner slow-blink trials than during no-interaction trials. Experiment 2 recruited 24 cats and analyzed 18; cats showed more half-blinks and eye narrowing in response to an unfamiliar experimenter's slow blink than to a neutral face without direct eye contact, and they had higher approach scores toward the experimenter's hand afterward. The authors interpret the pattern as possible positive emotional communication and call for further research before firm emotional conclusions.",
+      "limitations": "Home-based naturalistic experiments with modest samples and some variation in stimulus delivery. Experiment 2's neutral control avoided direct eye contact, and the authors explicitly caution that the emotional meaning of the behavior is not settled."
+    }
+  ],
+  "claim_checks": [
+    {
+      "claim_id": "c1",
+      "verdict": "supported",
+      "notes": "The paper reports 21 cats from 14 households in Experiment 1 and a final analysis of 18 dyads after three outlier exclusions."
+    },
+    {
+      "claim_id": "c2",
+      "verdict": "supported",
+      "notes": "Rates of half-blinking and eye narrowing were significantly higher in the owner slow-blink condition than in the no-interaction condition."
+    },
+    {
+      "claim_id": "c3",
+      "verdict": "supported",
+      "notes": "Experiment 2 recruited 24 cats, excluded six outliers, and analyzed 18; both half-blinks and eye narrowing were higher after the slow blink than after the neutral face."
+    },
+    {
+      "claim_id": "c4",
+      "verdict": "supported",
+      "notes": "The paper reports a significantly higher approach score after the slow-blink condition than after the neutral-face condition."
+    },
+    {
+      "claim_id": "c5",
+      "verdict": "interpretation",
+      "notes": "The authors describe the results as consistent with positive emotional communication but explicitly say further research is needed before firm conclusions about emotional state."
+    },
+    {
+      "claim_id": "c6",
+      "verdict": "interpretation",
+      "notes": "The limited samples and naturalistic settings support a cautious reading: a slow blink can be an invitation, not a reliable test of trust in every cat."
+    }
+  ],
+  "open_questions": [
+    "Does the response generalize to cats in shelters, veterinary clinics, or multi-cat homes?",
+    "Which parts of the human signal matter most: eyelid movement, gaze direction, or the accompanying social attention?",
+    "Can slow-blink interactions be used as a welfare indicator, as the authors suggest, without overinterpreting a single response?"
+  ]
+}

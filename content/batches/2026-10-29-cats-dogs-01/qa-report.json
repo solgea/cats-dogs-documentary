@@ -1,0 +1,113 @@
+{
+  "schema_version": 1,
+  "batch_id": "2026-10-29-cats-dogs-01",
+  "generated_at": "2026-10-28T21:53:50Z",
+  "mode": "validate",
+  "status": "PASS",
+  "summary": {
+    "packages": 6,
+    "status": "PASS",
+    "pass": 6,
+    "warn": 0,
+    "fail": 0,
+    "render_status": {
+      "dog-guilty-look": "NOT_RENDERED",
+      "cat-sweetness": "NOT_RENDERED",
+      "puppy-dog-eyes": "NOT_RENDERED",
+      "slow-blink": "NOT_RENDERED",
+      "purr-cry": "NOT_RENDERED",
+      "dog-nose": "NOT_RENDERED"
+    },
+    "publish_ready": false
+  },
+  "packages": [
+    {
+      "id": "dog-guilty-look",
+      "status": "PASS",
+      "counts": {
+        "PASS": 85,
+        "WARN": 0,
+        "FAIL": 0,
+        "SKIP": 1
+      },
+      "render_status": "NOT_RENDERED",
+      "publish_ready": false,
+      "qa_report": "content/packages/dog-guilty-look/qa-report.json"
+    },
+    {
+      "id": "cat-sweetness",
+      "status": "PASS",
+      "counts": {
+        "PASS": 85,
+        "WARN": 0,
+        "FAIL": 0,
+        "SKIP": 1
+      },
+      "render_status": "NOT_RENDERED",
+      "publish_ready": false,
+      "qa_report": "content/packages/cat-sweetness/qa-report.json"
+    },
+    {
+      "id": "puppy-dog-eyes",
+      "status": "PASS",
+      "counts": {
+        "PASS": 85,
+        "WARN": 0,
+        "FAIL": 0,
+        "SKIP": 1
+      },
+      "render_status": "NOT_RENDERED",
+      "publish_ready": false,
+      "qa_report": "content/packages/puppy-dog-eyes/qa-report.json"
+    },
+    {
+      "id": "slow-blink",
+      "status": "PASS",
+      "counts": {
+        "PASS": 87,
+        "WARN": 0,
+        "FAIL": 0,
+        "SKIP": 1
+      },
+      "render_status": "NOT_RENDERED",
+      "publish_ready": false,
+      "qa_report": "content/packages/slow-blink/qa-report.json"
+    },
+    {
+      "id": "purr-cry",
+      "status": "PASS",
+      "counts": {
+        "PASS": 85,
+        "WARN": 0,
+        "FAIL": 0,
+        "SKIP": 1
+      },
+      "render_status": "NOT_RENDERED",
+      "publish_ready": false,
+      "qa_report": "content/packages/purr-cry/qa-report.json"
+    },
+    {
+      "id": "dog-nose",
+      "status": "PASS",
+      "counts": {
+        "PASS": 87,
+        "WARN": 0,
+        "FAIL": 0,
+        "SKIP": 1
+      },
+      "render_status": "NOT_RENDERED",
+      "publish_ready": false,
+      "qa_report": "content/packages/dog-nose/qa-report.json"
+    }
+  ],
+  "duplicate_pairs": [],
+  "render_gate": {
+    "status": "NOT_REQUESTED",
+    "note": "Live ViewMade rendering is a separate command and requires OAuth, discovered tool bindings, --allow-live, and CDDOCS_LIVE_CONFIRM=YES."
+  },
+  "publishing_gate": {
+    "manual_youtube_upload": true,
+    "human_signoff_required": true,
+    "note": "No video has been uploaded. Review every source and render before publishing."
+  }
+}

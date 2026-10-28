@@ -1,0 +1,37 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+.venv/
+venv/
+
+# Local secrets and machine state
+.env
+state/*.db
+state/*.db-journal
+state/*.db-wal
+state/*.db-shm
+state/viewmade-token.json
+state/viewmade-oauth-client.json
+state/viewmade-tools.json
+state/viewmade-binding.json
+state/viewmade-jobs/
+state/oauth-*.json
+
+# Generated media (large, not source-controlled)
+renders/
+*.mp4
+*.mov
+*.wav.tmp
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Keep committed history export and placeholder files
+!state/history.json
+!state/.gitkeep

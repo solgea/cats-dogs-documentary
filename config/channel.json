@@ -1,0 +1,101 @@
+{
+  "schema_version": 1,
+  "channel_name": "Cats & Dogs, Explained",
+  "language": "en",
+  "format": {
+    "platform": "youtube_shorts",
+    "aspect_ratio": "9:16",
+    "width": 1080,
+    "height": 1920,
+    "min_duration_s": 30,
+    "max_duration_s": 60,
+    "default_duration_s": 45,
+    "min_scenes": 4,
+    "max_scenes": 8,
+    "hook_min_s": 1.0,
+    "hook_max_s": 3.0,
+    "subtitle_max_line_chars": 42,
+    "subtitle_max_lines": 2,
+    "subtitle_max_chars_per_second": 23.0
+  },
+  "editorial": {
+    "voice": "Warm, curious, precise, and calm. Explain one idea rather than listing facts.",
+    "point_of_view": "Evidence first. Separate what a study shows from what it suggests. Never invent a story, quote, number, or citation.",
+    "required_disclosure": "Illustrative, AI-assisted visuals; not documentary footage.",
+    "educational_disclaimer": "Educational content, not veterinary advice. Consult a veterinarian for health concerns.",
+    "require_sources": true,
+    "require_claim_checks": true,
+    "require_human_review": true,
+    "require_source_limitations": true,
+    "min_words_per_second": 1.7,
+    "max_words_per_second": 3.3,
+    "max_title_chars": 100,
+    "max_description_chars": 5000,
+    "max_hashtags": 15,
+    "max_tags_chars": 500,
+    "forbidden_medical_patterns": [
+      "\\bcure[sd]?\\b",
+      "\\bmedicat(e|ion|ions)\\b",
+      "\\bdo[sz]e[sd]?\\b",
+      "\\bprescri(be|bed|ption)\\b",
+      "\\bdiagnos(e|ed|is|tic)\\b",
+      "\\btreat(ment)? (your|the) (cat|dog|pet)\\b"
+    ],
+    "forbidden_claim_phrases": [
+      "scientists say",
+      "studies prove",
+      "experts agree",
+      "always",
+      "never fails",
+      "guaranteed",
+      "miracle"
+    ]
+  },
+  "visual": {
+    "style": "Cinematic documentary-style illustration with natural light, realistic fur, species-correct anatomy, and calm, non-staged behavior.",
+    "default_subject_rules": [
+      "Use one cat or dog as the continuous subject unless the scene explicitly calls for two animals.",
+      "Keep coat markings, eye color, collar, and body proportions consistent between scenes.",
+      "Show natural, relaxed behavior. Never stage fear, pain, aggression, or distress.",
+      "No voice-over mouth movement is required; avoid lip-sync shots of animals.",
+      "Vertical 9:16 composition with the subject in the middle third and caption-safe lower area."
+    ],
+    "banned_description_terms": [
+      "bleeding",
+      "bloody",
+      "crying animal",
+      "crying dog",
+      "crying cat",
+      "whimpering",
+      "starving",
+      "emaciated",
+      "injured",
+      "wounded",
+      "trapped",
+      "dog fight",
+      "cat fight",
+      "attacking",
+      "baring teeth",
+      "snarling",
+      "shaking with fear"
+    ],
+    "negative_prompt": "No extra limbs, no extra ears, no extra tails, no distorted eyes, no human hands merging with fur, no text artifacts, no logos, no watermarks, no photorealistic claim of archival footage, no distressed animals, no staged aggression.",
+    "disclosure_note": "Generated visuals are illustrative. Do not present them as archival or documentary footage."
+  },
+  "pillars": {
+    "behavior": "Behavior science and body-language research",
+    "surprising_fact": "Surprising but verified facts",
+    "real_story": "Credible real-life stories with named sources",
+    "history": "Breed and domestication history",
+    "senses": "Senses, communication, and intelligence",
+    "famous_animal": "Famous animals with verifiable records",
+    "welfare": "Practical veterinary and welfare facts"
+  },
+  "publishing": {
+    "visibility_default": "private",
+    "made_for_kids": false,
+    "manual_upload": true,
+    "youtube_upload_integration": false,
+    "require_human_signoff_before_upload": true
+  }
+}

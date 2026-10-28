@@ -1,0 +1,71 @@
+{
+  "schema_version": 1,
+  "package_id": "purr-cry",
+  "question": "Why does a hungry cat's purr sound so urgent?",
+  "short_answer": "Some purrs produced during food solicitation contain a pronounced high-frequency component around 380 Hz. Human listeners rate those purrs as more urgent and less pleasant than ordinary purrs, but the study does not show that cats calculate the effect or that the sound means distress.",
+  "verification": {
+    "researched_at": "2026-10-29",
+    "method": "Read the Current Biology correspondence and its PubMed record, then checked the recording sample, playback design, acoustic measure, listener ratings, and the authors' interpretation against the DOI and PMID metadata.",
+    "source_access": "PubMed record, publisher DOI record, and published study summary",
+    "myth_or_anecdote": "The popular story that cats deliberately fake a baby's cry to manipulate their owners. The study documents an embedded high-frequency component and a difference in human ratings, not a calculated strategy or a claim about feline intent.",
+    "uncertainties": [
+      "The study is a short correspondence based on ten cats and fifty listeners, so it cannot establish how common the pattern is across cats.",
+      "The recordings were edited into short playback sequences, and listeners rated perceived urgency and pleasantness rather than measuring a behavioral response.",
+      "The analysis identifies an acoustic feature associated with solicitation purrs; it does not test whether cats learn the effect or produce it intentionally.",
+      "The finding does not establish the cat's welfare state or show that a solicitation purr indicates distress."
+    ]
+  },
+  "sources": [
+    {
+      "id": "mccomb-2009",
+      "type": "peer-reviewed study",
+      "title": "The cry embedded within the purr",
+      "authors": ["McComb, K.", "Taylor, A. M.", "Wilson, C.", "Charlton, B. D."],
+      "year": 2009,
+      "journal": "Current Biology",
+      "volume": "19",
+      "issue": "13",
+      "pages": "R507-R508",
+      "doi": "10.1016/j.cub.2009.05.033",
+      "pmid": "19602409",
+      "url": "https://doi.org/10.1016/j.cub.2009.05.033",
+      "accessed": "2026-10-29",
+      "tier": 1,
+      "verified": true,
+      "evidence": "The authors recorded purrs from ten cats in solicitation and non-solicitation contexts. Solicitation purrs contained a pronounced high-frequency voiced component with a peak range of 220-520 Hz and a mean near 380 Hz, embedded within the low-frequency purr. Playbacks to fifty human listeners at equal amplitude found that solicitation purrs were rated as more urgent and less pleasant. The authors propose that this cry-like component makes the solicitation purr effective at eliciting human attention.",
+      "limitations": "Short correspondence with ten cats and fifty listeners; playback ratings measure human perception, not feline intention. The study does not test learning, deliberate control, or the cat's welfare state."
+    }
+  ],
+  "claim_checks": [
+    {
+      "claim_id": "c1",
+      "verdict": "supported",
+      "notes": "The paper reports a high-frequency peak in the 220-520 Hz range with a mean around 380 Hz in solicitation purrs."
+    },
+    {
+      "claim_id": "c2",
+      "verdict": "supported",
+      "notes": "The study recorded purrs from ten cats in solicitation and non-solicitation situations and played them to fifty listeners at equal amplitude."
+    },
+    {
+      "claim_id": "c3",
+      "verdict": "supported",
+      "notes": "Listeners rated solicitation purrs as more urgent and less pleasant than the comparison purrs."
+    },
+    {
+      "claim_id": "c4",
+      "verdict": "interpretation",
+      "notes": "The authors interpret the high-frequency component as a cry-like signal that draws human attention; this is their proposed function, not a direct measure of intent."
+    },
+    {
+      "claim_id": "c5",
+      "verdict": "interpretation",
+      "notes": "The study measures acoustic structure and listener ratings. It does not establish deliberate calculation, learning, or distress, so the narration keeps those claims out."
+    }
+  ],
+  "open_questions": [
+    "Do cats learn to emphasize the high-frequency component through feedback from humans?",
+    "How does the response vary among listeners with different experience with cats or infants?",
+    "Does the same pattern appear in cats living in different social or feeding situations?"
+  ]
+}

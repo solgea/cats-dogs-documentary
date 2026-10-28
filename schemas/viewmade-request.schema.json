@@ -1,0 +1,277 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://cats-dogs-documentary.local/schemas/viewmade-request.schema.json",
+  "title": "Cats and Dogs Documentary ViewMade request record",
+  "description": "Local provider request specification and honest submission state. This file is never proof that ViewMade rendered or accepted a job.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "package_id",
+    "provider",
+    "provider_endpoint",
+    "status",
+    "submission_allowed",
+    "blocked_reason",
+    "preflight",
+    "request",
+    "submission",
+    "job_id",
+    "render_path",
+    "notes"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "package_id": {
+      "$ref": "#/$defs/slug"
+    },
+    "provider": {
+      "const": "viewmade"
+    },
+    "provider_endpoint": {
+      "type": "string",
+      "pattern": "^https://"
+    },
+    "status": {
+      "enum": [
+        "NOT_SUBMITTED",
+        "BLOCKED_UNBOUND",
+        "READY_FOR_SUBMISSION",
+        "SUBMITTED",
+        "RENDERING",
+        "COMPLETE",
+        "FAILED"
+      ]
+    },
+    "submission_allowed": {
+      "type": "boolean"
+    },
+    "blocked_reason": {
+      "type": ["string", "null"],
+      "minLength": 10
+    },
+    "preflight": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "tool_bindings_complete",
+        "authentication",
+        "live_authorisation"
+      ],
+      "properties": {
+        "tool_bindings_complete": {
+          "type": "boolean"
+        },
+        "authentication": {
+          "type": "string",
+          "minLength": 5
+        },
+        "live_authorisation": {
+          "type": "string",
+          "minLength": 5
+        }
+      }
+    },
+    "request": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "title",
+        "format",
+        "duration_s",
+        "aspect_ratio",
+        "resolution",
+        "language",
+        "narration",
+        "scenes",
+        "captions",
+        "voice",
+        "music",
+        "visual_style",
+        "negative_prompt",
+        "disclosure",
+        "output"
+      ],
+      "properties": {
+        "title": {
+          "type": "string",
+          "minLength": 8
+        },
+        "format": {
+          "const": "youtube_shorts"
+        },
+        "duration_s": {
+          "type": "number",
+          "minimum": 30,
+          "maximum": 60
+        },
+        "aspect_ratio": {
+          "const": "9:16"
+        },
+        "resolution": {
+          "const": "1080x1920"
+        },
+        "language": {
+          "type": "string",
+          "minLength": 2
+        },
+        "narration": {
+          "type": "string",
+          "minLength": 50
+        },
+        "scenes": {
+          "type": "array",
+          "minItems": 4,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "id",
+              "start_s",
+              "duration_s",
+              "narration",
+              "visual",
+              "transition"
+            ],
+            "properties": {
+              "id": {
+                "$ref": "#/$defs/slug"
+              },
+              "start_s": {
+                "type": "number",
+                "minimum": 0
+              },
+              "duration_s": {
+                "type": "number",
+                "exclusiveMinimum": 0
+              },
+              "narration": {
+                "type": "string",
+                "minLength": 10
+              },
+              "visual": {
+                "type": "object"
+              },
+              "transition": {
+                "type": "string",
+                "minLength": 3
+              }
+            }
+          }
+        },
+        "captions": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["mode", "srt_file", "cues"],
+          "properties": {
+            "mode": {
+              "const": "burned_in"
+            },
+            "srt_file": {
+              "const": "subtitles.srt"
+            },
+            "cues": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["index", "start_s", "end_s", "text"],
+                "properties": {
+                  "index": {
+                    "type": "integer",
+                    "minimum": 1
+                  },
+                  "start_s": {
+                    "type": "number",
+                    "minimum": 0
+                  },
+                  "end_s": {
+                    "type": "number",
+                    "exclusiveMinimum": 0
+                  },
+                  "text": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                }
+              }
+            }
+          }
+        },
+        "voice": {
+          "type": "string",
+          "minLength": 5
+        },
+        "music": {
+          "type": "string",
+          "minLength": 5
+        },
+        "visual_style": {
+          "type": "string",
+          "minLength": 15
+        },
+        "negative_prompt": {
+          "type": "string",
+          "minLength": 40
+        },
+        "disclosure": {
+          "type": "string",
+          "pattern": "[Nn]ot documentary footage"
+        },
+        "output": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["container", "width", "height", "fps", "audio"],
+          "properties": {
+            "container": {
+              "const": "mp4"
+            },
+            "width": {
+              "const": 1080
+            },
+            "height": {
+              "const": 1920
+            },
+            "fps": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "audio": {
+              "const": true
+            }
+          }
+        }
+      }
+    },
+    "submission": {
+      "type": ["object", "null"]
+    },
+    "job_id": {
+      "type": ["string", "null"]
+    },
+    "render_path": {
+      "type": ["string", "null"]
+    },
+    "updated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "notes": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "minLength": 10
+      }
+    }
+  },
+  "$defs": {
+    "slug": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+    }
+  }
+}

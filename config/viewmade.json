@@ -1,0 +1,45 @@
+{
+  "schema_version": 1,
+  "provider": "viewmade",
+  "plan_requirement": "ViewMade Pro or higher (API/MCP access)",
+  "mcp_url": "https://mcp.viewmade.com/mcp",
+  "resource_metadata_url": "https://mcp.viewmade.com/.well-known/oauth-protected-resource",
+  "authorization_server": "https://viewmade.com",
+  "authorization_metadata_url": "https://viewmade.com/.well-known/oauth-authorization-server",
+  "connect_url": "https://viewmade.com/dashboard/connect",
+  "scopes": [
+    "video:create",
+    "video:read",
+    "presets:write",
+    "account:read"
+  ],
+  "client_name": "Cats & Dogs Documentary Pipeline",
+  "redirect_host": "127.0.0.1",
+  "redirect_port": 8765,
+  "redirect_path": "/callback",
+  "protocol_version": "2025-06-18",
+  "live_confirm_env": "CDDOCS_LIVE_CONFIRM",
+  "render": {
+    "aspect_ratio": "9:16",
+    "width": 1080,
+    "height": 1920,
+    "target_duration_s": 45,
+    "min_duration_s": 30,
+    "max_duration_s": 60,
+    "captions": true,
+    "burned_in_captions": true,
+    "voice": "natural English narration, warm and measured",
+    "music": "subtle, low, non-distracting documentary bed",
+    "disclosure": "Illustrative, AI-assisted visuals; not documentary footage."
+  },
+  "tool_bindings": {
+    "render": null,
+    "status": null,
+    "download": null
+  },
+  "notes": [
+    "Tool names are deliberately null. They must be discovered at runtime through the official MCP endpoint and bound explicitly with `cddocs viewmade bind`.",
+    "No render request is sent until OAuth succeeds, tools are discovered, and all three bindings exist.",
+    "Output from ViewMade is expected to be a 1080x1920 9:16 MP4 around 45 seconds. Rendered files are verified locally before being marked COMPLETE."
+  ]
+}

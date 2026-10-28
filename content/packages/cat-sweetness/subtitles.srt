@@ -1,0 +1,71 @@
+1
+00:00:00,000 --> 00:00:01,776
+Your cat can't taste sugar.
+
+2
+00:00:01,776 --> 00:00:02,500
+Here's why.
+
+3
+00:00:02,500 --> 00:00:04,514
+Cats are obligate carnivores.
+
+4
+00:00:04,514 --> 00:00:06,181
+Meat is their main fare.
+
+5
+00:00:06,181 --> 00:00:10,000
+Their sweet-taste equipment
+is missing a critical part.
+
+6
+00:00:10,000 --> 00:00:14,075
+In 2005, researchers examined
+the gene for Tas1r2, one
+
+7
+00:00:14,075 --> 00:00:18,000
+of two proteins that build
+a working sweet receptor.
+
+8
+00:00:18,000 --> 00:00:23,161
+In cats, that gene has a 247-base-pair
+deletion and premature stop signals.
+
+9
+00:00:23,161 --> 00:00:25,500
+It is a pseudogene, not expressed.
+
+10
+00:00:25,500 --> 00:00:28,352
+The partner gene, Tas1r3,
+is still expressed.
+
+11
+00:00:28,352 --> 00:00:32,091
+But without both halves, the
+receptor cannot detect sugars.
+
+12
+00:00:32,091 --> 00:00:34,500
+Sweetness has no channel to the brain.
+
+13
+00:00:34,500 --> 00:00:39,391
+The same broken gene appeared in six
+domestic cats, a tiger, and a cheetah.
+
+14
+00:00:39,391 --> 00:00:40,695
+It is not pickiness.
+
+15
+00:00:40,695 --> 00:00:42,195
+It is deep cat biology.
+
+16
+00:00:42,195 --> 00:00:45,000
+No sweet tooth; just
+a carnivore's toolkit.

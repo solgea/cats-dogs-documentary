@@ -1,0 +1,262 @@
+{
+  "schema_version": 1,
+  "package_id": "puppy-dog-eyes",
+  "provider": "viewmade",
+  "provider_endpoint": "https://mcp.viewmade.com/mcp",
+  "status": "NOT_SUBMITTED",
+  "submission_allowed": false,
+  "blocked_reason": "ViewMade OAuth and official MCP tool bindings are not both ready. Run `cddocs viewmade login`, `cddocs viewmade discover`, and `cddocs viewmade bind`.",
+  "preflight": {
+    "tool_bindings_complete": false,
+    "authentication": "not_checked_by_build",
+    "live_authorisation": "required_at_render_time"
+  },
+  "request": {
+    "title": "The Muscle Behind Puppy-Dog Eyes",
+    "format": "youtube_shorts",
+    "duration_s": 45,
+    "aspect_ratio": "9:16",
+    "resolution": "1080x1920",
+    "language": "en",
+    "narration": "Puppy-dog eyes are anatomy, not just charm. That inner-brow lift comes from a small muscle: the levator anguli oculi medialis, above the inner corner of the eye. In 2019, researchers dissected four wolves and six dogs. The muscle was consistently present in the dogs they examined, and not in the wolves. Dogs also produced the eyebrow movement more often and more intensely than wolves. The highest intensities appeared only in dogs. The team suggests this may have given dogs an edge: a face that pulls at human sympathy. It is a hypothesis, not a proven cause. What is clear is that the muscle is part of dog anatomy, not a human invention. And the look works on us. Evolution shaped the plea; we answered it.",
+    "scenes": [
+      {
+        "id": "s1",
+        "start_s": 0,
+        "duration_s": 2.5,
+        "narration": "Puppy-dog eyes are anatomy, not just charm.",
+        "visual": {
+          "description": "A medium-sized brown mixed-breed dog looks up toward an off-screen person, inner eyebrows slightly raised, eyes soft and relaxed. The expression is natural, not exaggerated or tearful. Warm window light and a simple home background.",
+          "shot_type": "eye-level close-up",
+          "subject": "one brown mixed-breed dog with a white chest patch and expressive brows",
+          "motion": "slow push-in; the dog's inner brows lift slightly",
+          "framing": "vertical 9:16, eyes on the upper-third line, caption-safe lower third",
+          "continuity": "same dog, coat, and warm home setting throughout",
+          "avoid": [
+            "human face",
+            "tears",
+            "whimpering",
+            "text overlays"
+          ]
+        },
+        "transition": "cut"
+      },
+      {
+        "id": "s2",
+        "start_s": 2.5,
+        "duration_s": 8.0,
+        "narration": "That inner-brow lift comes from a small muscle: the levator anguli oculi medialis, above the inner corner of the eye.",
+        "visual": {
+          "description": "An extreme macro of the same dog's eye and inner brow. The fur moves subtly as the brow lifts. A soft translucent highlight traces the area above the inner corner of the eye without any labels or arrows.",
+          "shot_type": "macro close-up",
+          "subject": "the same brown dog's right eye and inner eyebrow",
+          "motion": "very slow lateral drift, shallow focus",
+          "framing": "vertical 9:16, eye in the center, brow near the top third",
+          "continuity": "same eye color, white chest fur at frame edge, same lighting direction",
+          "avoid": [
+            "anatomical cutaway",
+            "blood",
+            "needles",
+            "text overlays"
+          ]
+        },
+        "transition": "cut"
+      },
+      {
+        "id": "s3",
+        "start_s": 10.5,
+        "duration_s": 8.0,
+        "narration": "In 2019, researchers dissected four wolves and six dogs. The muscle was consistently present in the dogs they examined, and not in the wolves.",
+        "visual": {
+          "description": "A calm split composition: the same brown dog in a home doorway on one side, a gray wolf standing in a snowy forest on the other. Both are shown alive and unhurried, in profile, with natural fur and correct anatomy. No dissection imagery.",
+          "shot_type": "two static profile portraits, split screen",
+          "subject": "the same brown dog and a gray wolf, separate animals",
+          "motion": "almost still; slight breathing and ear movement",
+          "framing": "vertical 9:16 split horizontally, dog above wolf, each face in its own half",
+          "continuity": "dog matches previous scenes; wolf has natural gray coat and yellow eyes",
+          "avoid": [
+            "dissection",
+            "wounds",
+            "cages",
+            "growling",
+            "text overlays"
+          ]
+        },
+        "transition": "cut"
+      },
+      {
+        "id": "s4",
+        "start_s": 18.5,
+        "duration_s": 8.0,
+        "narration": "Dogs also produced the eyebrow movement more often and more intensely than wolves. The highest intensities appeared only in dogs.",
+        "visual": {
+          "description": "The same brown dog stands at a shelter-style kennel gate, calmly watching a visitor. The dog's inner brows lift and relax in a natural rhythm. The visitor is visible only as a soft shoulder and hand, never looming or teasing.",
+          "shot_type": "medium shot through an open kennel gate",
+          "subject": "the same brown dog and a visitor's shoulder and hand",
+          "motion": "gentle handheld observation, no sudden moves",
+          "framing": "vertical 9:16, dog centered behind the gate, visitor's shoulder at the edge",
+          "continuity": "same dog and coat; kennel is clean, dry, and calm",
+          "avoid": [
+            "crying dog",
+            "barred cage close-up",
+            "human face",
+            "text overlays"
+          ]
+        },
+        "transition": "cut"
+      },
+      {
+        "id": "s5",
+        "start_s": 26.5,
+        "duration_s": 9.0,
+        "narration": "The team suggests this may have given dogs an edge: a face that pulls at human sympathy. It is a hypothesis, not a proven cause.",
+        "visual": {
+          "description": "A warm living-room scene: the same dog sits beside a seated owner, looking up with a mild inner-brow lift. The owner's hand rests nearby, open and relaxed. The camera stays neutral and does not manufacture sadness.",
+          "shot_type": "medium two-shot, owner seen from the shoulders down",
+          "subject": "the same brown dog and an owner's relaxed hand and torso",
+          "motion": "slow dolly-in toward the dog's face",
+          "framing": "vertical 9:16, dog's face in the middle third, owner's hand in the lower third",
+          "continuity": "same dog, living room, and oatmeal sweater as the opening",
+          "avoid": [
+            "sad music cue",
+            "tears",
+            "owner looming",
+            "text overlays"
+          ]
+        },
+        "transition": "cut"
+      },
+      {
+        "id": "s6",
+        "start_s": 35.5,
+        "duration_s": 9.5,
+        "narration": "What is clear is that the muscle is part of dog anatomy, not a human invention. And the look works on us. Evolution shaped the plea; we answered it.",
+        "visual": {
+          "description": "A final portrait of the same brown dog resting on a rug, chin down, eyes open and calm. The camera pulls back slowly to include the owner's hand resting nearby. A brief, tasteful cross-dissolve shows a wolf on a distant ridge, then returns to the dog.",
+          "shot_type": "low medium shot, then slow pull-back",
+          "subject": "the same brown dog, an owner's hand, and a distant wolf silhouette",
+          "motion": "slow pull-back and one cross-dissolve",
+          "framing": "vertical 9:16, dog in the lower middle third, open space above",
+          "continuity": "same rug and dog; wolf remains a distant separate animal, not a hybrid",
+          "avoid": [
+            "hybrid animals",
+            "howling",
+            "cages",
+            "text overlays"
+          ]
+        },
+        "transition": "fade out"
+      }
+    ],
+    "captions": {
+      "mode": "burned_in",
+      "srt_file": "subtitles.srt",
+      "cues": [
+        {
+          "index": 1,
+          "start_s": 0.0,
+          "end_s": 2.5,
+          "text": "Puppy-dog eyes are anatomy, not just charm."
+        },
+        {
+          "index": 2,
+          "start_s": 2.5,
+          "end_s": 6.569,
+          "text": "That inner-brow lift comes from a small muscle: the levator"
+        },
+        {
+          "index": 3,
+          "start_s": 6.569,
+          "end_s": 10.5,
+          "text": "anguli oculi medialis, above the inner corner of the eye."
+        },
+        {
+          "index": 4,
+          "start_s": 10.5,
+          "end_s": 13.7,
+          "text": "In 2019, researchers dissected four wolves and six dogs."
+        },
+        {
+          "index": 5,
+          "start_s": 13.7,
+          "end_s": 16.1,
+          "text": "The muscle was consistently present in the"
+        },
+        {
+          "index": 6,
+          "start_s": 16.1,
+          "end_s": 18.5,
+          "text": "dogs they examined, and not in the wolves."
+        },
+        {
+          "index": 7,
+          "start_s": 18.5,
+          "end_s": 23.625,
+          "text": "Dogs also produced the eyebrow movement more often and more intensely than wolves."
+        },
+        {
+          "index": 8,
+          "start_s": 23.625,
+          "end_s": 26.5,
+          "text": "The highest intensities appeared only in dogs."
+        },
+        {
+          "index": 9,
+          "start_s": 26.5,
+          "end_s": 29.5,
+          "text": "The team suggests this may have given dogs"
+        },
+        {
+          "index": 10,
+          "start_s": 29.5,
+          "end_s": 32.714,
+          "text": "an edge: a face that pulls at human sympathy."
+        },
+        {
+          "index": 11,
+          "start_s": 32.714,
+          "end_s": 35.5,
+          "text": "It is a hypothesis, not a proven cause."
+        },
+        {
+          "index": 12,
+          "start_s": 35.5,
+          "end_s": 40.64,
+          "text": "What is clear is that the muscle is part of dog anatomy, not a human invention."
+        },
+        {
+          "index": 13,
+          "start_s": 40.64,
+          "end_s": 42.267,
+          "text": "And the look works on us."
+        },
+        {
+          "index": 14,
+          "start_s": 42.267,
+          "end_s": 45.0,
+          "text": "Evolution shaped the plea; we answered it."
+        }
+      ]
+    },
+    "voice": "natural English narration, warm and measured",
+    "music": "subtle, low, non-distracting documentary bed",
+    "visual_style": "Cinematic documentary-style illustration with natural light, realistic fur, species-correct anatomy, and calm, non-staged behavior.",
+    "negative_prompt": "No extra limbs, no extra ears, no extra tails, no distorted eyes, no human hands merging with fur, no text artifacts, no logos, no watermarks, no photorealistic claim of archival footage, no distressed animals, no staged aggression.",
+    "disclosure": "Illustrative, AI-assisted visuals; not documentary footage.",
+    "output": {
+      "container": "mp4",
+      "width": 1080,
+      "height": 1920,
+      "fps": 30,
+      "audio": true
+    }
+  },
+  "submission": null,
+  "job_id": null,
+  "render_path": null,
+  "notes": [
+    "This is a local request specification, not evidence that ViewMade accepted a job.",
+    "No MCP tool name is hardcoded. The adapter uses the official discovered and bound tools.",
+    "A render is COMPLETE only after the downloaded MP4 passes local media validation."
+  ]
+}

@@ -1,0 +1,69 @@
+{
+  "schema_version": 1,
+  "package_id": "dog-guilty-look",
+  "question": "Does a dog's guilty look mean the dog feels guilty?",
+  "short_answer": "No. In the 2009 experiment, the look tracked owner scolding rather than whether the dog had actually eaten the food.",
+  "verification": {
+    "researched_at": "2026-10-29",
+    "method": "Read the peer-reviewed study record and abstract, then checked the sample size, experimental manipulation, dependent measures, and authors' conclusions against the DOI and PubMed metadata.",
+    "source_access": "PubMed abstract plus publisher DOI record",
+    "myth_or_anecdote": "The popular story that a dog 'knows it did wrong' because it looks guilty. The study tested the look against actual disobedience and found owner cues were the stronger predictor.",
+    "uncertainties": [
+      "The experiment cannot show whether dogs ever experience guilt; it shows the look is not a reliable diagnostic.",
+      "The sample was fourteen dogs in a controlled owner-greeting context, so the size of the effect in everyday homes is uncertain.",
+      "Owner obedience ratings were subjective and may correlate with other aspects of the relationship."
+    ]
+  },
+  "sources": [
+    {
+      "id": "horowitz-2009",
+      "type": "peer-reviewed study",
+      "title": "Disambiguating the 'guilty look': salient prompts to a familiar dog behaviour",
+      "authors": ["Horowitz, A."],
+      "year": 2009,
+      "journal": "Behavioural Processes",
+      "volume": "81",
+      "issue": "3",
+      "pages": "447-452",
+      "doi": "10.1016/j.beproc.2009.03.014",
+      "pmid": "19520245",
+      "url": "https://doi.org/10.1016/j.beproc.2009.03.014",
+      "accessed": "2026-10-29",
+      "tier": 1,
+      "verified": true,
+      "evidence": "Fourteen dogs were filmed during an owner greeting after a food-related manipulation. Owners were sometimes told, incorrectly, that the dog had eaten. The 'guilty look' increased when owners scolded the dog, regardless of whether the dog had actually eaten the food; the effect was stronger in dogs rated as more obedient.",
+      "limitations": "Small sample, controlled laboratory-style greeting, and owner-reported obedience. The study measures human readings of dog behavior, not a direct assay of canine emotion."
+    }
+  ],
+  "claim_checks": [
+    {
+      "claim_id": "c1",
+      "verdict": "supported",
+      "notes": "The abstract and study record describe fourteen dogs and a manipulation of owner belief about whether the dog had eaten."
+    },
+    {
+      "claim_id": "c2",
+      "verdict": "supported",
+      "notes": "The reported result is that scolding, not actual consumption, predicted the guilty-look behaviors."
+    },
+    {
+      "claim_id": "c3",
+      "verdict": "partially_supported",
+      "notes": "The stronger effect in obedient dogs is reported; the interpretation as a response to owner cues is the authors' framing, not a direct mechanism measurement."
+    },
+    {
+      "claim_id": "c4",
+      "verdict": "interpretation",
+      "notes": "The study supports 'not reliable evidence' rather than 'dogs never feel guilt'. The narration uses the narrower wording."
+    },
+    {
+      "claim_id": "c5",
+      "verdict": "supported",
+      "notes": "The paper's description of the guilty look includes lowered head, flattened ears, and tucked tail."
+    }
+  ],
+  "open_questions": [
+    "How strongly does the effect generalize outside a greeting after a food rule?",
+    "Which owner cues, such as tone or posture, carry the most signal for the dog?"
+  ]
+}

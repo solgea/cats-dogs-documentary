@@ -1,0 +1,110 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://cats-dogs-documentary.local/schemas/history.schema.json",
+  "title": "Cats and Dogs Documentary topic history export",
+  "description": "Portable, reviewable export of the local SQLite topic history used for cross-batch duplicate detection.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "description", "topics", "batches"],
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "description": {
+      "type": "string",
+      "minLength": 10
+    },
+    "topics": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/topic"
+      }
+    },
+    "batches": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/batch"
+      }
+    }
+  },
+  "$defs": {
+    "slug": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+    },
+    "topic": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "slug",
+        "batch_id",
+        "title",
+        "central_question",
+        "central_fact",
+        "source_ids",
+        "status",
+        "created_at"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/slug"
+        },
+        "slug": {
+          "$ref": "#/$defs/slug"
+        },
+        "batch_id": {
+          "$ref": "#/$defs/slug"
+        },
+        "title": {
+          "type": "string",
+          "minLength": 8
+        },
+        "central_question": {
+          "type": "string",
+          "minLength": 8
+        },
+        "central_fact": {
+          "type": "string",
+          "minLength": 8
+        },
+        "source_ids": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/slug"
+          }
+        },
+        "status": {
+          "enum": ["PASS", "WARN"]
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "batch": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["batch_id", "package_count", "status", "created_at"],
+      "properties": {
+        "batch_id": {
+          "$ref": "#/$defs/slug"
+        },
+        "package_count": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "status": {
+          "enum": ["PASS", "WARN", "FAIL"]
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    }
+  }
+}

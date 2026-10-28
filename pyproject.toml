@@ -1,0 +1,25 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "cddocs"
+version = "0.1.0"
+description = "Fail-closed documentary Shorts pipeline for an English-language cats-and-dogs channel"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "Proprietary" }
+authors = [{ name = "Cats & Dogs Documentary" }]
+dependencies = []
+
+[project.scripts]
+cddocs = "cddocs.cli:main"
+
+[tool.setuptools]
+package-dir = { "" = "src" }
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+cddocs = ["py.typed"]

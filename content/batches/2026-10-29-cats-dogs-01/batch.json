@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "batch_id": "2026-10-29-cats-dogs-01",
+  "created_at": "2026-10-29",
+  "theme": "Evidence-first explanations of everyday cat and dog behavior and senses",
+  "target_duration_s": 45,
+  "format": "youtube_shorts",
+  "status": "source-checked",
+  "human_review_required": true,
+  "packages": [
+    "dog-guilty-look",
+    "cat-sweetness",
+    "puppy-dog-eyes",
+    "slow-blink",
+    "purr-cry",
+    "dog-nose"
+  ],
+  "notes": [
+    "Six original 9:16 packages, each built around one central question and one verified primary source.",
+    "QA does not imply publication readiness. A real validated render and human editorial sign-off are still required before any manual upload."
+  ]
+}

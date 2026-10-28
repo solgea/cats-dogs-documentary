@@ -1,0 +1,267 @@
+{
+  "schema_version": 1,
+  "package_id": "slow-blink",
+  "provider": "viewmade",
+  "provider_endpoint": "https://mcp.viewmade.com/mcp",
+  "status": "NOT_SUBMITTED",
+  "submission_allowed": false,
+  "blocked_reason": "ViewMade OAuth and official MCP tool bindings are not both ready. Run `cddocs viewmade login`, `cddocs viewmade discover`, and `cddocs viewmade bind`.",
+  "preflight": {
+    "tool_bindings_complete": false,
+    "authentication": "not_checked_by_build",
+    "live_authorisation": "required_at_render_time"
+  },
+  "request": {
+    "title": "What a Cat's Slow Blink Really Means",
+    "format": "youtube_shorts",
+    "duration_s": 45,
+    "aspect_ratio": "9:16",
+    "resolution": "1080x1920",
+    "language": "en",
+    "narration": "Your cat's slow blink might be a reply. In one experiment, owners slow-blinked at their cats. Cats half-blinked and narrowed their eyes more than when owners sat nearby without interacting. In a second experiment, an unfamiliar researcher slow-blinked at cats. The cats were then more likely to approach her hand than after a neutral face. A slow blink is not one long stare. It is a series of half-blinks, then a prolonged narrowing or full closure of the eyes. The authors suggest this may be positive communication. They also caution that more research is needed before firm conclusions about the cat's emotional state. So try one slow blink from a comfortable distance, then watch. If the cat looks away or stays tense, give it space. The blink is an invitation, not a demand.",
+    "scenes": [
+      {
+        "id": "s1",
+        "start_s": 0,
+        "duration_s": 2.5,
+        "narration": "Your cat's slow blink might be a reply.",
+        "visual": {
+          "description": "A gray tabby cat sits on a cushioned window seat in a quiet living room, facing the camera with relaxed eyes. The cat performs one slow half-blink, then holds a calm, soft gaze. Morning light falls across its face, and the background is gently out of focus.",
+          "shot_type": "eye-level close-up",
+          "subject": "one gray tabby cat with dark stripes, pale green eyes, and a white chin",
+          "motion": "slow push-in; the cat half-closes its eyes once",
+          "framing": "vertical 9:16, the cat's face in the upper middle third, caption-safe lower third",
+          "continuity": "same gray tabby, window seat, and warm living room in every scene",
+          "avoid": [
+            "human face",
+            "forced eye contact",
+            "startled expression",
+            "text overlays"
+          ]
+        },
+        "transition": "cut"
+      },
+      {
+        "id": "s2",
+        "start_s": 2.5,
+        "duration_s": 7.5,
+        "narration": "In one experiment, owners slow-blinked at their cats. Cats half-blinked and narrowed their eyes more than when owners sat nearby without interacting.",
+        "visual": {
+          "description": "The same gray tabby rests on the window seat while a seated owner's face stays out of frame. The owner's visible eyes perform a slow blink, and the cat answers with a half-blink of its own. The room is still, and both subjects remain relaxed.",
+          "shot_type": "over-the-shoulder two-shot from behind the owner",
+          "subject": "the same gray tabby and an owner's relaxed face seen only from the brow down",
+          "motion": "steady camera; one human slow blink, then one cat half-blink",
+          "framing": "vertical 9:16, cat centered, owner's brow and cheek as a soft foreground edge",
+          "continuity": "same cat, window seat, and oatmeal sweater; no other animals",
+          "avoid": [
+            "direct stare",
+            "human face fully visible",
+            "grabbing the cat",
+            "text overlays"
+          ]
+        },
+        "transition": "cut"
+      },
+      {
+        "id": "s3",
+        "start_s": 10.0,
+        "duration_s": 8.0,
+        "narration": "In a second experiment, an unfamiliar researcher slow-blinked at cats. The cats were then more likely to approach her hand than after a neutral face.",
+        "visual": {
+          "description": "The same gray tabby stands on a living-room floor, watching a seated researcher whose face is out of frame. The researcher's open hand rests on the floor a short distance away. After a slow blink from the researcher, the cat steps forward and sniffs the hand calmly.",
+          "shot_type": "low-angle medium shot",
+          "subject": "the same gray tabby and a researcher's open hand, no visible face",
+          "motion": "gentle lateral follow as the cat takes two steps forward",
+          "framing": "vertical 9:16, cat in the middle third, hand in the lower third with clear floor space",
+          "continuity": "same cat and living room; the researcher wears a plain blue shirt",
+          "avoid": [
+            "reaching or grabbing",
+            "human face",
+            "cornering the cat",
+            "text overlays"
+          ]
+        },
+        "transition": "cut"
+      },
+      {
+        "id": "s4",
+        "start_s": 18.0,
+        "duration_s": 8.0,
+        "narration": "A slow blink is not one long stare. It is a series of half-blinks, then a prolonged narrowing or full closure of the eyes.",
+        "visual": {
+          "description": "An extreme macro view of the same gray tabby's eyes. The upper and lower lids meet in a soft half-blink, open briefly, then narrow into a prolonged relaxed squint. Fur detail and whiskers stay natural, and the lighting remains warm and even.",
+          "shot_type": "macro close-up",
+          "subject": "the same gray tabby's eyes, lids, and whiskers",
+          "motion": "very slow push-in, one complete half-blink sequence",
+          "framing": "vertical 9:16, both eyes on the upper-third line, whiskers inside frame",
+          "continuity": "same eye color, stripe pattern, and window light as the opening",
+          "avoid": [
+            "human-like eyelids",
+            "extra whiskers",
+            "tears",
+            "text overlays"
+          ]
+        },
+        "transition": "cut"
+      },
+      {
+        "id": "s5",
+        "start_s": 26.0,
+        "duration_s": 9.0,
+        "narration": "The authors suggest this may be positive communication. They also caution that more research is needed before firm conclusions about the cat's emotional state.",
+        "visual": {
+          "description": "The same gray tabby lies along the window seat with its chin resting on a folded blanket. The cat's eyes are half closed and its ears are relaxed. Sunlight moves slowly across the fur while the cat breathes evenly, then the camera eases back to show the quiet room.",
+          "shot_type": "medium close-up, then slow pull-back",
+          "subject": "the same gray tabby resting on the window seat",
+          "motion": "slow pull-back with no sudden movement",
+          "framing": "vertical 9:16, cat in the lower middle third, soft negative space above",
+          "continuity": "same blanket, window seat, and morning light; no new animals",
+          "avoid": [
+            "awkward sleeping pose",
+            "human face",
+            "startling sound cue",
+            "text overlays"
+          ]
+        },
+        "transition": "cut"
+      },
+      {
+        "id": "s6",
+        "start_s": 35.0,
+        "duration_s": 10.0,
+        "narration": "So try one slow blink from a comfortable distance, then watch. If the cat looks away or stays tense, give it space. The blink is an invitation, not a demand.",
+        "visual": {
+          "description": "The same gray tabby sits at the far end of the window seat while an owner's hand rests open on the cushion nearby. The cat looks at the hand, blinks slowly once, and stays in place. The owner does not reach closer, and the room remains calm.",
+          "shot_type": "medium two-shot, owner seen only as a hand and sleeve",
+          "subject": "the same gray tabby and an owner's open hand",
+          "motion": "static camera; the cat blinks once and settles",
+          "framing": "vertical 9:16, cat and hand in the lower middle third, caption-safe top",
+          "continuity": "same cat, window seat, blanket, and oatmeal sleeve",
+          "avoid": [
+            "chasing the cat",
+            "restraint",
+            "human face",
+            "text overlays"
+          ]
+        },
+        "transition": "fade out"
+      }
+    ],
+    "captions": {
+      "mode": "burned_in",
+      "srt_file": "subtitles.srt",
+      "cues": [
+        {
+          "index": 1,
+          "start_s": 0.0,
+          "end_s": 2.5,
+          "text": "Your cat's slow blink might be a reply."
+        },
+        {
+          "index": 2,
+          "start_s": 2.5,
+          "end_s": 5.204,
+          "text": "In one experiment, owners slow-blinked at their cats."
+        },
+        {
+          "index": 3,
+          "start_s": 5.204,
+          "end_s": 7.551,
+          "text": "Cats half-blinked and narrowed their eyes more"
+        },
+        {
+          "index": 4,
+          "start_s": 7.551,
+          "end_s": 10.0,
+          "text": "than when owners sat nearby without interacting."
+        },
+        {
+          "index": 5,
+          "start_s": 10.0,
+          "end_s": 13.784,
+          "text": "In a second experiment, an unfamiliar researcher slow-blinked at cats."
+        },
+        {
+          "index": 6,
+          "start_s": 13.784,
+          "end_s": 18.0,
+          "text": "The cats were then more likely to approach her hand than after a neutral face."
+        },
+        {
+          "index": 7,
+          "start_s": 18.0,
+          "end_s": 20.333,
+          "text": "A slow blink is not one long stare."
+        },
+        {
+          "index": 8,
+          "start_s": 20.333,
+          "end_s": 23.466,
+          "text": "It is a series of half-blinks, then a prolonged"
+        },
+        {
+          "index": 9,
+          "start_s": 23.466,
+          "end_s": 26.0,
+          "text": "narrowing or full closure of the eyes."
+        },
+        {
+          "index": 10,
+          "start_s": 26.0,
+          "end_s": 29.153,
+          "text": "The authors suggest this may be positive communication."
+        },
+        {
+          "index": 11,
+          "start_s": 29.153,
+          "end_s": 32.191,
+          "text": "They also caution that more research is needed before"
+        },
+        {
+          "index": 12,
+          "start_s": 32.191,
+          "end_s": 35.0,
+          "text": "firm conclusions about the cat's emotional state."
+        },
+        {
+          "index": 13,
+          "start_s": 35.0,
+          "end_s": 39.0,
+          "text": "So try one slow blink from a comfortable distance, then watch."
+        },
+        {
+          "index": 14,
+          "start_s": 39.0,
+          "end_s": 42.355,
+          "text": "If the cat looks away or stays tense, give it space."
+        },
+        {
+          "index": 15,
+          "start_s": 42.355,
+          "end_s": 45.0,
+          "text": "The blink is an invitation, not a demand."
+        }
+      ]
+    },
+    "voice": "natural English narration, warm and measured",
+    "music": "subtle, low, non-distracting documentary bed",
+    "visual_style": "Cinematic documentary-style illustration with natural light, realistic fur, species-correct anatomy, and calm, non-staged behavior.",
+    "negative_prompt": "No extra limbs, no extra ears, no extra tails, no distorted eyes, no human hands merging with fur, no text artifacts, no logos, no watermarks, no photorealistic claim of archival footage, no distressed animals, no staged aggression.",
+    "disclosure": "Illustrative, AI-assisted visuals; not documentary footage.",
+    "output": {
+      "container": "mp4",
+      "width": 1080,
+      "height": 1920,
+      "fps": 30,
+      "audio": true
+    }
+  },
+  "submission": null,
+  "job_id": null,
+  "render_path": null,
+  "notes": [
+    "This is a local request specification, not evidence that ViewMade accepted a job.",
+    "No MCP tool name is hardcoded. The adapter uses the official discovered and bound tools.",
+    "A render is COMPLETE only after the downloaded MP4 passes local media validation."
+  ]
+}

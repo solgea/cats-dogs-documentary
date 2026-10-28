@@ -1,0 +1,82 @@
+{
+  "schema_version": 1,
+  "package_id": "cat-sweetness",
+  "question": "Why can't cats taste sweetness?",
+  "short_answer": "The cat Tas1r2 gene is an unexpressed pseudogene. Without functional T1R2, the two-part sweet receptor cannot form, so the species-typical sweet channel is missing.",
+  "verification": {
+    "researched_at": "2026-10-29",
+    "method": "Read the open-access PLOS Genetics article and checked the gene structure, expression assays, comparative species sample, and authors' conclusion against the DOI and PubMed metadata.",
+    "source_access": "Open-access full text plus PubMed and PMC records",
+    "myth_or_anecdote": "The idea that cats are simply picky or spoiled about sweets. The study identifies a broken receptor gene rather than a preference or training effect.",
+    "uncertainties": [
+      "Receptor loss explains species-typical sweet detection, not every individual food choice.",
+      "The wild-species comparison used one tiger and one cheetah, so it shows the variant in those individuals rather than a population-wide estimate.",
+      "The exact evolutionary timing of the pseudogenization is not resolved by this study."
+    ]
+  },
+  "sources": [
+    {
+      "id": "li-2005",
+      "type": "peer-reviewed study",
+      "title": "Pseudogenization of a Sweet-Receptor Gene Accounts for Cats' Indifference toward Sugar",
+      "authors": [
+        "Li, X.",
+        "Li, W.",
+        "Wang, H.",
+        "Cao, J.",
+        "Maehashi, K.",
+        "Huang, L.",
+        "Bachmanov, A. A.",
+        "Reed, D. R.",
+        "Legrand-Defretin, V.",
+        "Beauchamp, G. K.",
+        "Brand, J. G."
+      ],
+      "year": 2005,
+      "journal": "PLoS Genetics",
+      "volume": "1",
+      "issue": "1",
+      "pages": "e3",
+      "doi": "10.1371/journal.pgen.0010003",
+      "pmid": "16103917",
+      "pmcid": "PMC1183522",
+      "url": "https://doi.org/10.1371/journal.pgen.0010003",
+      "accessed": "2026-10-29",
+      "tier": 1,
+      "verified": true,
+      "evidence": "The study sequenced cat Tas1r2 and Tas1r3. Cat Tas1r2 carries a 247-bp deletion in exon 3 plus premature stop codons and was not detected at the RNA or protein level, making it an unexpressed pseudogene. Tas1r3 is expressed in taste buds. The same Tas1r2 deletion and stop codons were found in six healthy domestic cats, one tiger, and one cheetah. A functional T1R2/T1R3 sweet receptor therefore cannot form.",
+      "limitations": "The molecular work used a small number of animals and inferred receptor function from the established mammalian T1R2/T1R3 model. It does not measure every possible behavioral response to every sweet compound."
+    }
+  ],
+  "claim_checks": [
+    {
+      "claim_id": "c1",
+      "verdict": "supported",
+      "notes": "The article introduction identifies the domestic cat as an obligate carnivore and describes its indifference to sweet-tasting compounds."
+    },
+    {
+      "claim_id": "c2",
+      "verdict": "supported",
+      "notes": "The 247-bp deletion, premature stop codons, absent RNA, and absent protein are all reported in the paper."
+    },
+    {
+      "claim_id": "c3",
+      "verdict": "supported",
+      "notes": "Tas1r3 expression is shown in taste buds; the authors conclude the heteromer cannot form without functional Tas1r2."
+    },
+    {
+      "claim_id": "c4",
+      "verdict": "supported",
+      "notes": "Six domestic cats, one tiger, and one cheetah showed the deletion and stop codons at the reported positions."
+    },
+    {
+      "claim_id": "c5",
+      "verdict": "interpretation",
+      "notes": "The receptor finding is strong evidence for species-typical sweet blindness, but behavior also involves smell, texture, learning, and individual variation."
+    }
+  ],
+  "open_questions": [
+    "When in felid evolution did Tas1r2 become a pseudogene?",
+    "Do any residual sweet-detection pathways exist outside the canonical T1R2/T1R3 receptor?"
+  ]
+}

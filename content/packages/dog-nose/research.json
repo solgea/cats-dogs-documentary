@@ -1,0 +1,77 @@
+{
+  "schema_version": 1,
+  "package_id": "dog-nose",
+  "question": "How does a dog's nose separate smelling from breathing?",
+  "short_answer": "A computational model reconstructed from MRI scans showed that canine nasal airflow splits into separate olfactory and respiratory paths. Each nostril also draws from a spatially separate patch of air, and the expiratory jet is directed to the side rather than straight ahead.",
+  "verification": {
+    "researched_at": "2026-10-29",
+    "method": "Read the open-access Journal of the Royal Society Interface paper and its PubMed record, then checked the sniff measurements, the MRI-derived model, the CFD conditions, reported airflow percentages, and the authors' functional interpretations against the DOI, PMID, and PMC metadata.",
+    "source_access": "PubMed abstract plus PMC full text and DOI record",
+    "myth_or_anecdote": "The popular shorthand that a dog's nose is simply a super-powered detector. The study shows that nasal geometry routes air into separate streams and that each nostril samples a separate region, which is a different claim from receptor sensitivity alone.",
+    "uncertainties": [
+      "The CFD model was reconstructed from one 29.5 kg female Labrador retriever mixed-breed dog and is described as generally representative of a mesaticephalic canine nasal cavity, not every breed.",
+      "The reported 12-13% olfactory airflow applies to the modeled relaxed, undilated nostril case; realistic nostril motion may change the fraction.",
+      "Bilateral comparison and odor source localization are proposed functions, not behaviors directly tested in this study.",
+      "The expiratory mixing benefit is inferred from the modeled flow pattern and flow visualization, not measured as a detection advantage."
+    ]
+  },
+  "sources": [
+    {
+      "id": "craven-2010",
+      "type": "peer-reviewed study",
+      "title": "The fluid dynamics of canine olfaction: unique nasal airflow patterns as an explanation of macrosmia",
+      "authors": ["Craven, B. A.", "Paterson, E. G.", "Settles, G. S."],
+      "year": 2010,
+      "journal": "Journal of the Royal Society Interface",
+      "volume": "7",
+      "issue": "47",
+      "pages": "933-943",
+      "doi": "10.1098/rsif.2009.0490",
+      "pmid": "20007171",
+      "pmcid": "PMC2871809",
+      "url": "https://doi.org/10.1098/rsif.2009.0490",
+      "accessed": "2026-10-29",
+      "tier": 1,
+      "verified": true,
+      "evidence": "Seven dogs weighing 6.8-52.9 kg were trained to sniff while wearing a flow-measuring muzzle; sniff frequency was 4-7 Hz. A computational fluid dynamics model was reconstructed from high-resolution MRI scans of the left nasal airway of a 29.5 kg female Labrador retriever mixed-breed dog. The simulation showed separate olfactory and respiratory flow paths, with about 12-13% of inspired air reaching the chemosensory region in the relaxed, undilated nostril case. Each nostril's approximately 1 cm reach was smaller than the internostril separation, giving spatially separate samples that may support bilateral comparison and odor source localization. The expiratory jet was directed ventrolaterally, which the authors propose can mix nearby odorants and reduce blow-off ahead of the nostril.",
+      "limitations": "The anatomical model is based on one dog, and the functional benefits of the airflow pattern are proposed interpretations. The percentage of air reaching the olfactory region depends on the modeled nostril condition and may differ with realistic nostril motion."
+    }
+  ],
+  "claim_checks": [
+    {
+      "claim_id": "c1",
+      "verdict": "supported",
+      "notes": "The paper reports seven dogs spanning 6.8-52.9 kg and a sniff frequency band of 4-7 Hz measured with the specialized muzzle."
+    },
+    {
+      "claim_id": "c2",
+      "verdict": "supported",
+      "notes": "The methods describe a three-dimensional model of the left nasal airway reconstructed from high-resolution MRI scans of a 29.5 kg female Labrador retriever mixed-breed dog."
+    },
+    {
+      "claim_id": "c3",
+      "verdict": "supported",
+      "notes": "The CFD results show distinct olfactory and respiratory paths and report approximately 12-13% of inspired air reaching the chemosensory region for the relaxed, undilated nostril case."
+    },
+    {
+      "claim_id": "c4",
+      "verdict": "partially_supported",
+      "notes": "The approximately 1 cm reach and the smaller-than-internostril-separation result are reported; bilateral comparison and source localization are explicitly framed as possible functions."
+    },
+    {
+      "claim_id": "c5",
+      "verdict": "partially_supported",
+      "notes": "The ventrolateral expiratory jet is a modeled and visualized result; the mixing and reduced blow-off benefits are the authors' proposed interpretation."
+    },
+    {
+      "claim_id": "c6",
+      "verdict": "interpretation",
+      "notes": "The authors propose that nasal airflow architecture helps explain macrosmia, while the study does not isolate airflow from receptor, neural, or behavioral contributors."
+    }
+  ],
+  "open_questions": [
+    "How much does the airflow pattern differ across brachycephalic, mesaticephalic, and dolichocephalic breeds?",
+    "Does realistic nostril motion materially change the fraction of air reaching the olfactory region?",
+    "Can bilateral sampling be tied to measurable odor-localization behavior in dogs?"
+  ]
+}

@@ -1,0 +1,273 @@
+{
+  "schema_version": 1,
+  "package_id": "cat-sweetness",
+  "provider": "viewmade",
+  "provider_endpoint": "https://mcp.viewmade.com/mcp",
+  "status": "NOT_SUBMITTED",
+  "submission_allowed": false,
+  "blocked_reason": "ViewMade OAuth and official MCP tool bindings are not both ready. Run `cddocs viewmade login`, `cddocs viewmade discover`, and `cddocs viewmade bind`.",
+  "preflight": {
+    "tool_bindings_complete": false,
+    "authentication": "not_checked_by_build",
+    "live_authorisation": "required_at_render_time"
+  },
+  "request": {
+    "title": "Why Cats Can't Taste Sweetness",
+    "format": "youtube_shorts",
+    "duration_s": 45,
+    "aspect_ratio": "9:16",
+    "resolution": "1080x1920",
+    "language": "en",
+    "narration": "Your cat can't taste sugar. Here's why. Cats are obligate carnivores. Meat is their main fare. Their sweet-taste equipment is missing a critical part. In 2005, researchers examined the gene for Tas1r2, one of two proteins that build a working sweet receptor. In cats, that gene has a 247-base-pair deletion and premature stop signals. It is a pseudogene, not expressed. The partner gene, Tas1r3, is still expressed. But without both halves, the receptor cannot detect sugars. Sweetness has no channel to the brain. The same broken gene appeared in six domestic cats, a tiger, and a cheetah. It is not pickiness. It is deep cat biology. No sweet tooth; just a carnivore's toolkit.",
+    "scenes": [
+      {
+        "id": "s1",
+        "start_s": 0,
+        "duration_s": 2.5,
+        "narration": "Your cat can't taste sugar. Here's why.",
+        "visual": {
+          "description": "An orange tabby cat sits on a sunlit kitchen windowsill, looking directly into the lens with a calm, neutral expression. A small ceramic dish of sugar cubes sits far in the foreground, ignored. Soft morning light, realistic fur detail.",
+          "shot_type": "eye-level close-up",
+          "subject": "one orange tabby cat with clear tabby stripes and green eyes",
+          "motion": "slow push-in; the cat blinks once",
+          "framing": "vertical 9:16, cat's face in the upper middle third, dish blurred at the bottom edge",
+          "continuity": "same orange tabby, windowsill, and kitchen in every scene",
+          "avoid": [
+            "human face",
+            "cat eating sugar",
+            "distorted eyes",
+            "text overlays"
+          ]
+        },
+        "transition": "cut"
+      },
+      {
+        "id": "s2",
+        "start_s": 2.5,
+        "duration_s": 7.5,
+        "narration": "Cats are obligate carnivores. Meat is their main fare. Their sweet-taste equipment is missing a critical part.",
+        "visual": {
+          "description": "The same orange tabby eats from a shallow bowl of plain shredded meat on a clean kitchen floor. An owner's hand sets the bowl down and withdraws. The cat eats calmly; the sugar dish from the opening is visible but untouched on the counter above.",
+          "shot_type": "low-angle medium shot",
+          "subject": "the same orange tabby and a human hand, no visible face",
+          "motion": "gentle tilt down from counter to bowl",
+          "framing": "vertical 9:16, cat and bowl in the lower middle third, clean negative space above",
+          "continuity": "same cat, kitchen, bowl, and sugar dish; no other animals",
+          "avoid": [
+            "messy food",
+            "food aggression",
+            "human face",
+            "text overlays"
+          ]
+        },
+        "transition": "cut"
+      },
+      {
+        "id": "s3",
+        "start_s": 10.0,
+        "duration_s": 8.0,
+        "narration": "In 2005, researchers examined the gene for Tas1r2, one of two proteins that build a working sweet receptor.",
+        "visual": {
+          "description": "A macro study of the same orange tabby's face as it laps water from a bowl. The tongue curls naturally, whiskers stay symmetrical, and the nose and eyes remain anatomically correct. Water ripples in slow motion.",
+          "shot_type": "macro side close-up",
+          "subject": "the same orange tabby's tongue, nose, and whiskers",
+          "motion": "high-speed-style slow motion, camera steady",
+          "framing": "vertical 9:16, tongue and water in the lower third, one eye visible above",
+          "continuity": "same tabby markings and green eye; no collar or harness",
+          "avoid": [
+            "forked tongue",
+            "extra whiskers",
+            "human teeth",
+            "text overlays"
+          ]
+        },
+        "transition": "cut"
+      },
+      {
+        "id": "s4",
+        "start_s": 18.0,
+        "duration_s": 7.5,
+        "narration": "In cats, that gene has a 247-base-pair deletion and premature stop signals. It is a pseudogene, not expressed.",
+        "visual": {
+          "description": "A restrained abstract animation on a deep amber background: two translucent protein-like forms drift toward each other. One form is complete; the other has a clean gap and dissolves before they can join. No labels, equations, or readable characters appear.",
+          "shot_type": "abstract macro animation",
+          "subject": "two soft translucent molecular forms, one incomplete",
+          "motion": "slow orbital drift, then the incomplete form fades",
+          "framing": "vertical 9:16, the two forms centered with generous negative space",
+          "continuity": "same amber palette and grain as the kitchen scenes; no sudden style shift",
+          "avoid": [
+            "readable text",
+            "DNA double helix cliché",
+            "medical diagram labels",
+            "flashing lights"
+          ]
+        },
+        "transition": "cut"
+      },
+      {
+        "id": "s5",
+        "start_s": 25.5,
+        "duration_s": 9.0,
+        "narration": "The partner gene, Tas1r3, is still expressed. But without both halves, the receptor cannot detect sugars. Sweetness has no channel to the brain.",
+        "visual": {
+          "description": "The same orange tabby sniffs a small dish of sugar cubes on the kitchen counter, then turns its head away and steps toward the meat bowl. The cat's movement is unhurried and curious, not disgusted.",
+          "shot_type": "medium close-up, slight high angle",
+          "subject": "the same orange tabby between a sugar dish and a meat bowl",
+          "motion": "single smooth lateral follow as the cat turns away",
+          "framing": "vertical 9:16, both dishes visible at the lower edges, cat centered",
+          "continuity": "same counter, dishes, and cat; sugar cubes remain uneaten",
+          "avoid": [
+            "cat eating sugar",
+            "knocked-over dishes",
+            "human face",
+            "text overlays"
+          ]
+        },
+        "transition": "cut"
+      },
+      {
+        "id": "s6",
+        "start_s": 34.5,
+        "duration_s": 10.5,
+        "narration": "The same broken gene appeared in six domestic cats, a tiger, and a cheetah. It is not pickiness. It is deep cat biology. No sweet tooth; just a carnivore's toolkit.",
+        "visual": {
+          "description": "A brief, respectful montage of three felines: the same orange tabby on its windowsill, a tiger standing in tall grass, and a cheetah on open savanna. Each shot is calm and observational, then the film returns to the tabby in warm window light.",
+          "shot_type": "three static wide portraits, then a close-up",
+          "subject": "orange tabby, tiger, and cheetah as separate realistic felines",
+          "motion": "slow cross-dissolves between the three portraits",
+          "framing": "vertical 9:16, each animal centered with natural habitat context",
+          "continuity": "natural coat patterns, correct feline anatomy, no fantasy hybrids",
+          "avoid": [
+            "hybrid animals",
+            "cages",
+            "performing animals",
+            "text overlays"
+          ]
+        },
+        "transition": "fade out"
+      }
+    ],
+    "captions": {
+      "mode": "burned_in",
+      "srt_file": "subtitles.srt",
+      "cues": [
+        {
+          "index": 1,
+          "start_s": 0.0,
+          "end_s": 1.776,
+          "text": "Your cat can't taste sugar."
+        },
+        {
+          "index": 2,
+          "start_s": 1.776,
+          "end_s": 2.5,
+          "text": "Here's why."
+        },
+        {
+          "index": 3,
+          "start_s": 2.5,
+          "end_s": 4.514,
+          "text": "Cats are obligate carnivores."
+        },
+        {
+          "index": 4,
+          "start_s": 4.514,
+          "end_s": 6.181,
+          "text": "Meat is their main fare."
+        },
+        {
+          "index": 5,
+          "start_s": 6.181,
+          "end_s": 10.0,
+          "text": "Their sweet-taste equipment is missing a critical part."
+        },
+        {
+          "index": 6,
+          "start_s": 10.0,
+          "end_s": 14.075,
+          "text": "In 2005, researchers examined the gene for Tas1r2, one"
+        },
+        {
+          "index": 7,
+          "start_s": 14.075,
+          "end_s": 18.0,
+          "text": "of two proteins that build a working sweet receptor."
+        },
+        {
+          "index": 8,
+          "start_s": 18.0,
+          "end_s": 23.161,
+          "text": "In cats, that gene has a 247-base-pair deletion and premature stop signals."
+        },
+        {
+          "index": 9,
+          "start_s": 23.161,
+          "end_s": 25.5,
+          "text": "It is a pseudogene, not expressed."
+        },
+        {
+          "index": 10,
+          "start_s": 25.5,
+          "end_s": 28.352,
+          "text": "The partner gene, Tas1r3, is still expressed."
+        },
+        {
+          "index": 11,
+          "start_s": 28.352,
+          "end_s": 32.091,
+          "text": "But without both halves, the receptor cannot detect sugars."
+        },
+        {
+          "index": 12,
+          "start_s": 32.091,
+          "end_s": 34.5,
+          "text": "Sweetness has no channel to the brain."
+        },
+        {
+          "index": 13,
+          "start_s": 34.5,
+          "end_s": 39.391,
+          "text": "The same broken gene appeared in six domestic cats, a tiger, and a cheetah."
+        },
+        {
+          "index": 14,
+          "start_s": 39.391,
+          "end_s": 40.695,
+          "text": "It is not pickiness."
+        },
+        {
+          "index": 15,
+          "start_s": 40.695,
+          "end_s": 42.195,
+          "text": "It is deep cat biology."
+        },
+        {
+          "index": 16,
+          "start_s": 42.195,
+          "end_s": 45.0,
+          "text": "No sweet tooth; just a carnivore's toolkit."
+        }
+      ]
+    },
+    "voice": "natural English narration, warm and measured",
+    "music": "subtle, low, non-distracting documentary bed",
+    "visual_style": "Cinematic documentary-style illustration with natural light, realistic fur, species-correct anatomy, and calm, non-staged behavior.",
+    "negative_prompt": "No extra limbs, no extra ears, no extra tails, no distorted eyes, no human hands merging with fur, no text artifacts, no logos, no watermarks, no photorealistic claim of archival footage, no distressed animals, no staged aggression.",
+    "disclosure": "Illustrative, AI-assisted visuals; not documentary footage.",
+    "output": {
+      "container": "mp4",
+      "width": 1080,
+      "height": 1920,
+      "fps": 30,
+      "audio": true
+    }
+  },
+  "submission": null,
+  "job_id": null,
+  "render_path": null,
+  "notes": [
+    "This is a local request specification, not evidence that ViewMade accepted a job.",
+    "No MCP tool name is hardcoded. The adapter uses the official discovered and bound tools.",
+    "A render is COMPLETE only after the downloaded MP4 passes local media validation."
+  ]
+}
