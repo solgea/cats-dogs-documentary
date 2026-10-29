@@ -10,6 +10,10 @@ venv/
 # Local secrets and machine state
 .env
 state/*.db
+
+# YouTube secrets - do not track
+src/cddocs/youtube/youtube_token.json
+src/cddocs/youtube/credentials.json
 state/*.db-journal
 state/*.db-wal
 state/*.db-shm
