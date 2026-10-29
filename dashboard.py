@@ -392,8 +392,12 @@ if not token_manager.is_valid():
     if st.sidebar.button("🔑 Token Oluştur (OAuth)", key="create_token_btn", use_container_width=True):
         result = oauth_manager.run_local_server(port=8503)
         if result:
-            st.success("✅ Yeni token alındı!")
-            st.rerun()
+            access_token, refresh_token = result
+            if token_manager.set_credentials_from_oauth(access_token, refresh_token):
+                st.success("✅ Yeni token alındı ve kaydedildi!")
+                st.rerun()
+            else:
+                st.error("❌ Token kaydedilemedi!")
         else:
             st.error("❌ Yetkilendirme başarısız!")
 else:

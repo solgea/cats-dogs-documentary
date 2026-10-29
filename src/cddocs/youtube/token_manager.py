@@ -140,6 +140,32 @@ class TokenManager:
             return None
         return self.credentials
 
+    def set_credentials_from_oauth(
+        self, access_token: str, refresh_token: str
+    ) -> bool:
+        """Save OAuth 2.0 credentials from authorization flow.
+
+        Args:
+            access_token: OAuth 2.0 access token
+            refresh_token: OAuth 2.0 refresh token
+
+        Returns:
+            True if credentials were saved successfully
+        """
+        try:
+            self.credentials = Credentials(
+                token=access_token,
+                refresh_token=refresh_token,
+                token_uri=self.config.token_uri,
+                client_id=self.config.client_id,
+                client_secret=self.config.client_secret,
+                scopes=self.config.scopes,
+            )
+            return self.save_credentials()
+        except Exception as e:
+            print(f"OAuth token kaydetme hatası: {e}")
+            return False
+
     def ensure_valid(self) -> bool:
         """Ensure credentials are valid, refreshing if necessary.
 
