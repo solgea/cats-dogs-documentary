@@ -357,14 +357,51 @@ if config_errors:
     st.error("⚠️ Yapılandırma hataları:")
     for err in config_errors:
         st.error(f"• {err}")
-    st.info("Lütfen YOUTUBE_CLIENT_ID ve YOUTUBE_CLIENT_SECRET ortam değişkenlerini ayarlayın.")
+    st.markdown("---")
+    st.markdown("### 🔧 Çözüm Adımları:")
+    st.markdown("""
+    1. **`.env` dosyasını açın** (`C:\\Users\\trycahce\\Desktop\\Proje\\cats-dogs-documentary\\.env`)
+    2. **Aşağıdaki değerleri Google Cloud Console'dan kopyalayın:**
+       - `YOUTUBE_CLIENT_ID` = OAuth 2.0 Client ID
+       - `YOUTUBE_CLIENT_SECRET` = OAuth 2.0 Client Secret
+    3. **Dosyayı kaydedin** ve dashboard'ı yeniden başlatın.
+    4. **Google Cloud Console'da** Authorized redirect URI olarak `http://localhost:8502` ekleyin.
+    """)
+    st.info("📁 `.env` dosya yolu: `C:\\Users\\trycahce\\Desktop\\Proje\\cats-dogs-documentary\\.env`")
     st.stop()
+
+# OAuth flow manager (yeniden yetkilendirme için)
+oauth_manager = OAuthFlowManager(config)
 
 token_manager = TokenManager(config=config)
 token_manager.load_credentials()
 
-# OAuth flow manager (yeniden yetkilendirme için)
-oauth_manager = OAuthFlowManager(config)
+# Token durumu kontrolü ve iyileştirilmiş hata mesajı
+if not token_manager.is_valid():
+    st.warning("⚠️ Token geçersiz veya yok")
+    st.markdown("### 🔑 Token Gereklidir")
+    st.markdown("""
+    YouTube API'ye erişmek için geçerli bir OAuth token gereklidir.
+    
+    **Adımlar:**
+    1. Sol panelde **"Yeniden Yetkilendir (OAuth)"** butonuna tıklayın
+    2. Google hesabınızla giriş yapın ve onay verin
+    3. Token otomatik olarak `youtube_token.json` dosyasına kaydedilecektir
+    4. Dashboard otomatik olarak yenilenecektir
+    """)
+    if st.sidebar.button("🔑 Token Oluştur (OAuth)", key="create_token_btn", use_container_width=True):
+        result = oauth_manager.run_local_server(port=8503)
+        if result:
+            st.success("✅ Yeni token alındı!")
+            st.rerun()
+        else:
+            st.error("❌ Yetkilendirme başarısız!")
+else:
+    creds = token_manager.get_credentials()
+    if creds and creds.expiry:
+        expiry_str = creds.expiry.strftime("%d.%m.%Y %H:%M")
+        st.sidebar.info(f"{T['token_expiry'].format(expiry_str)}")
+
 
 # ============================================================================
 # Sidebar: Dil, Tema, Kanal Seçimi ve Ayarlar
@@ -387,27 +424,6 @@ theme_label = T["theme_dark"] if not DARK else T["theme_light"]
 if st.sidebar.button(theme_label, key="theme_btn", use_container_width=True):
     st.session_state["dark_mode"] = not DARK
     st.rerun()
-
-st.sidebar.markdown("---")
-
-# Token durumu
-if token_manager.is_valid():
-    st.sidebar.success(T["token_valid"])
-    # Token süresi
-    creds = token_manager.get_credentials()
-    if creds and creds.expiry:
-        expiry_str = creds.expiry.strftime("%d.%m.%Y %H:%M")
-        st.sidebar.info(f"{T['token_expiry'].format(expiry_str)}")
-else:
-    st.sidebar.warning(T["token_invalid"])
-    if st.sidebar.button(T["reauthorize"], key="reauth_btn", use_container_width=True):
-        result = oauth_manager.run_local_server(port=8502)
-        if result:
-            access_token, refresh_token = result
-            st.sidebar.success(T["auth_success"])
-            st.rerun()
-        else:
-            st.sidebar.error(T["auth_fail"])
 
 st.sidebar.markdown("---")
 
