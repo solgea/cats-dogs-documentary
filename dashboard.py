@@ -27,6 +27,9 @@ import plotly.graph_objects as go
 import plotly.express as px
 import pandas as pd
 
+from dotenv import load_dotenv
+load_dotenv()
+
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
