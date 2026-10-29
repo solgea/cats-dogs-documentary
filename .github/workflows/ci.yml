@@ -22,6 +22,20 @@ jobs:
           pip install -r requirements.txt
           pip install -r requirements-dev.txt
 
+      - name: Create test MP4 file
+        run: |
+          python -c "
+import struct
+ftyp = b'ftyp'
+size = struct.pack('>I', 24)
+brand = b'isom'
+version = struct.pack('>I', 0)
+compatible_brands = b'isom'
+data = size + ftyp + version + compatible_brands
+with open('test.mp4', 'wb') as f:
+    f.write(data)
+          "
+
       - name: Run tests
         env:
           YOUTUBE_CLIENT_ID: ${{ secrets.YOUTUBE_CLIENT_ID }}
