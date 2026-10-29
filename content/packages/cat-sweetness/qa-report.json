@@ -2,7 +2,7 @@
   "schema_version": 1,
   "package_id": "cat-sweetness",
   "batch_id": "2026-10-29-cats-dogs-01",
-  "generated_at": "2026-10-28T21:53:50Z",
+  "generated_at": "2026-10-29T00:03:12Z",
   "status": "PASS",
   "publish_ready": false,
   "render_status": "NOT_RENDERED",
@@ -537,6 +537,6 @@
     "subtitles.srt": "b1fe31919cde5354380dd544564b139f9c95932282af24938f2f0df45002c171",
     "metadata.json": "5c63f4f79ac5f2c8f54ff78177a8252c0b0d4f87e6af2f2bbaf8314f8aeb1cc8",
     "visual-plan.md": "9d88fe30916ee3bd1958045f0acbbcdaa600e4dbb20f85ace3be34e4dbafa5a0",
-    "viewmade-request.json": "57e28600e7b96e2894c320618a8e4294eddf7b845ac7ec48d3885b531a37fc68"
+    "viewmade-request.json": "30f1d6ed2a1120c9b2cd00769c73b77158064a3bcb8e2c51ac955075788dbf11"
   }
 }

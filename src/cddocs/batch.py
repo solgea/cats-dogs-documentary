@@ -86,12 +86,20 @@ def _generated_files(
     metadata = build_metadata(package, research, channel)
     script = build_script(package, research, channel)
     visual_plan = build_visual_plan(package, channel)
+    previous_request = None
+    previous_path = folder / "viewmade-request.json"
+    if previous_path.is_file():
+        try:
+            previous_request = read_json(previous_path)
+        except PipelineError:
+            previous_request = None
     request = build_viewmade_request(
         package,
         cues,
         channel,
         viewmade,
         binding_complete=binding_complete,
+        previous=previous_request,
     )
 
     atomic_write_text(folder / "script.md", script)
@@ -226,10 +234,11 @@ def validate_package_folder(
             "SUBMITTED",
             "RENDERING",
             "COMPLETE",
+            "STALE",
             "FAILED",
         }:
             problems.append(f"unknown status {request_status!r}")
-        if request_status in {"SUBMITTED", "RENDERING", "COMPLETE"} and not job_id:
+        if request_status in {"SUBMITTED", "RENDERING", "COMPLETE", "STALE"} and not job_id:
             problems.append("submitted status without a job_id")
         rendered = request.get("render_path")
         if rendered and not (project.root / rendered).is_file():
@@ -341,6 +350,13 @@ def _write_batch_report(
     mode: str,
 ) -> tuple[Path, dict]:
     summary = summarize_results(results)
+    rendered = [result.package_id for result in results if result.render_status == "PASS"]
+    if rendered and len(rendered) == len(results):
+        render_gate_status = "COMPLETE"
+    elif rendered:
+        render_gate_status = "PARTIAL"
+    else:
+        render_gate_status = "NOT_RENDERED"
     payload = {
         "schema_version": 1,
         "batch_id": batch_id,
@@ -361,8 +377,9 @@ def _write_batch_report(
         ],
         "duplicate_pairs": pairs,
         "render_gate": {
-            "status": "NOT_REQUESTED",
-            "note": "Live ViewMade rendering is a separate command and requires OAuth, discovered tool bindings, --allow-live, and CDDOCS_LIVE_CONFIRM=YES.",
+            "status": render_gate_status,
+            "validated_packages": rendered,
+            "note": "Live ViewMade rendering is separate from QA. A validated MP4 is not editorial approval; only the listed packages have a local render.",
         },
         "publishing_gate": {
             "manual_youtube_upload": True,
@@ -497,14 +514,17 @@ def _render_readme(project: Project, outcome: BatchOutcome, batch: dict) -> str:
         "",
         f"QA status: **{outcome.status}**",
         "",
-        "This archive contains editorial source files and YouTube-ready metadata. "
-        "It does not contain an uploaded video.",
+        "This archive contains editorial source files and candidate YouTube metadata. "
+        "It does not contain an uploaded video or a publication approval.",
         "",
-        "## Upload checklist",
+        "QA PASS covers the checked artifacts only. It is not editorial sign-off and "
+        "does not make the batch publish-ready.",
+        "",
+        "## Upload checklist (only after editorial approval)",
         "",
         "1. Read `research.json` and verify every DOI/PMID link yourself.",
         "2. Watch the rendered Short end to end. Reject malformed animals or uncanny motion.",
-        "3. Confirm the description still contains the AI-visual disclosure and educational disclaimer.",
+        "3. Confirm the visual disclosure matches the actual renderer (AI-assisted vs real footage) and add provider attribution lines when applicable.",
         "4. Upload manually as a YouTube Short (9:16). Do not let YouTube convert a horizontal file.",
         "5. Keep the visibility private until a human editor signs off.",
         "",
@@ -522,7 +542,13 @@ def _render_readme(project: Project, outcome: BatchOutcome, batch: dict) -> str:
         result.package_id for result in outcome.results if result.render_status == "PASS"
     ]
     if rendered:
-        lines.append(f"Rendered and validated: {', '.join(rendered)}")
+        lines.append(f"Locally rendered and validated: {', '.join(rendered)}")
+        lines.append("")
+        lines.append(
+            "The MP4 is not included in this archive. It remains under `renders/`, "
+            "has not been editorially approved, and must not be published without "
+            "human sign-off."
+        )
     else:
         lines.append(
             "No validated MP4 is present. Live ViewMade rendering is blocked until OAuth "
@@ -531,7 +557,15 @@ def _render_readme(project: Project, outcome: BatchOutcome, batch: dict) -> str:
     lines.extend(
         [
             "",
-            "Illustrative, AI-assisted visuals; not documentary footage.",
+            "## Disclosure and attribution",
+            "",
+            "The checked-in metadata uses the pre-render disclosure:",
+            "",
+            "> Illustrative, AI-assisted visuals; not documentary footage.",
+            "",
+            "This disclosure may be false for a real-footage provider render. "
+            "Reconcile it with the actual visuals before publishing, and include the "
+            "provider attribution lines in the YouTube description when required.",
             "",
         ]
     )
@@ -561,6 +595,7 @@ def package_batch(project: Project, batch_id: str, *, output_dir: Path | None = 
         for name in REQUIRED_ARTIFACTS + ("qa-report.json", "render.mp4"):
             add(f"packages/{slug}/{name}", package_folder / name)
     add("history.json", project.history_export)
+    add("VIEWMADE_OUTPUT_REVIEW.md", project.root / "docs" / "viewmade-output-review.md")
     entries.append(
         (
             "PACKAGE_README.md",

@@ -11,6 +11,7 @@ import json
 import os
 import re
 import shutil
+import subprocess
 import tempfile
 import time
 import urllib.error
@@ -21,7 +22,7 @@ from pathlib import Path
 from typing import Any
 
 from ..config import Project, Settings
-from ..media_probe import MediaInfo, validate_render
+from ..media_probe import MediaInfo, check_aspect, validate_file, validate_render
 from ..util import (
     PipelineError,
     read_json,
@@ -34,7 +35,10 @@ from . import oauth
 from .mcp import MCPAuthError, MCPClient, MCPError, find_tool, tool_names
 
 ALLOWED_PLACEHOLDERS = {
+    "package_id",
     "prompt",
+    "provider_topic",
+    "script",
     "title",
     "duration_s",
     "aspect_ratio",
@@ -175,6 +179,22 @@ def _first_present(data: Any, candidates: tuple[str, ...]) -> Any:
         if key in data and data[key] not in (None, ""):
             return data[key]
     return None
+
+
+def _script_lines(narration: str, max_lines: int = 12) -> str:
+    """Turn narration into the 7-12 semantic lines the provider expects."""
+    text = " ".join(str(narration).split())
+    sentences = [part.strip() for part in re.split(r"(?<=[.!?])\s+", text) if part.strip()]
+    if not sentences:
+        return ""
+    groups = [[sentence] for sentence in sentences]
+    while len(groups) > max_lines:
+        index = min(
+            range(len(groups) - 1),
+            key=lambda i: len(" ".join(groups[i] + groups[i + 1])),
+        )
+        groups[index : index + 2] = [groups[index] + groups[index + 1]]
+    return "\n".join(" ".join(group) for group in groups)
 
 
 def _generation_prompt(request_payload: dict) -> str:
@@ -351,7 +371,10 @@ class ViewMadeAdapter:
     def _context(self, request_payload: dict, *, job_id: str | None = None, provider_state: Any = None) -> dict:
         request = request_payload.get("request") or {}
         return {
+            "package_id": request_payload.get("package_id"),
             "prompt": _generation_prompt(request_payload),
+            "provider_topic": request.get("provider_topic") or request.get("title"),
+            "script": _script_lines(str(request.get("narration", ""))),
             "title": request.get("title"),
             "duration_s": request.get("duration_s"),
             "aspect_ratio": request.get("aspect_ratio"),
@@ -395,14 +418,15 @@ class ViewMadeAdapter:
         package_id = str(request_payload.get("package_id") or "")
         if not package_id:
             raise ViewMadeBlocked("render request has no package_id")
-        if not self.binding_complete():
-            raise ViewMadeBlocked(
-                "ViewMade render/status/download tools are not fully bound. "
-                "Run `cddocs viewmade discover` and `cddocs viewmade bind` first."
-            )
-        # Never re-render a package already verified in this request file.
+
         existing_status = request_payload.get("status")
         existing_render = request_payload.get("render_path")
+        existing_job = request_payload.get("job_id")
+        existing_provider_state = str(request_payload.get("provider_state") or "").lower()
+
+        # A verified local render is the only safe reason to skip a new provider
+        # call. A COMPLETE request with a missing or invalid file must be repaired
+        # explicitly; silently submitting again would charge for a second job.
         if existing_status == "COMPLETE" and existing_render:
             existing_path = self.project.root / existing_render
             if existing_path.is_file():
@@ -417,10 +441,34 @@ class ViewMadeAdapter:
                     return RenderResult(
                         package_id=package_id,
                         status="COMPLETE",
-                        job_id=request_payload.get("job_id"),
+                        job_id=existing_job,
                         render_path=existing_render,
                         media=info,
                     )
+            raise ViewMadeBlocked(
+                "the request is COMPLETE but its local render is missing or invalid. "
+                "Repair or recover the file; do not submit another paid render."
+            )
+        if existing_status == "COMPLETE":
+            raise ViewMadeBlocked(
+                "the request is COMPLETE but has no render_path. Repair the request "
+                "state before submitting another paid render."
+            )
+        if existing_job and (
+            existing_status in {"SUBMITTED", "RENDERING", "STALE"}
+            or existing_provider_state in {"queued", "rendering", "ready"}
+        ):
+            raise ViewMadeBlocked(
+                f"ViewMade job {existing_job} already exists "
+                f"(status={existing_status!r}, provider_state={existing_provider_state!r}). "
+                "Do not submit a second paid render. Recover the existing job with "
+                "`scripts/recover_viewmade_job.py` or resolve it in the provider dashboard."
+            )
+        if not self.binding_complete():
+            raise ViewMadeBlocked(
+                "ViewMade render/status/download tools are not fully bound. "
+                "Run `cddocs viewmade discover` and `cddocs viewmade bind` first."
+            )
 
         token = oauth.get_access_token(self.project, self.settings)
         client = MCPClient(
@@ -573,6 +621,7 @@ class ViewMadeAdapter:
         target_dir.mkdir(parents=True, exist_ok=True)
         target = target_dir / f"{package_id}.mp4"
         try:
+            normalization = None
             if url:
                 self._download_url(str(url), target)
             elif file_path and Path(str(file_path)).is_file():
@@ -586,6 +635,7 @@ class ViewMadeAdapter:
                 raise ViewMadeBlocked(
                     "ViewMade download tool returned neither a URL nor an existing file path"
                 )
+            normalization = self._normalize_render(target)
         except (OSError, urllib.error.URLError, ViewMadeBlocked) as exc:
             message = f"could not download the ViewMade render: {exc}"
             self._update_request(
@@ -643,6 +693,7 @@ class ViewMadeAdapter:
             provider_state=provider_state,
             render_path=render_rel,
             render_sha256=sha256_file(target),
+            normalization=normalization,
             error=None,
         )
         record.update(
@@ -651,6 +702,7 @@ class ViewMadeAdapter:
                 "provider_state": provider_state,
                 "render_path": render_rel,
                 "render_sha256": sha256_file(target),
+                "normalization": normalization,
                 "completed_at": utc_now_iso(),
                 "media": info.to_dict() if info else None,
             }
@@ -664,6 +716,83 @@ class ViewMadeAdapter:
             media=info,
             provider_state=str(provider_state) if provider_state else None,
         )
+
+    def _normalize_render(self, target: Path) -> dict | None:
+        """Normalize a higher-resolution 9:16 render to the channel format."""
+        render_config = self.config.get("render") or {}
+        if not render_config.get("normalize", False):
+            return None
+        width = int(render_config["width"])
+        height = int(render_config["height"])
+        info, _issues = validate_file(target, expect_format="mp4", min_bytes=100_000)
+        if info is None or not info.width or not info.height:
+            return None
+        if info.width == width and info.height == height:
+            return None
+        status, detail = check_aspect(
+            info.width, info.height, str(render_config.get("aspect_ratio", "9:16"))
+        )
+        if status != "PASS":
+            return None
+        ffmpeg = shutil.which("ffmpeg")
+        if not ffmpeg:
+            raise ViewMadeBlocked(
+                f"provider returned {info.width}x{info.height}; ffmpeg is required to "
+                f"normalize it to {width}x{height}"
+            )
+        temporary = target.with_name(f"{target.stem}.normalized.mp4")
+        command = [
+            ffmpeg,
+            "-y",
+            "-i",
+            str(target),
+            "-vf",
+            f"scale={width}:{height}:flags=lanczos,setsar=1",
+            "-c:v",
+            "libx264",
+            "-preset",
+            "medium",
+            "-crf",
+            "18",
+            "-c:a",
+            "aac",
+            "-b:a",
+            "192k",
+            "-movflags",
+            "+faststart",
+            str(temporary),
+        ]
+        try:
+            subprocess.run(command, check=True, capture_output=True)
+            normalized, issues = validate_file(
+                temporary,
+                expect_format="mp4",
+                min_bytes=100_000,
+                expected_width=width,
+                expected_height=height,
+                require_audio=True,
+            )
+            if normalized is None or issues:
+                raise ViewMadeBlocked(
+                    "ffmpeg normalization did not produce the required display size: "
+                    + "; ".join(issues)
+                )
+            os.replace(temporary, target)
+        except (OSError, subprocess.CalledProcessError) as exc:
+            if temporary.exists():
+                temporary.unlink()
+            raise ViewMadeBlocked(f"ffmpeg normalization failed: {exc}") from exc
+        except ViewMadeBlocked:
+            if temporary.exists():
+                temporary.unlink()
+            raise
+        return {
+            "source_width": info.width,
+            "source_height": info.height,
+            "target_width": width,
+            "target_height": height,
+            "tool": "ffmpeg",
+        }
 
     def _download_url(self, url: str, target: Path) -> None:
         parsed = urllib.parse.urlparse(url)

@@ -2,7 +2,7 @@
   "schema_version": 1,
   "package_id": "dog-nose",
   "batch_id": "2026-10-29-cats-dogs-01",
-  "generated_at": "2026-10-28T21:53:50Z",
+  "generated_at": "2026-10-29T00:03:12Z",
   "status": "PASS",
   "publish_ready": false,
   "render_status": "NOT_RENDERED",
@@ -549,6 +549,6 @@
     "subtitles.srt": "2de62c5ef344812cf026f6bf0e0617cffacdc119a4e759a03cc0d8d9ab2adcf9",
     "metadata.json": "cdc74e41ebf3d99b5495088497b196b1a6db85e493c8fb17040a4237c8db81fb",
     "visual-plan.md": "4d05efb716d75ddd321a80dda010ce574e13a47037c7e6411f493269dc3aae91",
-    "viewmade-request.json": "f4d4470f3e63d57049510d52b2efd1e671de72be0d62a1910285e2bd8ceb2f35"
+    "viewmade-request.json": "9520208157062c844d29bc323bfd2a8ed5a29a11d1b8d4d0bf6a1046b70e8d20"
   }
 }

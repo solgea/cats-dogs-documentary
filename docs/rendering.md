@@ -2,10 +2,23 @@
 
 ## Current state
 
-Live ViewMade rendering is **BLOCKED** for batch
-`2026-10-29-cats-dogs-01`. There is no OAuth token, no discovered tool list, and
-no render/status/download binding. No MP4 has been produced. Do not report a
-render, URL, job id, or file hash that does not exist.
+ViewMade OAuth, discovery, and render/status/download binding are complete for
+batch `2026-10-29-cats-dogs-01`.
+
+The `dog-guilty-look` pilot job `f59f8a91-7b2b-4dbb-a03d-62effc911581` reached
+`ready` after 20 credits were charged. The provider file was downloaded,
+normalized to 1080x1920, and passed local media validation:
+
+- `renders/dog-guilty-look.mp4` — 47.733 s, H.264 video, AAC stereo audio;
+- SHA-256 `ac8ab8917d71d22548077d12fe6f0c535878ff709abd3fd41375b8b1b41e2f61`;
+- provider output: 21 scenes, 1440x2560 coded, six third-party YouTube sources.
+
+`COMPLETE` only means the file is parseable and matches the channel format. The
+pilot has **not** passed editorial review, and its provider sources are
+entertainment/compilation clips rather than the peer-reviewed evidence in the
+local research record. Do not render the remaining five packages until the
+editorial direction is decided. See
+[viewmade-output-review.md](viewmade-output-review.md).
 
 ## Gate order
 
@@ -21,7 +34,11 @@ A render request passes through all of these gates:
 8. Polling: the status tool must reach a configured success state before timeout.
 9. Download: the download tool must yield an HTTPS URL or an existing local file.
 10. Local verification: the downloaded bytes must parse as a 1080x1920, 9:16,
-    30–60 second MP4 with audio.
+    30–60 second MP4 with audio. A higher-resolution 9:16 provider render is
+    normalized to 1080x1920 with ffmpeg before this check; if ffmpeg is missing,
+    the render fails closed. Normalization forces square pixels (`setsar=1`) and
+    re-probes the temporary output, because preserving a non-square source SAR
+    can leave a 1080-wide file with a 1071-pixel display width.
 11. Human review: a person must watch the result and approve it. This does not
     happen inside this repository.
 
@@ -43,6 +60,28 @@ written to `content/batches/<batch-id>/render-report.json`; package state is
 written to `viewmade-request.json` and local job records under
 `state/viewmade-jobs/`.
 
+If `viewmade_create_short` returns a transport error but `viewmade_list_videos`
+shows a matching production, do **not** submit a second job. Verify the job id
+and title, then attach to the existing job:
+
+```powershell
+$env:CDDOCS_LIVE_CONFIRM = "YES"
+python scripts/recover_viewmade_job.py dog-guilty-look <job-id> --poll-interval 60 --timeout 14400
+```
+
+The recovery script uses the bound status and download tools, normalizes the
+file, runs local validation, and records the provider package state. It never
+prints the bearer token.
+
+For a fixed, self-refreshing terminal dashboard instead of a scrolling log:
+
+```powershell
+pwsh -File scripts/watch_render.ps1
+```
+
+The dashboard shows provider status, stage, progress, provider ETA, estimated
+time remaining, elapsed time, local request state, and whether the MP4 exists.
+
 Without both live confirmations, even an accidental command with a valid token
 does not submit:
 
@@ -61,8 +100,15 @@ CDDOCS_LIVE_CONFIRM=YES.
 - no job id, submission, or render path.
 
 During a real render it can move through `SUBMITTED`, `RENDERING`, `COMPLETE`, or
-`FAILED`. A status without a job id fails validation. A `render_path` must exist on
-disk. The adapter records provider state and errors rather than hiding them.
+`FAILED`. `STALE` means a provider job or MP4 belongs to an older request
+specification and must not be published. A status without a job id fails
+validation. A `render_path` must exist on disk. The adapter records provider
+state and errors rather than hiding them.
+
+`batch build` preserves an existing job id, provider state, render path, hash,
+normalization record, and provider package when the `request` object is
+unchanged. If the script or other request fields changed, the preserved job is
+marked `STALE` instead of silently reusing an unrelated MP4.
 
 ## Download and validation
 
@@ -71,8 +117,10 @@ path. The adapter refuses non-HTTPS URLs. It attaches the bearer token only when
 the host is `viewmade.com` or a `*.viewmade.com` subdomain; unrelated hosts get no
 credential.
 
-The target is `renders/<package-id>.mp4`. It is temporary until local validation
-passes:
+The target is `renders/<package-id>.mp4`. If `render.normalize` is enabled and
+the provider returns another 9:16 resolution such as 1440x2560, ffmpeg scales
+the file to 1080x1920 with Lanczos resampling and AAC audio. It is temporary
+until local validation passes:
 
 - ISO-BMFF/MP4 `ftyp` and `moov` structure;
 - a duration from `mvhd` in the 30–60 second range;
@@ -87,10 +135,13 @@ when possible and records `FAILED`. It never becomes `COMPLETE`.
 
 If a request is already `COMPLETE` and its `render_path` still passes validation,
 the adapter returns the existing verified render rather than submitting again.
-To intentionally replace a bad render, inspect and archive the old files and
-state, then reset the request through a deliberate operator workflow. Do not
-hand-edit a job to `COMPLETE`; that is the one status the pipeline treats as
-evidence of a verified file.
+It also refuses to submit a second paid job when a job id exists in an active
+provider state (`queued`, `rendering`, or `ready`), or when a `COMPLETE` request
+is missing a valid local file. Recover the existing job instead; see the recovery
+command above. To intentionally replace a bad render, inspect and archive the old
+files and state, then reset the request through a deliberate operator workflow.
+Do not hand-edit a job to `COMPLETE`; that is the one status the pipeline treats
+as evidence of a verified file.
 
 ## What rendering does not authorize
 

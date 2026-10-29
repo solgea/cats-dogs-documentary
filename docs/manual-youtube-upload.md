@@ -22,8 +22,13 @@ Do not upload until all of the following are true:
       eyes, merged hands, impossible gaits, or uncanny mouth motion.
 - [ ] No scene manufactures distress, punishment, aggression, or a false "guilty"
       or "sad" emotion for engagement.
-- [ ] The description carries the synthetic-media disclosure, educational
-      disclaimer, `Sources:` section, and `#Shorts`.
+- [ ] The visual disclosure matches the actual renderer: use the AI-assisted
+      disclosure only for AI-assisted visuals; use the provider attribution lines
+      and an accurate real-footage description for a stock/archival montage.
+- [ ] The description carries the educational disclaimer, `Sources:` section, and
+      `#Shorts`.
+- [ ] When ViewMade produced the render, its `sources` and `attributions` have
+      been reviewed and the required attribution lines are in the description.
 - [ ] The title is accurate and under the length limit.
 - [ ] Human editorial sign-off has been recorded in the team's approval record.
 
@@ -48,8 +53,9 @@ and update the pipeline deliberately if a sign-off workflow is added.
 7. Do not add a claim, source, quote, statistic, or medical instruction that is
    absent from the reviewed package.
 8. If YouTube requires a synthetic/altered-content disclosure, follow the current
-   platform UI and the channel's disclosure text. The description always includes:
-   `Illustrative, AI-assisted visuals; not documentary footage.`
+   platform UI. Use `Illustrative, AI-assisted visuals; not documentary footage.`
+   only when the render is actually AI-assisted. A ViewMade real-footage montage
+   must not carry that claim; use accurate attribution instead.
 9. Upload manually. Do not automate the final publish action.
 
 ## After upload

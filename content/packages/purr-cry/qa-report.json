@@ -2,7 +2,7 @@
   "schema_version": 1,
   "package_id": "purr-cry",
   "batch_id": "2026-10-29-cats-dogs-01",
-  "generated_at": "2026-10-28T21:53:50Z",
+  "generated_at": "2026-10-29T00:03:12Z",
   "status": "PASS",
   "publish_ready": false,
   "render_status": "NOT_RENDERED",
@@ -537,6 +537,6 @@
     "subtitles.srt": "728ee6dda3c2f6924dc615dd546dffddb5558bef8b4b518d3996f5e4368c4c53",
     "metadata.json": "1ce1c39ff525f59521fda545d5c7aa900cb1f8badcd8a566ac4ead0ce5b44c2e",
     "visual-plan.md": "bf0450930e52917f57ba4eebd86fdaf1dbc5f68cf219810469316a0f02a72d89",
-    "viewmade-request.json": "59cc512c1e3c7dbfa2f3f8d5732cb39a0df455fab0712b8fc389b16a65039967"
+    "viewmade-request.json": "6b05936068c931451c530a6f8642a449666352b35f5aed319173846942cdb60c"
   }
 }

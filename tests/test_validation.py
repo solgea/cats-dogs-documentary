@@ -54,11 +54,16 @@ class ValidationTests(unittest.TestCase):
         result = self._validate()
         self.assertEqual(result.status, "PASS", [check.to_dict() for check in result.checks if check.status == "FAIL"])
         self.assertFalse(result.publish_ready)
-        self.assertEqual(result.render_status, "NOT_RENDERED")
         checks = {check.id: check for check in result.checks}
         self.assertEqual(checks["package.editorial"].status, "PASS")
-        self.assertEqual(checks["render.artifact"].status, "SKIP")
         self.assertEqual(checks["history.dedup"].status, "SKIP")
+        render_file = self.project.root / "renders" / "dog-guilty-look.mp4"
+        if render_file.is_file():
+            self.assertEqual(result.render_status, "PASS")
+            self.assertEqual(checks["render.artifact"].status, "PASS")
+        else:
+            self.assertEqual(result.render_status, "NOT_RENDERED")
+            self.assertEqual(checks["render.artifact"].status, "SKIP")
         summary = summarize_results([result])
         self.assertEqual(summary["status"], "PASS")
         self.assertFalse(summary["publish_ready"])

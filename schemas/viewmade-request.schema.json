@@ -42,6 +42,7 @@
         "SUBMITTED",
         "RENDERING",
         "COMPLETE",
+        "STALE",
         "FAILED"
       ]
     },
@@ -79,6 +80,7 @@
       "additionalProperties": false,
       "required": [
         "title",
+        "provider_topic",
         "format",
         "duration_s",
         "aspect_ratio",
@@ -98,6 +100,11 @@
         "title": {
           "type": "string",
           "minLength": 8
+        },
+        "provider_topic": {
+          "type": "string",
+          "minLength": 8,
+          "maxLength": 400
         },
         "format": {
           "const": "youtube_shorts"
@@ -252,7 +259,23 @@
     "job_id": {
       "type": ["string", "null"]
     },
+    "provider_state": {
+      "type": ["string", "null"]
+    },
     "render_path": {
+      "type": ["string", "null"]
+    },
+    "render_sha256": {
+      "type": ["string", "null"],
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "normalization": {
+      "type": ["object", "null"]
+    },
+    "provider_package": {
+      "type": ["object", "null"]
+    },
+    "error": {
       "type": ["string", "null"]
     },
     "updated_at": {

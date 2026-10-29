@@ -5,14 +5,15 @@
   "provider_endpoint": "https://mcp.viewmade.com/mcp",
   "status": "NOT_SUBMITTED",
   "submission_allowed": false,
-  "blocked_reason": "ViewMade OAuth and official MCP tool bindings are not both ready. Run `cddocs viewmade login`, `cddocs viewmade discover`, and `cddocs viewmade bind`.",
+  "blocked_reason": null,
   "preflight": {
-    "tool_bindings_complete": false,
+    "tool_bindings_complete": true,
     "authentication": "not_checked_by_build",
     "live_authorisation": "required_at_render_time"
   },
   "request": {
     "title": "What a Cat's Slow Blink Really Means",
+    "provider_topic": "Do cats understand a human slow blink?",
     "format": "youtube_shorts",
     "duration_s": 45,
     "aspect_ratio": "9:16",

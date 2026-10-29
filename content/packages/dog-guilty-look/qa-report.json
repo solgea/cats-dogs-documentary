@@ -2,15 +2,15 @@
   "schema_version": 1,
   "package_id": "dog-guilty-look",
   "batch_id": "2026-10-29-cats-dogs-01",
-  "generated_at": "2026-10-28T21:53:50Z",
+  "generated_at": "2026-10-29T00:03:12Z",
   "status": "PASS",
   "publish_ready": false,
-  "render_status": "NOT_RENDERED",
+  "render_status": "PASS",
   "summary": {
-    "PASS": 85,
+    "PASS": 86,
     "WARN": 0,
     "FAIL": 0,
-    "SKIP": 1
+    "SKIP": 0
   },
   "checks": [
     {
@@ -507,9 +507,9 @@
     },
     {
       "id": "render.artifact",
-      "label": "Rendered MP4",
-      "status": "SKIP",
-      "detail": "not rendered yet; live ViewMade rendering is a separate gated stage"
+      "label": "Rendered MP4 is valid, vertical, and has audio",
+      "status": "PASS",
+      "detail": "{'format': 'mp4', 'ok': True, 'problems': [], 'width': 1080, 'height': 1920, 'duration_s': 47.733, 'sample_rate': None, 'channels': None, 'bits_per_sample': None, 'has_audio': True}"
     },
     {
       "id": "artifacts.hashes",
@@ -527,7 +527,7 @@
       "id": "artifacts.request_state",
       "label": "ViewMade request is honest about submission state",
       "status": "PASS",
-      "detail": "status='NOT_SUBMITTED'"
+      "detail": "status='COMPLETE'"
     }
   ],
   "artifacts": {
@@ -537,6 +537,6 @@
     "subtitles.srt": "6f33f477ee10cb74a29f8c355e31c53b43c7d1e2b4311c0df70ee0a8934f06fb",
     "metadata.json": "425ba8ec2ec73ffb7f7de02484ce42bf1f1d2a432333795c63fb0556230f6cec",
     "visual-plan.md": "cddb1946ddf393f9cf398d749b3cec3665d1ff14730baf8019533752e0f8c865",
-    "viewmade-request.json": "22d30544c3db6f67354529ad4e42147340e85bdd01fb3da1364d029b7efc996b"
+    "viewmade-request.json": "865548bccbce0efa4a5568294a80d1a1b86823a7184b4bdcbc41e38bc7841b0d"
   }
 }

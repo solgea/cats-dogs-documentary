@@ -157,6 +157,7 @@ tests/                  deterministic unit and integration tests
 - [ViewMade OAuth](docs/viewmade-oauth.md)
 - [ViewMade tool binding](docs/viewmade-tool-binding.md)
 - [Rendering](docs/rendering.md)
+- [ViewMade output review](docs/viewmade-output-review.md)
 - [Topic deduplication](docs/deduplication.md)
 - [Manual YouTube upload](docs/manual-youtube-upload.md)
 - [JSON schemas](schemas/README.md)

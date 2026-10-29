@@ -151,6 +151,7 @@ def build_viewmade_request(
     viewmade: dict,
     *,
     binding_complete: bool,
+    previous: dict | None = None,
 ) -> dict:
     format_cfg = channel["format"]
     render_cfg = viewmade["render"]
@@ -182,7 +183,7 @@ def build_viewmade_request(
         else "ViewMade OAuth and official MCP tool bindings are not both ready. "
         "Run `cddocs viewmade login`, `cddocs viewmade discover`, and `cddocs viewmade bind`."
     )
-    return {
+    payload = {
         "schema_version": 1,
         "package_id": package.get("id"),
         "provider": "viewmade",
@@ -197,6 +198,7 @@ def build_viewmade_request(
         },
         "request": {
             "title": package.get("title"),
+            "provider_topic": package.get("central_question") or package.get("title"),
             "format": "youtube_shorts",
             "duration_s": package.get("target_duration_s"),
             "aspect_ratio": format_cfg["aspect_ratio"],
@@ -231,6 +233,52 @@ def build_viewmade_request(
             "A render is COMPLETE only after the downloaded MP4 passes local media validation.",
         ],
     }
+    if previous is None:
+        return payload
+
+    previous_status = previous.get("status")
+    has_job = bool(previous.get("job_id"))
+    has_render = bool(previous.get("render_path"))
+    same_spec = previous.get("request") == payload["request"]
+    if same_spec and (has_job or has_render or previous_status in {"COMPLETE", "FAILED", "STALE"}):
+        for key in (
+            "status",
+            "job_id",
+            "provider_state",
+            "render_path",
+            "render_sha256",
+            "normalization",
+            "provider_package",
+            "submission",
+            "error",
+            "updated_at",
+        ):
+            if key in previous:
+                payload[key] = previous[key]
+        return payload
+
+    if not same_spec and (has_job or has_render):
+        # The provider job or MP4 belongs to an older specification. Keep the
+        # evidence, but never present it as a valid render for the new script.
+        for key in (
+            "job_id",
+            "provider_state",
+            "render_path",
+            "render_sha256",
+            "normalization",
+            "provider_package",
+            "submission",
+        ):
+            payload[key] = previous.get(key)
+        payload["status"] = "STALE"
+        payload["error"] = (
+            "request specification changed after the provider job; the existing "
+            "render is stale and must not be published"
+        )
+        payload["notes"].append(
+            "Existing job and render were preserved as STALE after a request change."
+        )
+    return payload
 
 
 def write_visual_plan(path: Path, text: str) -> Path:

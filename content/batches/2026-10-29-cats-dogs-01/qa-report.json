@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "batch_id": "2026-10-29-cats-dogs-01",
-  "generated_at": "2026-10-28T21:53:50Z",
+  "generated_at": "2026-10-29T00:03:12Z",
   "mode": "validate",
   "status": "PASS",
   "summary": {
@@ -11,7 +11,7 @@
     "warn": 0,
     "fail": 0,
     "render_status": {
-      "dog-guilty-look": "NOT_RENDERED",
+      "dog-guilty-look": "PASS",
       "cat-sweetness": "NOT_RENDERED",
       "puppy-dog-eyes": "NOT_RENDERED",
       "slow-blink": "NOT_RENDERED",
@@ -25,12 +25,12 @@
       "id": "dog-guilty-look",
       "status": "PASS",
       "counts": {
-        "PASS": 85,
+        "PASS": 86,
         "WARN": 0,
         "FAIL": 0,
-        "SKIP": 1
+        "SKIP": 0
       },
-      "render_status": "NOT_RENDERED",
+      "render_status": "PASS",
       "publish_ready": false,
       "qa_report": "content/packages/dog-guilty-look/qa-report.json"
     },
@@ -102,8 +102,11 @@
   ],
   "duplicate_pairs": [],
   "render_gate": {
-    "status": "NOT_REQUESTED",
-    "note": "Live ViewMade rendering is a separate command and requires OAuth, discovered tool bindings, --allow-live, and CDDOCS_LIVE_CONFIRM=YES."
+    "status": "PARTIAL",
+    "validated_packages": [
+      "dog-guilty-look"
+    ],
+    "note": "Live ViewMade rendering is separate from QA. A validated MP4 is not editorial approval; only the listed packages have a local render."
   },
   "publishing_gate": {
     "manual_youtube_upload": true,

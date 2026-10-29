@@ -7,9 +7,9 @@ import zipfile
 from pathlib import Path
 
 try:
-    from ._support import BATCH_ID, copy_project, load_json
+    from ._support import BATCH_ID, copy_project, load_json, write_json
 except ImportError:  # pragma: no cover
-    from _support import BATCH_ID, copy_project, load_json
+    from _support import BATCH_ID, copy_project, load_json, write_json
 
 from cddocs.batch import build_batch, package_batch, render_batch, validate_batch
 from cddocs.config import Settings
@@ -20,6 +20,23 @@ class BatchFlowTests(unittest.TestCase):
     def test_build_validate_package_and_refuse_live_without_gate(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             project = copy_project(Path(tmp) / "project")
+            request_path = project.package_path("dog-guilty-look") / "viewmade-request.json"
+            request = load_json(request_path)
+            request.update(
+                {
+                    "status": "NOT_SUBMITTED",
+                    "submission_allowed": False,
+                    "job_id": None,
+                    "provider_state": None,
+                    "render_path": None,
+                    "render_sha256": None,
+                    "normalization": None,
+                    "provider_package": None,
+                    "error": None,
+                    "submission": None,
+                }
+            )
+            write_json(request_path, request)
             outcome = build_batch(project, BATCH_ID)
             self.assertEqual(outcome.status, "PASS", outcome.to_dict())
             self.assertEqual(len(outcome.results), 6)
@@ -83,6 +100,31 @@ class BatchFlowTests(unittest.TestCase):
                 render_batch(project, BATCH_ID, allow_live=True, settings=wrong_confirm)
             self.assertIn("CDDOCS_LIVE_CONFIRM=YES", str(caught.exception))
             self.assertFalse((project.batch_path(BATCH_ID) / "render-report.json").exists())
+
+    def test_rebuild_preserves_complete_render_state(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            project = copy_project(Path(tmp) / "project")
+            request_path = project.package_path("dog-guilty-look") / "viewmade-request.json"
+            before = load_json(request_path)
+            self.assertEqual(before["status"], "COMPLETE")
+            self.assertEqual(
+                before["job_id"], "f59f8a91-7b2b-4dbb-a03d-62effc911581"
+            )
+
+            outcome = build_batch(project, BATCH_ID)
+            self.assertEqual(outcome.status, "PASS", outcome.to_dict())
+
+            after = load_json(request_path)
+            for key in (
+                "status",
+                "job_id",
+                "provider_state",
+                "render_path",
+                "render_sha256",
+                "normalization",
+                "provider_package",
+            ):
+                self.assertEqual(after.get(key), before.get(key), key)
 
 
 if __name__ == "__main__":

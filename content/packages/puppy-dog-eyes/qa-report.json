@@ -2,7 +2,7 @@
   "schema_version": 1,
   "package_id": "puppy-dog-eyes",
   "batch_id": "2026-10-29-cats-dogs-01",
-  "generated_at": "2026-10-28T21:53:50Z",
+  "generated_at": "2026-10-29T00:03:12Z",
   "status": "PASS",
   "publish_ready": false,
   "render_status": "NOT_RENDERED",
@@ -537,6 +537,6 @@
     "subtitles.srt": "00bcf4ab9627b8c5f00f098faa42a20c30d95310a7685df164a7cd4384b0e419",
     "metadata.json": "6aac25b917a6b05589e634a9b13162cc4d9d3f674f5c5cbc42892c47a016002c",
     "visual-plan.md": "18053dea24536ae3933a25e0548ad62b3e4abd84822ab74617070a36b48aeb0a",
-    "viewmade-request.json": "ec324af2ba5a595ac9171ba2f4764b4ff09cb945775461e5dc977ce0295d80fb"
+    "viewmade-request.json": "e61b95358238f9782d59925e290fd306862a916b6f62567e01be5408f46bbee1"
   }
 }

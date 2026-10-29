@@ -1,0 +1,13 @@
+{
+  "topic": "$provider_topic",
+  "script": "$script",
+  "language": "en",
+  "style": "field",
+  "voice": "atlas",
+  "narration_pace": "standard",
+  "music_mood": "auto",
+  "style_hint": "Calm, evidence-led documentary tone; natural light, realistic fur, species-correct anatomy, no staged distress.",
+  "sound_effects": "off",
+  "speech": "standard",
+  "operation_key": "$package_id"
+}

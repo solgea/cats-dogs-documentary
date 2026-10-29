@@ -16,7 +16,14 @@ from urllib.parse import urlparse
 from .history import History
 from .metadata import citation, validate_metadata
 from .subtitles import Cue, cue_stats, cue_text, validate_cues
-from .util import PipelineError, normalise_whitespace, utc_now_iso, word_count, write_json
+from .util import (
+    PipelineError,
+    normalise_whitespace,
+    read_json,
+    utc_now_iso,
+    word_count,
+    write_json,
+)
 
 STATUS_ORDER = {"PASS": 0, "SKIP": 1, "WARN": 2, "FAIL": 3}
 PLACEHOLDER_RE = re.compile(
@@ -649,8 +656,25 @@ def validate_package(
         add("history.dedup", "Topic history duplicate check", status, detail)
 
     # --- rendered artifact, if one exists ----------------------------
-    render_path = folder / "render.mp4"
-    if render_path.is_file():
+    render_path = None
+    request_path = folder / "viewmade-request.json"
+    if request_path.is_file():
+        try:
+            request_payload = read_json(request_path)
+            rendered = request_payload.get("render_path")
+            if rendered:
+                candidate = Path(str(rendered))
+                if not candidate.is_absolute():
+                    candidate = folder.parents[2] / candidate
+                if candidate.is_file():
+                    render_path = candidate
+        except (PipelineError, OSError, ValueError):
+            render_path = None
+    if render_path is None:
+        fallback = folder / "render.mp4"
+        if fallback.is_file():
+            render_path = fallback
+    if render_path is not None and render_path.is_file():
         from .media_probe import validate_render
 
         info, issues = validate_render(

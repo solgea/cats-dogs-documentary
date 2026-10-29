@@ -60,7 +60,10 @@ value can be a literal, or an exact placeholder that resolves at call time.
 
 | Placeholder | Resolves to |
 | --- | --- |
+| `$package_id` | Stable package id, suitable for an idempotency key |
 | `$prompt` | Deterministic generation prompt built from the local request |
+| `$provider_topic` | Species-specific provider topic, falling back to the title |
+| `$script` | Narration split into 7-12 semantic lines |
 | `$title` | Package/render title |
 | `$duration_s` | Target duration |
 | `$aspect_ratio` | `9:16` |

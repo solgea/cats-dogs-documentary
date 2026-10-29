@@ -3,16 +3,17 @@
   "package_id": "dog-guilty-look",
   "provider": "viewmade",
   "provider_endpoint": "https://mcp.viewmade.com/mcp",
-  "status": "NOT_SUBMITTED",
+  "status": "COMPLETE",
   "submission_allowed": false,
-  "blocked_reason": "ViewMade OAuth and official MCP tool bindings are not both ready. Run `cddocs viewmade login`, `cddocs viewmade discover`, and `cddocs viewmade bind`.",
+  "blocked_reason": null,
   "preflight": {
-    "tool_bindings_complete": false,
+    "tool_bindings_complete": true,
     "authentication": "not_checked_by_build",
     "live_authorisation": "required_at_render_time"
   },
   "request": {
     "title": "The Guilty Look Isn't Guilt",
+    "provider_topic": "Does a dog's guilty look mean the dog feels guilty?",
     "format": "youtube_shorts",
     "duration_s": 45,
     "aspect_ratio": "9:16",
@@ -253,11 +254,74 @@
     }
   },
   "submission": null,
-  "job_id": null,
-  "render_path": null,
+  "job_id": "f59f8a91-7b2b-4dbb-a03d-62effc911581",
+  "render_path": "renders/dog-guilty-look.mp4",
   "notes": [
     "This is a local request specification, not evidence that ViewMade accepted a job.",
     "No MCP tool name is hardcoded. The adapter uses the official discovered and bound tools.",
     "A render is COMPLETE only after the downloaded MP4 passes local media validation."
-  ]
+  ],
+  "provider_state": "ready",
+  "render_sha256": "ac8ab8917d71d22548077d12fe6f0c535878ff709abd3fd41375b8b1b41e2f61",
+  "normalization": {
+    "source_width": 1428,
+    "source_height": 2560,
+    "target_width": 1080,
+    "target_height": 1920,
+    "tool": "ffmpeg"
+  },
+  "provider_package": {
+    "id": "f59f8a91-7b2b-4dbb-a03d-62effc911581",
+    "status": "ready",
+    "title": "The truth behind the guilty look",
+    "description": "That famous 'guilty look' your dog gives you isn't actually remorse—it's a survival tactic to calm you down.",
+    "tags": [
+      "guilty",
+      "look"
+    ],
+    "duration": "0:48",
+    "aspect": "9:16",
+    "resolution": "1440x2560",
+    "scene_count": 21,
+    "sources": [
+      {
+        "title": "Dogs and the guilty look. DOG closing doors - Funny Animals - Fluffies! — Fluffies",
+        "url": "https://www.youtube.com/watch?v=15oQ_d1GzpA"
+      },
+      {
+        "title": "Decoding the 'Guilty' Look in Dogs: Emotions and Misunderstandings — Wild+Derp",
+        "url": "https://www.youtube.com/watch?v=toTXN0kjaTc"
+      },
+      {
+        "title": "Ultimate Guilty Dogs Video Compilation | The Pet Collective — The Pet Collective",
+        "url": "https://www.youtube.com/watch?v=7TruhoFdFfg"
+      },
+      {
+        "title": "Guilty dog covers up bad deed with funny face — Rumble Viral",
+        "url": "https://www.youtube.com/watch?v=_ulv0155crI"
+      },
+      {
+        "title": "Denver Official Guilty Dog Video  www.facebook.com/guiltydog — Denver the Guilty Dog",
+        "url": "https://www.youtube.com/watch?v=B8ISzf2pryI"
+      },
+      {
+        "title": "Guilty dog desperately asks for forgiveness — Rumble Viral",
+        "url": "https://www.youtube.com/watch?v=OI7HuH_uxzw"
+      }
+    ],
+    "attributions": [
+      "Dogs and the guilty look. DOG closing doors - Funny Animals - Fluffies! — Fluffies · https://www.youtube.com/watch?v=15oQ_d1GzpA",
+      "Decoding the 'Guilty' Look in Dogs: Emotions and Misunderstandings — Wild+Derp · https://www.youtube.com/watch?v=toTXN0kjaTc",
+      "Ultimate Guilty Dogs Video Compilation | The Pet Collective — The Pet Collective · https://www.youtube.com/watch?v=7TruhoFdFfg",
+      "Guilty dog covers up bad deed with funny face — Rumble Viral · https://www.youtube.com/watch?v=_ulv0155crI",
+      "Denver Official Guilty Dog Video  www.facebook.com/guiltydog — Denver the Guilty Dog · https://www.youtube.com/watch?v=B8ISzf2pryI",
+      "Guilty dog desperately asks for forgiveness — Rumble Viral · https://www.youtube.com/watch?v=OI7HuH_uxzw"
+    ],
+    "subject_note": "The request's premise is not supported by the research; the video tells the supported version: The premise that dogs feel moral guilt for their actions is unsupported by behavioral science.",
+    "credits_charged": 20,
+    "credits_refunded": 0,
+    "net_credits": 20
+  },
+  "error": null,
+  "updated_at": "2026-10-28T23:50:27Z"
 }
