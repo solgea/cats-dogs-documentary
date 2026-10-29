@@ -1,36 +1,58 @@
 #!/usr/bin/env python
-"""YouTube Professional Dashboard - Streamlit Based"""
+"""YouTube Profesyonel Dashboard - Streamlit Tabanlı.
+
+Mimari:
+- config.py: Merkezi yapılandırma (ortam değişkenleri)
+- token_manager.py: Güvenli OAuth token yönetimi (0o600 dosya izni)
+- api_client.py: YouTube Data API v3 istemcisi (retry, quota, validation)
+- upload.py: Güvenli upload yöneticisi (confirm_public koruması)
+- analytics.py: Seçili kanal desteğiyle analitik raporlama
+- oauth_flow.py: OAuth 2.0 yetkilendirme akışı
+"""
+
+import sys
+import os
+
+# Proje dizinini Python yoluna ekle (src/cddocs)
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "src", "cddocs"))
 
 import streamlit as st
 import plotly.graph_objects as go
 import plotly.express as px
 import pandas as pd
 from datetime import datetime, timedelta
-import sys
-sys.path.insert(0, 'src/cddocs')
+import logging
 
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+from youtube.config import YouTubeConfig
 from youtube.token_manager import TokenManager
 from youtube.api_client import YouTubeAPIClient
+from youtube.upload import UploadManager
 from youtube.analytics import AnalyticsReporter
+from youtube.oauth_flow import OAuthFlowManager
 
 
-# --- Sayfa Yapılandırması ---
+# ============================================================================
+# Sayfa Yapılandırması
+# ============================================================================
 st.set_page_config(
-    page_title="YouTube Analytics Dashboard",
+    page_title="YouTube Profesyonel Dashboard",
     page_icon="📊",
     layout="wide",
-    initial_sidebar_state="expanded"
+    initial_sidebar_state="expanded",
 )
 
-# --- CSS Stilizasyonu ---
-st.markdown("""
+# ============================================================================
+# CSS Stilizasyonu (Türkçe)
+# ============================================================================
+st.markdown(
+    """
     <style>
     .main .block-container {
         padding-top: 2rem;
         padding-bottom: 2rem;
-    }
-    .stSelectbox > div > div > div {
-        background-color: #f0f2f6;
     }
     .metric-card {
         background: white;
@@ -46,259 +68,451 @@ st.markdown("""
         width: 100%;
         margin-top: 0.5rem;
     }
+    .warning-box {
+        background: #fff3cd;
+        border: 1px solid #ffc107;
+        border-radius: 5px;
+        padding: 1rem;
+        margin: 1rem 0;
+    }
+    .success-box {
+        background: #d4edda;
+        border: 1px solid #28a745;
+        border-radius: 5px;
+        padding: 1rem;
+        margin: 1rem 0;
+    }
     </style>
-""", unsafe_allow_html=True)
+    """,
+    unsafe_allow_html=True,
+)
 
-# --- Başlık ---
+# ============================================================================
+# Başlık
+# ============================================================================
 st.title("📊 YouTube Profesyonel Dashboard")
 st.markdown("**YouTube Analitik & Kanal Yönetimi**")
 st.markdown("---")
 
-# --- Sidebar: Kanal Seçimi ---
-st.sidebar.header("⚙️ Ayarlar & Kanal Seçimi")
+# ============================================================================
+# Yapılandırma ve Token Yöneticisi
+# ============================================================================
+config = YouTubeConfig()
+config_errors = config.validate()
 
-token_manager = TokenManager('src/cddocs/youtube/youtube_token.json')
+if config_errors:
+    st.error("⚠️ Yapılandırma hataları:")
+    for err in config_errors:
+        st.error(f"• {err}")
+    st.info("Lütfen YOUTUBE_CLIENT_ID ve YOUTUBE_CLIENT_SECRET ortam değişkenlerini ayarlayın.")
+    st.stop()
+
+token_manager = TokenManager(config=config)
 token_manager.load_credentials()
 
-# Mevcut seçili channel
+# OAuth flow manager (yeniden yetkilendirme için)
+oauth_manager = OAuthFlowManager(config)
+
+# ============================================================================
+# Sidebar: Kanal Seçimi ve Ayarlar
+# ============================================================================
+st.sidebar.header("⚙️ Ayarlar & Kanal Seçimi")
+
+# Token durumu
+if token_manager.is_valid():
+    st.sidebar.success("✅ Token geçerli")
+else:
+    st.sidebar.warning("⚠️ Token geçersiz veya yok")
+    if st.sidebar.button("Yeniden Yetkilendir (OAuth)"):
+        result = oauth_manager.run_local_server(port=8502)
+        if result:
+            access_token, refresh_token = result
+            st.sidebar.success("✅ Yeni token alındı!")
+            st.rerun()
+        else:
+            st.sidebar.error("❌ Yetkilendirme başarısız")
+
+st.sidebar.markdown("---")
+
+# Mevcut seçili kanal
 selected_channel_id = token_manager.get_selected_channel()
-none_label = "Varsayılan (Mine) Kanal" if selected_channel_id is None else "Seçili: " + selected_channel_id[:20] + "..."
+none_label = "Varsayılan (Mine) Kanal" if selected_channel_id is None else f"Seçili: {selected_channel_id[:20]}..."
+st.sidebar.info(f"Mevcut Kanal: {none_label}")
 
-st.sidebar.info("Mevcut Kanal: " + none_label)
-
-# Kanal seçimi
-if st.sidebar.button("Kanalları Yenile ve Seç"):
-    # Kanalları listele
-    client = YouTubeAPIClient(token_manager)
-    request = client.service.channels().list(part="snippet,statistics", mine=True)
-    response = request.execute()
-    
-    if response.get("items"):
-        channels = response["items"]
+# Kanal listesini yükle (API çağrısı)
+def _load_channels():
+    """Kanalları API'den çek ve session_state'e kaydet."""
+    try:
+        client = YouTubeAPIClient(token_manager, config=config)
+        channels = client.list_accessible_channels()
         channel_options = {}
         for ch in channels:
-            title = ch["snippet"]["title"]
-            ch_id = ch["id"]
-            stats = ch.get("statistics", {})
-            # Ensure integer values
-            subs = int(stats.get("subscriberCount", 0))
-            views = int(stats.get("viewCount", 0))
-            videos = int(stats.get("videoCount", 0))
-            channel_options[ch_id] = {
-                "title": title,
-                "subscribers": subs,
-                "views": views,
-                "videos": videos
+            channel_options[ch["channel_id"]] = {
+                "title": ch["title"],
+                "subscribers": ch["subscriber_count"],
+                "views": ch["view_count"],
+                "videos": ch["video_count"],
             }
-        
-        # Seçimi kaydet
         st.session_state["channel_options"] = channel_options
-        if selected_channel_id and selected_channel_id in channel_options:
-            st.session_state["selected_channel_id"] = selected_channel_id
-        elif channel_options:
-            # İlk kanalı varsayılan yap
-            first_id = list(channel_options.keys())[0]
-            st.session_state["selected_channel_id"] = first_id
-            token_manager.set_selected_channel(first_id)
-    
+        return channel_options
+    except Exception as e:
+        st.sidebar.error(f"Kanalları yükleyemedi: {str(e)[:100]}")
+        return {}
+
+if st.sidebar.button("🔄 Kanalları Yenile ve Seç"):
+    _load_channels()
     st.rerun()
 
-# Aktif channel'ı göster
+# İlk yükleme veya refresh
+if "channel_options" not in st.session_state or not st.session_state["channel_options"]:
+    _load_channels()
+
+channel_options = st.session_state.get("channel_options", {})
+
+# Aktif kanal ID'sini belirle
 if "selected_channel_id" in st.session_state:
     active_id = st.session_state["selected_channel_id"]
 else:
     active_id = selected_channel_id
 
-# Channel seçimi
-channel_options = st.session_state.get("channel_options", {})
-if not channel_options:
-    # İlk yükleme veya refresh
-    client = YouTubeAPIClient(token_manager)
-    request = client.service.channels().list(part="snippet,statistics", mine=True)
-    response = request.execute()
-    if response.get("items"):
-        channel_options = {}
-        for ch in response["items"]:
-            title = ch["snippet"]["title"]
-            ch_id = ch["id"]
-            stats = ch.get("statistics", {})
-            subs = int(stats.get("subscriberCount", 0))
-            views = int(stats.get("viewCount", 0))
-            videos = int(stats.get("videoCount", 0))
-            channel_options[ch_id] = {
-                "title": title,
-                "subscribers": subs,
-                "views": views,
-                "videos": videos
-            }
-    st.session_state["channel_options"] = channel_options
-
 # Kanal seçimi UI
-st.sidebar.subheader("Kanallar")
+st.sidebar.subheader("📺 Kanallar")
 if channel_options:
-    # Mevcut seçiliyi ön plana çıkar
     selected = st.sidebar.radio(
         "Kanal Seçiniz:",
         options=list(channel_options.keys()),
-        format_func=lambda x: channel_options[x]["title"] + " (" + str(channel_options[x]["subscribers"]) + " abone)",
+        format_func=lambda x: f"{channel_options[x]['title']} ({channel_options[x]['subscribers']} abone)",
         index=list(channel_options.keys()).index(active_id) if active_id in channel_options else 0,
-        key="channel_radio"
+        key="channel_radio",
     )
-    
+
     # Seçimi kaydet
     if selected != st.session_state.get("selected_channel_id"):
         st.session_state["selected_channel_id"] = selected
         token_manager.set_selected_channel(selected)
-        st.sidebar.success("Kanal " + channel_options[selected]["title"] + " olarak ayarlandı!")
+        st.sidebar.success(f"✅ Kanal '{channel_options[selected]['title']}' olarak ayarlandı!")
         st.rerun()
-    
+
     # Kanal bilgisini göster
     active_channel = channel_options[selected]
-    st.sidebar.success("Aktif Kanal: " + active_channel["title"])
-    st.sidebar.info("Abone: " + str(active_channel["subscribers"]))
-    st.sidebar.info("Görüntüleme: " + str(active_channel["views"]))
-    st.sidebar.info("Video: " + str(active_channel["videos"]))
+    st.sidebar.success(f"**Aktif Kanal:** {active_channel['title']}")
+    st.sidebar.info(f"👥 Abone: {active_channel['subscribers']:,}")
+    st.sidebar.info(f"👁️ Görüntüleme: {active_channel['views']:,}")
+    st.sidebar.info(f"📹 Video: {active_channel['videos']}")
 else:
-    st.sidebar.warning("Kanalları yükleyemedim! Token'ı kontrol edin.")
+    st.sidebar.warning("Kanalları yükleyemedi! Token'ı kontrol edin.")
 
 st.sidebar.markdown("---")
-if st.sidebar.button("Varsayılan Kanaalı Sıfırla"):
+if st.sidebar.button("🔄 Varsayılan Kanaalı Sıfırla"):
     token_manager.set_selected_channel(None)
-    del st.session_state["selected_channel_id"]
-    st.sidebar.success("Varsayılan kanaal ayarlandı!")
+    if "selected_channel_id" in st.session_state:
+        del st.session_state["selected_channel_id"]
+    st.sidebar.success("✅ Varsayılan kanaal ayarlandı!")
     st.rerun()
 
-# --- Ana Sayfa: İstatistik Kartları ---
-st.header("Ana Istatistikler")
+# ============================================================================
+# Ana Sayfa: İstatistik Kartları
+# ============================================================================
+st.header("📈 Ana İstatistikler")
 
-if channel_options and selected in channel_options:
-    active_channel = channel_options[selected]
-    
-    # Ana métrickartlar
+# Seçili kanal bilgilerini al
+active_channel = None
+if channel_options:
+    current_sel = st.session_state.get("selected_channel_id") or active_id
+    if current_sel in channel_options:
+        active_channel = channel_options[current_sel]
+
+if active_channel:
     col1, col2, col3 = st.columns(3)
-    
+
     with col1:
-        st.markdown("""<div class="metric-card">
-            <h3>Abone Sayısı</h3>
-            <h1>""" + str(active_channel["subscribers"]) + """</h1>
-        </div>""", unsafe_allow_html=True)
-    
+        st.markdown(
+            f"""<div class="metric-card">
+                <h3>👥 Abone Sayısı</h3>
+                <h1>{active_channel['subscribers']:,}</h1>
+            </div>""",
+            unsafe_allow_html=True,
+        )
+
     with col2:
-        st.markdown("""<div class="metric-card">
-            <h3>Görüntülenme Sayısı</h3>
-            <h1>""" + str(active_channel["views"]) + """</h1>
-        </div>""", unsafe_allow_html=True)
-    
+        st.markdown(
+            f"""<div class="metric-card">
+                <h3>👁️ Görüntülenme Sayısı</h3>
+                <h1>{active_channel['views']:,}</h1>
+            </div>""",
+            unsafe_allow_html=True,
+        )
+
     with col3:
-        st.markdown("""<div class="metric-card">
-            <h3>Video Sayısı</h3>
-            <h1>""" + str(active_channel["videos"]) + """</h1>
-        </div>""", unsafe_allow_html=True)
-    
-    # --- Grafikler ---
+        st.markdown(
+            f"""<div class="metric-card">
+                <h3>📹 Video Sayısı</h3>
+                <h1>{active_channel['videos']}</h1>
+            </div>""",
+            unsafe_allow_html=True,
+        )
+
+    # ========================================================================
+    # Grafikler (Gerçek API Verisi)
+    # ========================================================================
     st.markdown("---")
-    st.subheader("Performans Grafikleri")
-    
+    st.subheader("📊 Performans Grafikleri")
+
     col_grafik1, col_grafik2 = st.columns(2)
-    
+
     with col_grafik1:
-        # Gerçek abone sayısıyla pie chart
+        # Pie chart: Abone vs Hedef
         subs = int(active_channel["subscribers"])
-        hedef = 1000000
+        hedef = 1_000_000
         kalan = max(hedef - subs, 0)
         fig = px.pie(
             values=[subs, kalan],
             names=["Abone", "Kalan Hedef"],
-            title="Abone vs. Hedef Görevi",
-            color_discrete_sequence=["#ff0000", "#ffcccc"]
+            title="Abone vs. 1 Milyon Hedef",
+            color_discrete_sequence=["#ff0000", "#ffcccc"],
         )
         st.plotly_chart(fig, use_container_width=True)
-    
+
     with col_grafik2:
-        # Gerçek API'den son 7 günlük veri (AnalyticsReporter ile)
+        # Gerçek analiz verisi: Son 7 günlük görüntüleme
         try:
-            reporter = AnalyticsReporter(token_manager)
-            # Basit bir zaman serisi: kanal istatistiklerinden yararlan
-            # Not: Gerçek YouTube Analytics zaman serisi için get_analytics_report kullanılmalı
-            views_count = int(active_channel["views"])
-            dates = [datetime.now() - timedelta(days=x) for x in range(7)]
-            # Her gün için eşit dağılım (gerçek API verisiyle değiştirilmeli)
-            views_per_day = [max(views_count // 7, 0) for _ in range(7)]
-            
-            fig2 = go.Figure()
-            fig2.add_trace(go.Scatter(
-                x=dates,
-                y=views_per_day,
-                mode="lines+markers",
-                name="Günlük Görüntüleme",
-                line=dict(color="#ff0000", width=3)
-            ))
-            fig2.update_layout(
-                title="Son 7 Gün - Günlük Görüntüleme (Tahmini)",
-                xaxis_title="Tarih",
-                yaxis_title="Görüntüleme Sayısı",
-                height=300
+            reporter = AnalyticsReporter(token_manager, config=config)
+            bugun = datetime.now().strftime("%Y-%m-%d")
+            on_gun_once = (datetime.now() - timedelta(days=7)).strftime("%Y-%m-%d")
+            daily_views = reporter.get_daily_views(
+                start_date=on_gun_once,
+                end_date=bugun,
             )
-            st.plotly_chart(fig2, use_container_width=True)
+
+            if daily_views:
+                dates = [d["date"] for d in daily_views]
+                views = [d["views"] for d in daily_views]
+
+                fig2 = go.Figure()
+                fig2.add_trace(
+                    go.Scatter(
+                        x=dates,
+                        y=views,
+                        mode="lines+markers",
+                        name="Günlük Görüntüleme",
+                        line=dict(color="#ff0000", width=3),
+                    )
+                )
+                fig2.update_layout(
+                    title="Son 7 Gün - Günlük Görüntüleme",
+                    xaxis_title="Tarih",
+                    yaxis_title="Görüntüleme Sayısı",
+                    height=300,
+                )
+                st.plotly_chart(fig2, use_container_width=True)
+            else:
+                st.info("Analiz verisi bulunamadı.")
         except Exception as e:
-            st.error(f"Grafik verisi alınamadı: {e}")
-    
-    # --- Son Aktivite / Videolar ---
+            st.error(f"Grafik verisi alınamadı: {str(e)[:100]}")
+
+    # ========================================================================
+    # Son Aktivite / Videolar (Gerçek API)
+    # ========================================================================
     st.markdown("---")
-    st.subheader("Son Aktivite")
-    
+    st.subheader("📺 Son Aktivite")
+
     try:
-        reporter = AnalyticsReporter(token_manager)
+        reporter = AnalyticsReporter(token_manager, config=config)
         recent_videos = reporter.get_recent_videos(max_results=10)
-        
+
         if recent_videos:
             video_df = pd.DataFrame(recent_videos)
+            # Sadece mevcut sütunları seç
+            cols = [c for c in ["title", "video_id", "published_at"] if c in video_df.columns]
             st.dataframe(
-                video_df[["title", "video_id", "published_at"]],
+                video_df[cols],
                 column_config={
                     "title": "Video Başlığı",
                     "video_id": "Video ID",
-                    "published_at": "Yayın Tarihi"
+                    "published_at": "Yayın Tarihi",
                 },
                 hide_index=True,
-                use_container_width=True
+                use_container_width=True,
             )
         else:
             st.info("Henüz video bulunamadı.")
     except Exception as e:
-        st.error(f"Video listesi alınamadı: {e}")
-    
-    # --- Analytics Raporu ---
+        st.error(f"Video listesi alınamadı: {str(e)[:100]}")
+
+    # ========================================================================
+    # Video Yükleme Formu (Güvenli)
+    # ========================================================================
     st.markdown("---")
-    st.subheader("Analytics Özeti")
-    
-    if st.button("Analytics Raporunu Çalıştır"):
-        with st.spinner("Analytics verileri alınıyor..."):
+    st.subheader("📤 Video Yükle")
+
+    with st.form("upload_form", clear_on_submit=False):
+        col_up1, col_up2 = st.columns(2)
+        with col_up1:
+            video_file = st.text_input(
+                "Video Dosya Yolu",
+                placeholder="örn: videos/ornek.mp4",
+                help="Yüklenecek MP4 dosyasının tam yolu",
+            )
+            video_title = st.text_input(
+                "Video Başlığı",
+                placeholder="Video başlığını girin",
+            )
+        with col_up2:
+            video_desc = st.text_area(
+                "Açıklama",
+                placeholder="Video açıklaması",
+                height=100,
+            )
+            video_tags = st.text_input(
+                "Etiketler (virgülle ayrılmış)",
+                placeholder="kedi,köpek,test",
+            )
+
+        privacy_col1, privacy_col2 = st.columns(2)
+        with privacy_col1:
+            privacy_status = st.selectbox(
+                "Gizlilik Durumu",
+                options=["unlisted", "private", "public"],
+                index=0,
+                help="Varsayılan 'unlisted'. 'Public' yapmak için onay gereklidir.",
+            )
+        with privacy_col2:
+            confirm_public = st.checkbox(
+                "Kamuya açmayı onaylıyorum",
+                value=False,
+                disabled=(privacy_status != "public"),
+                help="'Public' seçiminde işaretlemek zorunludur.",
+            )
+
+        submit_upload = st.form_submit_button("📤 Yükle", type="primary")
+
+    if submit_upload:
+        if not video_file or not video_title:
+            st.error("❌ Lütfen video dosya yolu ve başlığını girin.")
+        else:
             try:
-                reporter = AnalyticsReporter(token_manager)
-                # Video istatistiği (son uploaded videoyu varsayalım)
-                if "video_id" in st.session_state:
-                    vid_stats = reporter.get_video_stats(st.session_state["video_id"])
-                    st.success("Analytics verileri alındı!")
-                    
-                    col_a, col_b = st.columns(2)
-                    with col_a:
-                        st.metric("Görüntülemeler", str(vid_stats.get("views", 0)))
-                    with col_b:
-                        st.metric("Beğeni", str(vid_stats.get("likes", 0)))
-                    
-                    st.info("Yorum: " + str(vid_stats.get("comments", 0)))
-                    st.info("Süre: " + vid_stats.get("duration", "Bilinmiyor"))
-                
+                tags = [t.strip() for t in video_tags.split(",") if t.strip()] if video_tags else []
+                upload_manager = UploadManager(token_manager, config=config)
+
+                with st.spinner("Video yükleniyor... Bu biraz sürebilir."):
+                    result = upload_manager.upload_short(
+                        video_path=video_file,
+                        title=video_title,
+                        description=video_desc,
+                        tags=tags,
+                        privacy_status=privacy_status,
+                        confirm_public=confirm_public,
+                    )
+
+                st.success("✅ Video başarıyla yüklendi!")
+                st.info(f"📹 Video ID: {result.get('video_id')}")
+                st.info(f"🔗 URL: {result.get('video_url')}")
+                st.info(f"🔒 Gizlilik: {result.get('status', {}).get('privacyStatus')}")
+
+                # Yüklenen videoyu session'a kaydet (analitik için)
+                st.session_state["last_uploaded_video_id"] = result.get("video_id")
+
+            except ValueError as ve:
+                st.error(f"❌ Doğrulama hatası: {ve}")
+            except FileNotFoundError as fe:
+                st.error(f"❌ Dosya bulunamadı: {fe}")
             except Exception as e:
-                st.error("Analytics hatası: " + str(e)[:100])
-    
-    # Analytics butonu
-    if st.button("Analytics Başlat", help="Seçili videoyu için detaylı analytics raporu"):
-        st.session_state["run_analytics"] = True
-    
-# --- Alt Bilgi ---
+                st.error(f"❌ Yükleme hatası: {str(e)[:200]}")
+
+    # ========================================================================
+    # Gizlilik Değiştirme (Güvenli)
+    # ========================================================================
+    st.markdown("---")
+    st.subheader("🔒 Video Gizliliği Değiştir")
+
+    with st.form("privacy_form"):
+        vid_id = st.text_input(
+            "Video ID",
+            placeholder="Değiştirilecek video ID'si",
+            value=st.session_state.get("last_uploaded_video_id", ""),
+        )
+        new_privacy = st.selectbox(
+            "Yeni Gizlilik",
+            options=["private", "unlisted", "public"],
+            index=1,
+        )
+        confirm_privacy = st.checkbox(
+            "Kamuya açmayı onaylıyorum",
+            value=False,
+            disabled=(new_privacy != "public"),
+        )
+        submit_privacy = st.form_submit_button("🔒 Değiştir")
+
+    if submit_privacy:
+        if not vid_id:
+            st.error("❌ Lütfen Video ID'si girin.")
+        else:
+            try:
+                upload_manager = UploadManager(token_manager, config=config)
+                result = upload_manager.set_privacy_status(
+                    video_id=vid_id,
+                    privacy_status=new_privacy,
+                    confirm_public=confirm_privacy,
+                )
+                st.success(
+                    f"✅ Video {vid_id} gizliliği '{result.get('privacy_status')}' olarak değiştirildi."
+                )
+            except ValueError as ve:
+                st.error(f"❌ {ve}")
+            except Exception as e:
+                st.error(f"❌ Hata: {str(e)[:200]}")
+
+    # ========================================================================
+    # Analitik Raporu
+    # ========================================================================
+    st.markdown("---")
+    st.subheader("📊 Analitik Raporu")
+
+    col_an1, col_an2 = st.columns(2)
+    with col_an1:
+        anal_start = st.date_input(
+            "Başlangıç Tarihi",
+            value=datetime.now() - timedelta(days=7),
+        )
+    with col_an2:
+        anal_end = st.date_input(
+            "Bitiş Tarihi",
+            value=datetime.now(),
+        )
+
+    if st.button("📊 Analitik Verileri Getir"):
+        try:
+            reporter = AnalyticsReporter(token_manager, config=config)
+            report = reporter.get_analytics_report(
+                start_date=anal_start.strftime("%Y-%m-%d"),
+                end_date=anal_end.strftime("%Y-%m-%d"),
+                metrics=["views", "likes", "comments", "estimatedMinutesWatched"],
+                dimensions=[],
+            )
+
+            if report.get("rows"):
+                st.success("✅ Analitik veriler alındı!")
+                total_views = sum(int(r[0]) for r in report["rows"] if len(r) > 0)
+                st.metric("Toplam Görüntüleme", f"{total_views:,}")
+                st.json(report)
+            else:
+                st.info("Belirtilen tarih aralığında veri bulunamadı.")
+        except Exception as e:
+            st.error(f"❌ Analitik hatası: {str(e)[:200]}")
+
+# ============================================================================
+# Alt Bilgi
+# ============================================================================
 st.markdown("---")
-st.caption("YouTube Profesyonel Dashboard | Versiyon 1.0")
-st.caption("Geliştirilme tarihi: " + datetime.now().strftime("%B %Y"))
+st.caption("YouTube Profesyonel Dashboard | Versiyon 2.0")
+st.caption("Geliştirilme tarihi: " + datetime.now().strftime("%d %B %Y"))
 st.caption("Google API Entegrasyonu & OAuth 2.0 Kimlik Doğrulama")
+
+if config_errors:
+    st.markdown("---")
+    st.markdown(
+        '<div class="warning-box">⚠️ <b>Güvenlik Uyarıası:</b> '
+        "YOUTUBE_CLIENT_ID ve YOUTUBE_CLIENT_SECRET ortam değişkenleri "
+        "henüz ayarlanmamış. .env.example dosyasını inceleyin.</div>",
+        unsafe_allow_html=True,
+    )

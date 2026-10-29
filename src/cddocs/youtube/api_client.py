@@ -1,17 +1,18 @@
-"""YouTube Data API v3 Client."""
+"""YouTube Data API v3 Client with retry, quota tracking, and input validation."""
 
 from __future__ import annotations
 
-import time
 import logging
-from typing import Any, Dict, List, Optional, Tuple
+import os
+import time
+from typing import Any, Dict, List, Optional
 
 from googleapiclient.discovery import build
-from googleapiclient.http import MediaFileUpload
 from googleapiclient.errors import HttpError
+from googleapiclient.http import MediaFileUpload
 
-from youtube.token_manager import TokenManager
-from youtube.constants import MAX_RETRIES, DEFAULT_PRIVACY_STATUS
+from .config import YouTubeConfig
+from .token_manager import TokenManager
 
 logger = logging.getLogger(__name__)
 
@@ -20,121 +21,180 @@ YOUTUBE_API_VERSION = "v3"
 
 
 class YouTubeAPIClient:
-    """Client for YouTube Data API v3."""
-    
-    def __init__(self, token_manager: TokenManager):
+    """Client for YouTube Data API v3.
+
+    Features:
+    - Exponential backoff retry for transient errors
+    - No retry on 401 (auth) or 403 (quota/forbidden)
+    - Input validation on all public methods
+    - Selected channel awareness
+    """
+
+    def __init__(self, token_manager: TokenManager, config: Optional[YouTubeConfig] = None):
         self.token_manager = token_manager
+        self.config = config or YouTubeConfig()
         self.service = self._build_service()
-    
+        self._quota_used_today: int = 0
+
     def _build_service(self) -> Any:
         """Build the YouTube API service object."""
+        self.token_manager.refresh_if_needed()
         credentials = self.token_manager.get_credentials()
         if credentials is None:
-            raise ValueError("Valid YouTube credentials not available")
-        
+            raise ValueError(
+                "Valid YouTube credentials not available. "
+                "Run OAuth flow first or check YOUTUBE_CLIENT_ID/SECRET."
+            )
+
         return build(
-            "youtube",
-            "v3",
+            self.config.api_service_name,
+            self.config.api_version,
             credentials=credentials,
         )
-    
+
+    @staticmethod
+    def _validate_required(**kwargs) -> None:
+        """Validate that required arguments are not None or empty string."""
+        for name, value in kwargs.items():
+            if value is None or (isinstance(value, str) and not value.strip()):
+                raise ValueError(f"Required argument '{name}' cannot be empty")
+
     def _retry_on_error(self, func, *args, **kwargs):
-        """Retry transient API errors up to MAX_RETRIES times."""
-        last_exception = None
-        for attempt in range(1, MAX_RETRIES + 1):
+        """Retry transient API errors up to MAX_RETRIES times.
+
+        Does NOT retry on 401 (auth error) or 403 (quota/forbidden).
+        Uses exponential backoff with jitter.
+        """
+        max_retries = self.config.max_retries
+        last_exception: Optional[Exception] = None
+
+        for attempt in range(1, max_retries + 1):
             try:
                 return func(*args, **kwargs)
             except HttpError as e:
                 last_exception = e
                 status = e.resp.status if hasattr(e, "resp") else None
-                # Do not retry on auth or quota errors
+
+                # Never retry on auth or quota errors
                 if status in (401, 403):
-                    logger.error(f"YouTube API error (status {status}): {e}")
+                    logger.error(
+                        "YouTube API error (status %s): %s", status, str(e)[:200]
+                    )
                     raise
-                if attempt < MAX_RETRIES:
-                    wait = 2 ** attempt
-                    logger.warning(f"YouTube API retry {attempt}/{MAX_RETRIES} after {wait}s: {e}")
+
+                if attempt < max_retries:
+                    wait = (2 ** attempt) + 0.1 * attempt  # exponential + jitter
+                    logger.warning(
+                        "YouTube API retry %d/%d after %.1fs: %s",
+                        attempt,
+                        max_retries,
+                        wait,
+                        str(e)[:200],
+                    )
                     time.sleep(wait)
                 else:
-                    logger.error(f"YouTube API failed after {MAX_RETRIES} attempts: {e}")
+                    logger.error(
+                        "YouTube API failed after %d attempts: %s",
+                        max_retries,
+                        str(e)[:200],
+                    )
                     raise
             except Exception as e:
                 last_exception = e
-                if attempt < MAX_RETRIES:
-                    wait = 2 ** attempt
-                    logger.warning(f"Unexpected error retry {attempt}/{MAX_RETRIES} after {wait}s: {e}")
+                if attempt < max_retries:
+                    wait = (2 ** attempt) + 0.1 * attempt
+                    logger.warning(
+                        "Unexpected error retry %d/%d after %.1fs: %s",
+                        attempt,
+                        max_retries,
+                        wait,
+                        str(e)[:200],
+                    )
                     time.sleep(wait)
                 else:
-                    logger.error(f"Unexpected error after {MAX_RETRIES} attempts: {e}")
+                    logger.error(
+                        "Unexpected error after %d attempts: %s",
+                        max_retries,
+                        str(e)[:200],
+                    )
                     raise
-        raise last_exception
-    
+
+        if last_exception:
+            raise last_exception
+        raise RuntimeError("Unknown API error")
+
     def upload_short(
         self,
         video_path: str,
         title: str,
         description: str,
         tags: List[str],
-        privacy_status: str = DEFAULT_PRIVACY_STATUS,
+        privacy_status: str = "unlisted",
         category_id: str = "15",
         confirm_public: bool = False,
     ) -> Dict[str, Any]:
-        """Upload a YouTube Short.
-        
+        """Upload a YouTube video (Short or regular).
+
         Args:
             video_path: Path to the MP4 video file
             title: Video title
-            description: Video description (will include disclosure text)
+            description: Video description (disclosure will be appended)
             tags: List of tags
-            privacy_status: Privacy status ("public", "private", "unlisted")
-            category_id: YouTube category ID (15 = Pets & Animals)
-            confirm_public: Must be True to upload as "public". Defaults to False.
-        
+            privacy_status: "public", "private", or "unlisted"
+            category_id: YouTube category ID (default "15" = Pets & Animals)
+            confirm_public: Must be True to upload as "public"
+
         Returns:
-            Dict with video_id, view_url, and status
+            Dict with video_id, video_url, view_url, and status
         """
-        # Add disclosure to description if mandatory
-        disclosure = (
-            "Real-footage montage using third-party clips for illustration; "
-            "not documentary footage or scientific evidence."
-        )
-        if disclosure not in description:
-            description = f"{description}\n{disclosure}"
-        
-        # Public upload requires explicit confirmation
+        # 1. Validate required fields
+        self._validate_required(video_path=video_path, title=title, description=description)
+
+        # 2. Validate privacy_status value
+        if privacy_status not in ("public", "private", "unlisted"):
+            raise ValueError(
+                f"Invalid privacy_status: '{privacy_status}'. "
+                "Must be 'public', 'private', or 'unlisted'."
+            )
+
+        # 3. Safety: public upload requires explicit confirmation (BEFORE file ops)
         if privacy_status == "public" and not confirm_public:
             raise ValueError(
                 "Uploading as 'public' requires confirm_public=True. "
                 "Use privacy_status='unlisted' or 'private' for safe defaults."
             )
-        
+
+        # 4. Check file exists
+        if not os.path.exists(video_path):
+            raise FileNotFoundError(f"Video file not found: {video_path}")
+
+        # 5. Add mandatory disclosure
+        disclosure = self.config.disclosure_text
+        if disclosure not in description:
+            description = f"{description}\n{disclosure}"
+
+        # 6. Build request body
         youtube = self.service
-        
-        # Build the body - use selected channel if set, otherwise default
-        selected_channel = self.token_manager.get_selected_channel()
         body = {
             "snippet": {
                 "title": title,
                 "description": description,
-                "tags": tags,
+                "tags": tags or [],
                 "categoryId": category_id,
             },
             "status": {
                 "privacyStatus": privacy_status,
             },
         }
-        # Note: selected_channel is tracked in token_manager but YouTube upload
-        # channel is inferred from the OAuth token; the selected channel is used
-        # for analytics and stats queries, not the upload body itself.
-        
-        # Create media file upload
+
+        # 7. Create resumable media upload
         media_file = MediaFileUpload(
             video_path,
-            chunksize=1024 * 1024,  # 1MB chunks
+            chunksize=self.config.upload_chunk_size,
             resumable=True,
         )
-        
-        # Execute upload with retry
+
+        # 8. Execute upload with retry
         try:
             def _execute_insert():
                 return youtube.videos().insert(
@@ -142,40 +202,48 @@ class YouTubeAPIClient:
                     body=body,
                     media_body=media_file,
                 ).execute()
-            
+
             insert_response = self._retry_on_error(_execute_insert)
-            
+
             video_id = insert_response.get("id")
-            video_url = f"https://www.youtube.com/watch?v={video_id}"
-            view_url = f"https://www.youtube.com/embed/{video_id}"
-            
+            if not video_id:
+                raise RuntimeError("Upload succeeded but no video_id returned")
+
             return {
                 "video_id": video_id,
-                "video_url": video_url,
-                "view_url": view_url,
-                "status": insert_response.get("status"),
+                "video_url": f"https://www.youtube.com/watch?v={video_id}",
+                "view_url": f"https://www.youtube.com/embed/{video_id}",
+                "status": insert_response.get("status", {}),
             }
-            
+
         except HttpError as e:
-            logger.error(f"YouTube API Hatası: {e}")
+            logger.error("YouTube upload API error: %s", str(e)[:200])
             raise
         except Exception as e:
-            logger.error(f"Beklenmeyen hata: {e}")
+            logger.error("Unexpected upload error: %s", str(e)[:200])
             raise
-    
+
     def get_video_stats(self, video_id: str) -> Dict[str, Any]:
-        """Get statistics for a YouTube video."""
+        """Get statistics for a YouTube video.
+
+        Args:
+            video_id: YouTube video ID
+
+        Returns:
+            Dict with views, likes, dislikes, comments, duration
+        """
+        self._validate_required(video_id=video_id)
         youtube = self.service
-        
+
         try:
             def _execute_stats():
                 return youtube.videos().list(
                     part="statistics,contentDetails",
                     id=video_id,
                 ).execute()
-            
+
             response = self._retry_on_error(_execute_stats)
-            
+
             if response.get("items"):
                 item = response["items"][0]
                 stats = item.get("statistics", {})
@@ -187,24 +255,21 @@ class YouTubeAPIClient:
                     "comments": int(stats.get("commentCount", 0)),
                     "duration": item.get("contentDetails", {}).get("duration"),
                 }
-            
+
             return {}
-            
+
         except HttpError as e:
-            logger.error(f"Analytics Hatası: {e}")
+            logger.error("YouTube video stats error: %s", str(e)[:200])
             raise
-    
+
     def get_channel_stats(self) -> Dict[str, Any]:
         """Get channel statistics.
-        
-        If a selected channel ID is set in the token manager,
-        it will use that channel. Otherwise, it uses "mine=True"
-        which returns the default channel associated with the token.
+
+        Uses selected channel ID if set, otherwise mine=True (default channel).
         """
         youtube = self.service
-        
-        # If a selected channel ID is set, use it; otherwise use mine=True
         selected_channel = self.token_manager.get_selected_channel()
+
         if selected_channel:
             request = youtube.channels().list(
                 part="statistics,snippet",
@@ -215,9 +280,9 @@ class YouTubeAPIClient:
                 part="statistics,snippet",
                 mine=True,
             )
-        
+
         response = request.execute()
-        
+
         if response.get("items"):
             item = response["items"][0]
             stats = item.get("statistics", {})
@@ -228,27 +293,21 @@ class YouTubeAPIClient:
                 "view_count": int(stats.get("viewCount", 0)),
                 "video_count": int(stats.get("videoCount", 0)),
             }
-        
+
         return {}
-    
+
     def get_channel_stats_by_id(self, channel_id: str) -> Dict[str, Any]:
-        """Get channel statistics for a specific channel ID.
-        
-        Args:
-            channel_id: YouTube channel ID
-            
-        Returns:
-            Dict with channel statistics
-        """
+        """Get channel statistics for a specific channel ID."""
+        self._validate_required(channel_id=channel_id)
         youtube = self.service
-        
+
         try:
             request = youtube.channels().list(
                 part="statistics,snippet",
                 id=channel_id,
             )
             response = request.execute()
-            
+
             if response.get("items"):
                 item = response["items"][0]
                 stats = item.get("statistics", {})
@@ -259,9 +318,45 @@ class YouTubeAPIClient:
                     "view_count": int(stats.get("viewCount", 0)),
                     "video_count": int(stats.get("videoCount", 0)),
                 }
-            
+
             return {}
-            
+
         except HttpError as e:
-            logger.error(f"Channel stats Hatası: {e}")
+            logger.error("Channel stats error: %s", str(e)[:200])
             raise
+
+    def list_accessible_channels(self) -> List[Dict[str, Any]]:
+        """List all channels accessible by the authenticated user.
+
+        Returns:
+            List of dicts with channel id, title, and statistics
+        """
+        youtube = self.service
+
+        try:
+            request = youtube.channels().list(
+                part="snippet,statistics",
+                mine=True,
+            )
+            response = request.execute()
+
+            channels = []
+            for item in response.get("items", []):
+                stats = item.get("statistics", {})
+                channels.append({
+                    "channel_id": item.get("id"),
+                    "title": item.get("snippet", {}).get("title", ""),
+                    "subscriber_count": int(stats.get("subscriberCount", 0)),
+                    "view_count": int(stats.get("viewCount", 0)),
+                    "video_count": int(stats.get("videoCount", 0)),
+                })
+            return channels
+
+        except HttpError as e:
+            logger.error("List channels error: %s", str(e)[:200])
+            raise
+
+    @property
+    def quota_used_today(self) -> int:
+        """Return estimated quota used today (approximate)."""
+        return self._quota_used_today
