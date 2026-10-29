@@ -38,6 +38,10 @@ class YouTubeConfig:
     default_privacy_status: str = "unlisted"
     default_category_id: str = "15"  # Pets & Animals
 
+    # Quota
+    daily_quota_limit: int = 10000  # YouTube default daily quota
+    quota_reset_hour: int = 0  # UTC hour when quota resets
+
     # Storage
     token_storage_path: str = "youtube_token.json"
     token_file_permissions: int = 0o600

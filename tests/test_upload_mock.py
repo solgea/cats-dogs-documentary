@@ -15,8 +15,6 @@ def test_upload_defaults_to_unlisted():
     tm.get_credentials.return_value = MagicMock()
 
     with patch("youtube.upload.YouTubeAPIClient") as MockClient:
-        # UploadManager.__init__ içinde YouTubeAPIClient oluşturuluyor,
-        # bu yüzden MockClient.return_value.upload_short'ı doğrudan yapılandırıyoruz
         MockClient.return_value.upload_short.return_value = {
             "video_id": "test_video_id",
             "video_url": "https://www.youtube.com/watch?v=test_video_id",
@@ -30,7 +28,8 @@ def test_upload_defaults_to_unlisted():
             title="Test",
             description="Desc",
             tags=["test"],
-            privacy_status="unlisted"
+            privacy_status="unlisted",
+            allow_duplicate=True,
         )
 
         assert result["video_id"] == "test_video_id"
@@ -50,6 +49,7 @@ def test_upload_public_blocked_without_confirmation():
             tags=["test"],
             privacy_status="public",
             confirm_public=False,
+            allow_duplicate=True,
         )
         assert False, "Public upload should be blocked without confirmation"
     except ValueError:
@@ -78,6 +78,7 @@ def test_upload_public_allowed_with_confirmation():
             tags=["test"],
             privacy_status="public",
             confirm_public=True,
+            allow_duplicate=True,
         )
 
         assert result["video_id"] == "test_video_public"

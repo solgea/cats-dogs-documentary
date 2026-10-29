@@ -340,32 +340,74 @@ if active_channel:
         st.error(f"Video listesi alınamadı: {str(e)[:100]}")
 
     # ========================================================================
-    # Video Yükleme Formu (Güvenli)
+    # Video Yükleme Formu (Güvenli + Ön İzleme)
     # ========================================================================
     st.markdown("---")
     st.subheader("📤 Video Yükle")
 
+    # Video dosya ön izleme
+    video_file = st.text_input(
+        "Video Dosya Yolu",
+        placeholder="örn: videos/ornek.mp4",
+        help="Yüklenecek MP4 dosyasının tam yolu",
+        key="video_file_input",
+    )
+
+    # Dosya ön izleme bilgisi
+    if video_file and os.path.exists(video_file):
+        file_size = os.path.getsize(video_file)
+        file_size_mb = file_size / (1024 * 1024)
+        file_name = os.path.basename(video_file)
+
+        col_prev1, col_prev2, col_prev3 = st.columns(3)
+        with col_prev1:
+            st.metric("📁 Dosya Adı", file_name)
+        with col_prev2:
+            st.metric("💾 Boyut", f"{file_size_mb:.2f} MB")
+        with col_prev3:
+            # Tahmini süre (MB başına ~1 dakika varsayımı, very rough)
+            est_duration = max(1, int(file_size_mb))
+            st.metric("⏱️ Tahmini Süre", f"{est_duration} dakika")
+
+        # Duplicate kontrolü
+        try:
+            upload_manager_preview = UploadManager(token_manager, config=config)
+            duplicate = upload_manager_preview._is_duplicate(video_file)
+            if duplicate:
+                st.warning(
+                    f"⚠️ Bu dosya daha önce yüklendi (Video ID: {duplicate.get('video_id')}). "
+                    "Yine de yüklemek için 'Yinelenene İzin Ver' işaretleyin."
+                )
+                st.session_state["duplicate_detected"] = True
+            else:
+                st.session_state["duplicate_detected"] = False
+        except Exception:
+            st.session_state["duplicate_detected"] = False
+
+    elif video_file:
+        st.error("❌ Dosya bulunamadı: " + video_file)
+        st.session_state["duplicate_detected"] = False
+
+    # Yükleme formu
     with st.form("upload_form", clear_on_submit=False):
         col_up1, col_up2 = st.columns(2)
         with col_up1:
-            video_file = st.text_input(
-                "Video Dosya Yolu",
-                placeholder="örn: videos/ornek.mp4",
-                help="Yüklenecek MP4 dosyasının tam yolu",
-            )
             video_title = st.text_input(
                 "Video Başlığı",
                 placeholder="Video başlığını girin",
+                key="video_title_input",
             )
         with col_up2:
             video_desc = st.text_area(
                 "Açıklama",
                 placeholder="Video açıklaması",
                 height=100,
+                key="video_desc_input",
             )
             video_tags = st.text_input(
                 "Etiketler (virgülle ayrılmış)",
                 placeholder="kedi,köpek,test",
+                key="video_tags_input",
             )
 
         privacy_col1, privacy_col2 = st.columns(2)
@@ -375,6 +417,7 @@ if active_channel:
                 options=["unlisted", "private", "public"],
                 index=0,
                 help="Varsayılan 'unlisted'. 'Public' yapmak için onay gereklidir.",
+                key="privacy_select",
             )
         with privacy_col2:
             confirm_public = st.checkbox(
@@ -382,17 +425,36 @@ if active_channel:
                 value=False,
                 disabled=(privacy_status != "public"),
                 help="'Public' seçiminde işaretlemek zorunludur.",
+                key="confirm_public_cb",
             )
+
+        allow_dup_cb = st.checkbox(
+            "Yinelenen dosyaya izin ver",
+            value=st.session_state.get("duplicate_detected", False),
+            help="Aynı dosya daha önce yüklendiyse bu işaretlemesi gerekir.",
+            key="allow_dup_cb",
+        )
 
         submit_upload = st.form_submit_button("📤 Yükle", type="primary")
 
     if submit_upload:
         if not video_file or not video_title:
             st.error("❌ Lütfen video dosya yolu ve başlığını girin.")
+        elif not os.path.exists(video_file):
+            st.error("❌ Dosya bulunamadı: " + video_file)
         else:
             try:
                 tags = [t.strip() for t in video_tags.split(",") if t.strip()] if video_tags else []
                 upload_manager = UploadManager(token_manager, config=config)
+
+                def progress_callback(uploaded: int, total: int):
+                    """Upload ilerleme geri çağrısı."""
+                    pct = int(uploaded / total * 100) if total > 0 else 0
+                    progress_bar.progress(pct)
+                    status_text.text(f"Yükleniyor: %{pct}")
+
+                progress_bar = st.progress(0)
+                status_text = st.empty()
 
                 with st.spinner("Video yükleniyor... Bu biraz sürebilir."):
                     result = upload_manager.upload_short(
@@ -402,7 +464,12 @@ if active_channel:
                         tags=tags,
                         privacy_status=privacy_status,
                         confirm_public=confirm_public,
+                        progress_callback=progress_callback,
+                        allow_duplicate=allow_dup_cb,
                     )
+
+                progress_bar.progress(100)
+                status_text.text("Tamamlandı!")
 
                 st.success("✅ Video başarıyla yüklendi!")
                 st.info(f"📹 Video ID: {result.get('video_id')}")

@@ -19,6 +19,16 @@ logger = logging.getLogger(__name__)
 YOUTUBE_API_SERVICE_NAME = "youtube"
 YOUTUBE_API_VERSION = "v3"
 
+# YouTube API v3 quota costs (approximate, per Google documentation)
+QUOTA_COSTS = {
+    "videos.insert": 1600,
+    "videos.list": 1,
+    "videos.update": 50,
+    "channels.list": 1,
+    "playlistItems.list": 1,
+    "search.list": 100,
+}
+
 
 class YouTubeAPIClient:
     """Client for YouTube Data API v3.
@@ -132,6 +142,7 @@ class YouTubeAPIClient:
         privacy_status: str = "unlisted",
         category_id: str = "15",
         confirm_public: bool = False,
+        progress_callback: Optional[callable] = None,
     ) -> Dict[str, Any]:
         """Upload a YouTube video (Short or regular).
 
@@ -143,6 +154,7 @@ class YouTubeAPIClient:
             privacy_status: "public", "private", or "unlisted"
             category_id: YouTube category ID (default "15" = Pets & Animals)
             confirm_public: Must be True to upload as "public"
+            progress_callback: Optional callback(uploaded_bytes, total_bytes)
 
         Returns:
             Dict with video_id, video_url, view_url, and status
@@ -168,12 +180,21 @@ class YouTubeAPIClient:
         if not os.path.exists(video_path):
             raise FileNotFoundError(f"Video file not found: {video_path}")
 
-        # 5. Add mandatory disclosure
+        total_size = os.path.getsize(video_path)
+
+        # 5. Report initial progress
+        if progress_callback:
+            try:
+                progress_callback(0, total_size)
+            except Exception:
+                pass  # Don't fail upload due to callback errors
+
+        # 6. Add mandatory disclosure
         disclosure = self.config.disclosure_text
         if disclosure not in description:
             description = f"{description}\n{disclosure}"
 
-        # 6. Build request body
+        # 7. Build request body
         youtube = self.service
         body = {
             "snippet": {
@@ -187,15 +208,17 @@ class YouTubeAPIClient:
             },
         }
 
-        # 7. Create resumable media upload
+        # 8. Create resumable media upload
         media_file = MediaFileUpload(
             video_path,
             chunksize=self.config.upload_chunk_size,
             resumable=True,
         )
 
-        # 8. Execute upload with retry
+        # 9. Execute upload with retry
         try:
+            self.check_quota("videos.insert")
+
             def _execute_insert():
                 return youtube.videos().insert(
                     part="snippet,status",
@@ -204,10 +227,18 @@ class YouTubeAPIClient:
                 ).execute()
 
             insert_response = self._retry_on_error(_execute_insert)
+            self.consume_quota("videos.insert")
 
             video_id = insert_response.get("id")
             if not video_id:
                 raise RuntimeError("Upload succeeded but no video_id returned")
+
+            # 10. Report final progress
+            if progress_callback:
+                try:
+                    progress_callback(total_size, total_size)
+                except Exception:
+                    pass
 
             return {
                 "video_id": video_id,
@@ -236,6 +267,8 @@ class YouTubeAPIClient:
         youtube = self.service
 
         try:
+            self.check_quota("videos.list")
+
             def _execute_stats():
                 return youtube.videos().list(
                     part="statistics,contentDetails",
@@ -243,6 +276,7 @@ class YouTubeAPIClient:
                 ).execute()
 
             response = self._retry_on_error(_execute_stats)
+            self.consume_quota("videos.list")
 
             if response.get("items"):
                 item = response["items"][0]
@@ -271,17 +305,20 @@ class YouTubeAPIClient:
         selected_channel = self.token_manager.get_selected_channel()
 
         if selected_channel:
+            self.check_quota("channels.list")
             request = youtube.channels().list(
                 part="statistics,snippet",
                 id=selected_channel,
             )
         else:
+            self.check_quota("channels.list")
             request = youtube.channels().list(
                 part="statistics,snippet",
                 mine=True,
             )
 
         response = request.execute()
+        self.consume_quota("channels.list")
 
         if response.get("items"):
             item = response["items"][0]
@@ -302,11 +339,14 @@ class YouTubeAPIClient:
         youtube = self.service
 
         try:
+            self.check_quota("channels.list")
+
             request = youtube.channels().list(
                 part="statistics,snippet",
                 id=channel_id,
             )
             response = request.execute()
+            self.consume_quota("channels.list")
 
             if response.get("items"):
                 item = response["items"][0]
@@ -334,11 +374,14 @@ class YouTubeAPIClient:
         youtube = self.service
 
         try:
+            self.check_quota("channels.list")
+
             request = youtube.channels().list(
                 part="snippet,statistics",
                 mine=True,
             )
             response = request.execute()
+            self.consume_quota("channels.list")
 
             channels = []
             for item in response.get("items", []):
@@ -360,3 +403,33 @@ class YouTubeAPIClient:
     def quota_used_today(self) -> int:
         """Return estimated quota used today (approximate)."""
         return self._quota_used_today
+
+    def check_quota(self, method_name: str) -> None:
+        """Check if there is enough quota remaining for the given API method.
+
+        Args:
+            method_name: YouTube API method name (e.g., "videos.insert")
+
+        Raises:
+            RuntimeError: If quota would be exceeded
+        """
+        cost = QUOTA_COSTS.get(method_name, 1)
+        if self._quota_used_today + cost > self.config.daily_quota_limit:
+            remaining = self.config.daily_quota_limit - self._quota_used_today
+            raise RuntimeError(
+                f"Daily quota would be exceeded. "
+                f"Needed: {cost}, Remaining: {remaining}, "
+                f"Limit: {self.config.daily_quota_limit}"
+            )
+
+    def consume_quota(self, method_name: str) -> None:
+        """Record quota usage for an API method."""
+        cost = QUOTA_COSTS.get(method_name, 1)
+        self._quota_used_today += cost
+        logger.debug(
+            "Quota consumed: %d for %s. Total today: %d/%d",
+            cost,
+            method_name,
+            self._quota_used_today,
+            self.config.daily_quota_limit,
+        )
