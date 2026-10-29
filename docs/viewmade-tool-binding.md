@@ -60,7 +60,8 @@ value can be a literal, or an exact placeholder that resolves at call time.
 
 | Placeholder | Resolves to |
 | --- | --- |
-| `$package_id` | Stable package id, suitable for an idempotency key |
+| `$package_id` | Stable package id |
+| `$operation_key` | Package id plus a short hash of the request specification; stable for identical requests, new after a material edit |
 | `$prompt` | Deterministic generation prompt built from the local request |
 | `$provider_topic` | Species-specific provider topic, falling back to the title |
 | `$script` | Narration split into 7-12 semantic lines |
@@ -71,7 +72,7 @@ value can be a literal, or an exact placeholder that resolves at call time.
 | `$narration` | Full narration |
 | `$scenes` | Scene array with visual direction |
 | `$captions` | Caption object and cues |
-| `$disclosure` | Synthetic-media disclosure |
+| `$disclosure` | Visual disclosure (real-footage by default) |
 | `$request` | The local request object |
 | `$job_id` | Provider job id for status/download |
 | `$provider_state` | Last provider state for download |

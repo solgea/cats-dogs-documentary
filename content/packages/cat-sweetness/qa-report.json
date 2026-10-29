@@ -2,7 +2,7 @@
   "schema_version": 1,
   "package_id": "cat-sweetness",
   "batch_id": "2026-10-29-cats-dogs-01",
-  "generated_at": "2026-10-29T00:03:12Z",
+  "generated_at": "2026-10-29T03:35:17Z",
   "status": "PASS",
   "publish_ready": false,
   "render_status": "NOT_RENDERED",
@@ -10,7 +10,7 @@
     "PASS": 85,
     "WARN": 0,
     "FAIL": 0,
-    "SKIP": 1
+    "SKIP": 3
   },
   "checks": [
     {
@@ -353,7 +353,7 @@
       "id": "visual.policy",
       "label": "Package carries a visual style, anatomy, welfare, and disclosure policy",
       "status": "PASS",
-      "detail": "style/anatomy/welfare/disclosure must all be present"
+      "detail": "style/anatomy/welfare/disclosure must be present and match channel policy"
     },
     {
       "id": "visual.negative_prompt",
@@ -512,6 +512,18 @@
       "detail": "not rendered yet; live ViewMade rendering is a separate gated stage"
     },
     {
+      "id": "render.attribution",
+      "label": "Rendered real-footage video credits every provider source",
+      "status": "SKIP",
+      "detail": "not rendered yet"
+    },
+    {
+      "id": "render.editorial_review",
+      "label": "Editorial review disposition is recorded",
+      "status": "SKIP",
+      "detail": "not rendered yet"
+    },
+    {
       "id": "artifacts.hashes",
       "label": "Generated artifacts were hashed for integrity",
       "status": "PASS",
@@ -531,12 +543,12 @@
     }
   ],
   "artifacts": {
-    "package.json": "e20ea121708efc3184246b13490f1ec7499681a838b1733557c80b3b7c1109fc",
+    "package.json": "e33b446dd7f8474e5d6bf779b3bd7831ac7e2d3e6f55e0d20081c28c55c0917b",
     "research.json": "185b2a90dc27aab5c4e2278518e12d7a3bd836f7b9a4496907016fa662b1259a",
-    "script.md": "3fac9e8fc525992c2486c3b2d1d493848adf91f07c947cb72131ca645e4c6945",
+    "script.md": "100c593dcea99812c51d9640b6cc013c91269cfe61725126303d2ddaf3d8c058",
     "subtitles.srt": "b1fe31919cde5354380dd544564b139f9c95932282af24938f2f0df45002c171",
-    "metadata.json": "5c63f4f79ac5f2c8f54ff78177a8252c0b0d4f87e6af2f2bbaf8314f8aeb1cc8",
-    "visual-plan.md": "9d88fe30916ee3bd1958045f0acbbcdaa600e4dbb20f85ace3be34e4dbafa5a0",
-    "viewmade-request.json": "30f1d6ed2a1120c9b2cd00769c73b77158064a3bcb8e2c51ac955075788dbf11"
+    "metadata.json": "61bf8b26884fa07afe65e112ed66dc0de96c63faff6784784d6703f3a006d43a",
+    "visual-plan.md": "6f49fc84835f8f16bcb21951bbf434a8d95c71685a9ebada8b83292788922657",
+    "viewmade-request.json": "ff227033f90bb86dbda54b904660b8cc2eec8d6706c9406c641e585ed3c5af2b"
   }
 }

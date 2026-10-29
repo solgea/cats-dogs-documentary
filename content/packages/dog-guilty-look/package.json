@@ -25,7 +25,12 @@
         "motion": "slow push-in, dog holds the look and blinks once",
         "framing": "vertical 9:16, dog's face in the upper middle third, caption-safe lower third",
         "continuity": "same dog, rug, and warm living room as every later scene; no collar changes",
-        "avoid": ["human face", "raised hand", "crying or cowering", "text overlays"]
+        "avoid": [
+          "human face",
+          "raised hand",
+          "crying or cowering",
+          "text overlays"
+        ]
       },
       "transition": "cut"
     },
@@ -41,7 +46,12 @@
         "motion": "gentle lateral slide from bowl to dog",
         "framing": "vertical 9:16, bowl in lower third, dog in middle third, clear floor space",
         "continuity": "same dog and coat markings; kitchen adjacent to the living room; bowl is brushed steel",
-        "avoid": ["food aggression", "snarling", "human face", "messy food"]
+        "avoid": [
+          "food aggression",
+          "snarling",
+          "human face",
+          "messy food"
+        ]
       },
       "transition": "cut"
     },
@@ -57,7 +67,13 @@
         "motion": "subtle handheld drift, no sudden movement",
         "framing": "vertical 9:16, dog's face centered, owner's shoulder as a soft foreground edge",
         "continuity": "same living room, rug, and dog; owner wears a plain oatmeal sweater",
-        "avoid": ["shouting", "pointing finger", "hitting", "fear grimace", "text overlays"]
+        "avoid": [
+          "shouting",
+          "pointing finger",
+          "hitting",
+          "fear grimace",
+          "text overlays"
+        ]
       },
       "transition": "cut"
     },
@@ -73,7 +89,12 @@
         "motion": "very slow rack focus from ear to eye",
         "framing": "vertical 9:16, one eye on the upper-third line, fur detail crisp",
         "continuity": "same eye color, white chest patch visible at frame edge, no collar change",
-        "avoid": ["human-like tears", "glowing eyes", "extra eyelids", "text overlays"]
+        "avoid": [
+          "human-like tears",
+          "glowing eyes",
+          "extra eyelids",
+          "text overlays"
+        ]
       },
       "transition": "cut"
     },
@@ -89,7 +110,13 @@
         "motion": "static camera, dog shifts weight and exhales",
         "framing": "vertical 9:16, full dog inside frame with space above the tail",
         "continuity": "same coat, body proportions, and rug; tail remains natural and anatomically correct",
-        "avoid": ["trembling", "urine", "cowering on back", "extra tail", "text overlays"]
+        "avoid": [
+          "trembling",
+          "urine",
+          "cowering on back",
+          "extra tail",
+          "text overlays"
+        ]
       },
       "transition": "cut"
     },
@@ -105,7 +132,12 @@
         "motion": "slow pull-back to reveal the calm room",
         "framing": "vertical 9:16, dog and hand in the lower middle third, caption-safe top",
         "continuity": "same rug, sweater, and dog; no new people or animals",
-        "avoid": ["sad music cue", "human face", "leash tugging", "text overlays"]
+        "avoid": [
+          "sad music cue",
+          "human face",
+          "leash tugging",
+          "text overlays"
+        ]
       },
       "transition": "fade out"
     }
@@ -114,49 +146,64 @@
     {
       "id": "c1",
       "text": "The 2009 study used fourteen dogs and sometimes gave owners incorrect information about whether the dog had eaten.",
-      "source_ids": ["horowitz-2009"],
+      "source_ids": [
+        "horowitz-2009"
+      ],
       "evidence_level": "peer-reviewed behavioral experiment",
       "limits": "Small sample in a controlled greeting context; the manipulation concerned owner belief, not the dog's memory."
     },
     {
       "id": "c2",
       "text": "The guilty look was associated with owner scolding, not with whether the dog had actually eaten the food.",
-      "source_ids": ["horowitz-2009"],
+      "source_ids": [
+        "horowitz-2009"
+      ],
       "evidence_level": "peer-reviewed behavioral experiment",
       "limits": "Association under experimental conditions does not prove the absence of any internal guilt experience."
     },
     {
       "id": "c3",
       "text": "The effect was stronger in dogs rated as more obedient, consistent with a response to owner cues.",
-      "source_ids": ["horowitz-2009"],
+      "source_ids": [
+        "horowitz-2009"
+      ],
       "evidence_level": "peer-reviewed behavioral experiment",
       "limits": "Obedience was based on owner ratings; the mechanism is inferred, not directly measured."
     },
     {
       "id": "c4",
       "text": "A guilty look is not reliable evidence that a dog feels guilty.",
-      "source_ids": ["horowitz-2009"],
+      "source_ids": [
+        "horowitz-2009"
+      ],
       "evidence_level": "interpretation of peer-reviewed evidence",
       "limits": "The study cannot establish what a dog feels; it tests whether the look tracks wrongdoing."
     },
     {
       "id": "c5",
       "text": "The paper describes the guilty look as lowered head, flattened ears, and a tucked tail.",
-      "source_ids": ["horowitz-2009"],
+      "source_ids": [
+        "horowitz-2009"
+      ],
       "evidence_level": "peer-reviewed behavioral description",
       "limits": "These postures can occur in other contexts and should not be read as a single emotion."
     }
   ],
   "visual_policy": {
-    "style": "Warm cinematic documentary-style illustration with natural indoor light and realistic fur.",
-    "anatomy": "One brown mixed-breed dog with a white chest patch, floppy ears, dark eyes, four sound legs, and a natural tail; keep proportions and markings identical in every scene.",
-    "welfare": "The dog is calm or mildly uncertain, never frightened, injured, punished, or physically corrected. No shouting, leash jerks, or staged distress.",
-    "continuity": "Same dog, rug, living room, kitchen, steel bowl, and oatmeal sweater throughout. The owner is shown only as hands, shoulder, or from behind.",
-    "disclosure": "Illustrative, AI-assisted visuals; not documentary footage."
+    "style": "Observational real-footage montage built from third-party pet clips, natural light, calm pacing, and species-correct behavior.",
+    "anatomy": "Every animal must be species-correct and anatomically coherent. Multiple individuals may appear across clips; reject malformed, uncanny, or merged animals.",
+    "welfare": "The dog is calm or mildly uncertain, never frightened, injured, punished, or physically corrected. No shouting, leash jerks, or staged distress. Reject any clip with staged distress, restraint, injury, aggression, or a visible watermark.",
+    "continuity": "Keep the question, tone, and caption position consistent across clips. Do not imply that different animals are the same individual. Avoid repeated or watermarked clips.",
+    "disclosure": "Real-footage montage using third-party clips for illustration; not documentary footage or scientific evidence."
   },
   "youtube": {
     "title": "The Guilty Look Isn't Guilt",
-    "hashtags": ["#Dogs", "#DogBehavior", "#AnimalScience", "#Shorts"],
+    "hashtags": [
+      "#Dogs",
+      "#DogBehavior",
+      "#AnimalScience",
+      "#Shorts"
+    ],
     "tags": [
       "dog guilty look",
       "dog behavior",

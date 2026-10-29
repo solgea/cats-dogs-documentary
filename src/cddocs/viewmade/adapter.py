@@ -7,6 +7,7 @@ templates that satisfy each tool's advertised input schema.
 """
 from __future__ import annotations
 
+import hashlib
 import json
 import os
 import re
@@ -36,6 +37,7 @@ from .mcp import MCPAuthError, MCPClient, MCPError, find_tool, tool_names
 
 ALLOWED_PLACEHOLDERS = {
     "package_id",
+    "operation_key",
     "prompt",
     "provider_topic",
     "script",
@@ -197,11 +199,22 @@ def _script_lines(narration: str, max_lines: int = 12) -> str:
     return "\n".join(" ".join(group) for group in groups)
 
 
+def _canonical_sha256(payload: Any) -> str:
+    canonical = json.dumps(payload, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
+    return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
+
+
+def _operation_key(request_payload: dict) -> str:
+    """Stable idempotency key that changes when the render specification changes."""
+    digest = _canonical_sha256(request_payload.get("request") or {})[:12]
+    return f"{request_payload.get('package_id')}-{digest}"
+
+
 def _generation_prompt(request_payload: dict) -> str:
     request = request_payload.get("request") or {}
     lines = [
         f"Create a {request.get('duration_s')} second vertical YouTube Short titled {request.get('title')!r}.",
-        f"Format: {request.get('aspect_ratio')} {request.get('resolution')}, documentary-style illustrative visuals.",
+        f"Format: {request.get('aspect_ratio')} {request.get('resolution')}, real-footage montage from third-party pet clips.",
         "Narration:",
         str(request.get("narration", "")),
         "",
@@ -218,9 +231,11 @@ def _generation_prompt(request_payload: dict) -> str:
         [
             "",
             "Requirements:",
-            "- Natural English narration, burned-in captions matching the provided cues.",
-            "- Species-correct anatomy and consistent markings; no extra limbs or malformed faces.",
-            "- No distressed animals, no staged aggression, no on-screen text artifacts, no logos.",
+            "- Preserve the supplied script wording verbatim; use natural English narration.",
+            "- Burned-in captions must match the spoken narration.",
+            "- Species-correct, anatomically coherent animals; no extra limbs or malformed faces.",
+            "- No distressed animals, no staged aggression, no on-screen text artifacts, no logos, no watermarks.",
+            "- Return every footage source and attribution line.",
             f"- Disclosure: {request.get('disclosure', '')}",
         ]
     )
@@ -372,6 +387,7 @@ class ViewMadeAdapter:
         request = request_payload.get("request") or {}
         return {
             "package_id": request_payload.get("package_id"),
+            "operation_key": _operation_key(request_payload),
             "prompt": _generation_prompt(request_payload),
             "provider_topic": request.get("provider_topic") or request.get("title"),
             "script": _script_lines(str(request.get("narration", ""))),
@@ -388,7 +404,7 @@ class ViewMadeAdapter:
             "provider_state": provider_state,
         }
 
-    def _call_bound(self, key: str, context: dict) -> Any:
+    def _bound_arguments(self, key: str, context: dict) -> tuple[dict, dict]:
         binding = self.binding()
         if not binding:
             raise ViewMadeBlocked("ViewMade tools are not bound")
@@ -398,6 +414,10 @@ class ViewMadeAdapter:
         arguments = _resolve_placeholders(entry.get("template") or {}, context)
         if not isinstance(arguments, dict):
             raise ViewMadeBlocked(f"ViewMade {key} template did not produce an object")
+        return entry, arguments
+
+    def _call_bound(self, key: str, context: dict) -> Any:
+        entry, arguments = self._bound_arguments(key, context)
         token = oauth.get_access_token(self.project, self.settings)
         client = MCPClient(
             self.config["mcp_url"],
@@ -470,6 +490,9 @@ class ViewMadeAdapter:
                 "Run `cddocs viewmade discover` and `cddocs viewmade bind` first."
             )
 
+        render_context = self._context(request_payload)
+        binding = self.binding() or {}
+        render_entry, render_arguments = self._bound_arguments("render", render_context)
         token = oauth.get_access_token(self.project, self.settings)
         client = MCPClient(
             self.config["mcp_url"],
@@ -478,15 +501,8 @@ class ViewMadeAdapter:
             connect_url=self.config["connect_url"],
         )
         client.initialize()
-        binding = self.binding() or {}
         try:
-            submit = client.call_tool(
-                str(binding["tools"]["render"]["name"]),
-                _resolve_placeholders(
-                    binding["tools"]["render"].get("template") or {},
-                    self._context(request_payload),
-                ),
-            )
+            submit = client.call_tool(str(render_entry["name"]), render_arguments)
         except MCPAuthError:
             raise
         except MCPError as exc:
@@ -511,7 +527,16 @@ class ViewMadeAdapter:
             job_id=job_id,
             submission={
                 "submitted_at": utc_now_iso(),
-                "render_tool": binding["tools"]["render"]["name"],
+                "render_tool": render_entry["name"],
+                "arguments_sha256": _canonical_sha256(render_arguments),
+                "arguments_summary": {
+                    "topic": render_arguments.get("topic"),
+                    "engine": render_arguments.get("engine"),
+                    "style": render_arguments.get("style"),
+                    "voice": render_arguments.get("voice"),
+                    "script_lines": len(str(render_arguments.get("script") or "").splitlines()),
+                    "operation_key": render_arguments.get("operation_key"),
+                },
             },
             error=None,
         )

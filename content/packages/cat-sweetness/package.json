@@ -25,7 +25,12 @@
         "motion": "slow push-in; the cat blinks once",
         "framing": "vertical 9:16, cat's face in the upper middle third, dish blurred at the bottom edge",
         "continuity": "same orange tabby, windowsill, and kitchen in every scene",
-        "avoid": ["human face", "cat eating sugar", "distorted eyes", "text overlays"]
+        "avoid": [
+          "human face",
+          "cat eating sugar",
+          "distorted eyes",
+          "text overlays"
+        ]
       },
       "transition": "cut"
     },
@@ -41,7 +46,12 @@
         "motion": "gentle tilt down from counter to bowl",
         "framing": "vertical 9:16, cat and bowl in the lower middle third, clean negative space above",
         "continuity": "same cat, kitchen, bowl, and sugar dish; no other animals",
-        "avoid": ["messy food", "food aggression", "human face", "text overlays"]
+        "avoid": [
+          "messy food",
+          "food aggression",
+          "human face",
+          "text overlays"
+        ]
       },
       "transition": "cut"
     },
@@ -57,7 +67,12 @@
         "motion": "high-speed-style slow motion, camera steady",
         "framing": "vertical 9:16, tongue and water in the lower third, one eye visible above",
         "continuity": "same tabby markings and green eye; no collar or harness",
-        "avoid": ["forked tongue", "extra whiskers", "human teeth", "text overlays"]
+        "avoid": [
+          "forked tongue",
+          "extra whiskers",
+          "human teeth",
+          "text overlays"
+        ]
       },
       "transition": "cut"
     },
@@ -73,7 +88,12 @@
         "motion": "slow orbital drift, then the incomplete form fades",
         "framing": "vertical 9:16, the two forms centered with generous negative space",
         "continuity": "same amber palette and grain as the kitchen scenes; no sudden style shift",
-        "avoid": ["readable text", "DNA double helix cliché", "medical diagram labels", "flashing lights"]
+        "avoid": [
+          "readable text",
+          "DNA double helix cliché",
+          "medical diagram labels",
+          "flashing lights"
+        ]
       },
       "transition": "cut"
     },
@@ -89,7 +109,12 @@
         "motion": "single smooth lateral follow as the cat turns away",
         "framing": "vertical 9:16, both dishes visible at the lower edges, cat centered",
         "continuity": "same counter, dishes, and cat; sugar cubes remain uneaten",
-        "avoid": ["cat eating sugar", "knocked-over dishes", "human face", "text overlays"]
+        "avoid": [
+          "cat eating sugar",
+          "knocked-over dishes",
+          "human face",
+          "text overlays"
+        ]
       },
       "transition": "cut"
     },
@@ -105,7 +130,12 @@
         "motion": "slow cross-dissolves between the three portraits",
         "framing": "vertical 9:16, each animal centered with natural habitat context",
         "continuity": "natural coat patterns, correct feline anatomy, no fantasy hybrids",
-        "avoid": ["hybrid animals", "cages", "performing animals", "text overlays"]
+        "avoid": [
+          "hybrid animals",
+          "cages",
+          "performing animals",
+          "text overlays"
+        ]
       },
       "transition": "fade out"
     }
@@ -114,49 +144,64 @@
     {
       "id": "c1",
       "text": "Domestic cats are obligate carnivores and do not prefer sweet-tasting compounds.",
-      "source_ids": ["li-2005"],
+      "source_ids": [
+        "li-2005"
+      ],
       "evidence_level": "peer-reviewed comparative genomics and behavior review",
       "limits": "Individual cats may still sample sweet foods; the claim concerns species-typical taste preference."
     },
     {
       "id": "c2",
       "text": "The cat Tas1r2 gene has a 247-base-pair deletion and premature stop codons and is an unexpressed pseudogene.",
-      "source_ids": ["li-2005"],
+      "source_ids": [
+        "li-2005"
+      ],
       "evidence_level": "peer-reviewed molecular genetics",
       "limits": "The finding is based on studied cats and taste tissue; it does not quantify every possible residual sweet response."
     },
     {
       "id": "c3",
       "text": "Tas1r3 is expressed in cat taste buds, but without functional Tas1r2 the sweet-receptor heteromer cannot form.",
-      "source_ids": ["li-2005"],
+      "source_ids": [
+        "li-2005"
+      ],
       "evidence_level": "peer-reviewed molecular genetics",
       "limits": "The receptor model is inferred from the two-part T1R2/T1R3 system established in other mammals."
     },
     {
       "id": "c4",
       "text": "The same Tas1r2 deletion and stop codons were found in six domestic cats, one tiger, and one cheetah.",
-      "source_ids": ["li-2005"],
+      "source_ids": [
+        "li-2005"
+      ],
       "evidence_level": "peer-reviewed comparative genomics",
       "limits": "Small number of individuals per wild species; the claim is about the detected variants, not every member of each species."
     },
     {
       "id": "c5",
       "text": "A cat's lack of interest in sweets is better explained by receptor biology than by pickiness.",
-      "source_ids": ["li-2005"],
+      "source_ids": [
+        "li-2005"
+      ],
       "evidence_level": "interpretation of peer-reviewed evidence",
       "limits": "Behavior is also influenced by learning, texture, smell, and familiarity; receptor loss is not the only factor."
     }
   ],
   "visual_policy": {
-    "style": "Warm, tactile food-and-science documentary illustration with macro details and one restrained abstract sequence.",
-    "anatomy": "One orange tabby with symmetrical tabby stripes, green eyes, a natural pink tongue, and correct whisker placement. The tiger and cheetah are separate, realistic felines with correct coat patterns.",
-    "welfare": "The cat eats plain meat and is never shown eating sugar, chocolate, or unsafe human food. No restraint, fear, or forced interaction.",
-    "continuity": "Same cat, kitchen, windowsill, ceramic dishes, and morning light. The abstract sequence keeps the same amber palette and grain.",
-    "disclosure": "Illustrative, AI-assisted visuals; not documentary footage."
+    "style": "Observational real-footage montage built from third-party pet clips, natural light, calm pacing, and species-correct behavior.",
+    "anatomy": "Every animal must be species-correct and anatomically coherent. Multiple individuals may appear across clips; reject malformed, uncanny, or merged animals.",
+    "welfare": "The cat eats plain meat and is never shown eating sugar, chocolate, or unsafe human food. No restraint, fear, or forced interaction. Reject any clip with staged distress, restraint, injury, aggression, or a visible watermark.",
+    "continuity": "Keep the question, tone, and caption position consistent across clips. Do not imply that different animals are the same individual. Avoid repeated or watermarked clips.",
+    "disclosure": "Real-footage montage using third-party clips for illustration; not documentary footage or scientific evidence."
   },
   "youtube": {
     "title": "Why Cats Can't Taste Sweetness",
-    "hashtags": ["#Cats", "#CatScience", "#AnimalScience", "#Shorts"],
+    "hashtags": [
+      "#Cats",
+      "#CatScience",
+      "#AnimalScience",
+      "#Shorts"
+    ],
     "tags": [
       "cats taste sweetness",
       "cat taste buds",

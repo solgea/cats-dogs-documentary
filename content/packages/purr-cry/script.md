@@ -87,4 +87,4 @@ The cry is a real acoustic feature, but it does not prove that a cat is calculat
 - **Source verification:** Read the Current Biology correspondence and its PubMed record, then checked the recording sample, playback design, acoustic measure, listener ratings, and the authors' interpretation against the DOI and PMID metadata.
 - **Myth or anecdote:** The popular story that cats deliberately fake a baby's cry to manipulate their owners. The study documents an embedded high-frequency component and a difference in human ratings, not a calculated strategy or a claim about feline intent.
 - **Human sign-off:** required before upload. This file is not a claim of human review.
-- **Disclosure:** Illustrative, AI-assisted visuals; not documentary footage.
+- **Disclosure:** Real-footage montage using third-party clips for illustration; not documentary footage or scientific evidence.

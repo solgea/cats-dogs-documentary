@@ -134,9 +134,10 @@ def build_visual_plan(package: dict, channel: dict) -> str:
             "## Welfare and authenticity review",
             "",
             "- No scene asks for fear, pain, injury, aggression, or staged distress.",
-            "- No scene presents generated imagery as archival or documentary footage.",
-            "- Species anatomy, coat markings, and body proportions must remain consistent.",
-            "- Reject any shot with extra limbs, merged faces, malformed eyes, or text artifacts.",
+            "- Real footage is illustrative B-roll, not evidence; never present a clip as an archival record of the claim.",
+            "- Every clip must show species-correct, anatomically coherent animals; reject malformed or uncanny animals.",
+            "- Reject watermarks, logos, social handles, burned-in captions, extra limbs, or merged faces.",
+            "- Credit every third-party clip source in the YouTube description.",
             "- Keep captions in the lower third and outside the main subject's face.",
             "",
         ]
@@ -227,6 +228,7 @@ def build_viewmade_request(
         "submission": None,
         "job_id": None,
         "render_path": None,
+        "editorial_review": None,
         "notes": [
             "This is a local request specification, not evidence that ViewMade accepted a job.",
             "No MCP tool name is hardcoded. The adapter uses the official discovered and bound tools.",
@@ -250,6 +252,7 @@ def build_viewmade_request(
             "normalization",
             "provider_package",
             "submission",
+            "editorial_review",
             "error",
             "updated_at",
         ):
@@ -268,6 +271,7 @@ def build_viewmade_request(
             "normalization",
             "provider_package",
             "submission",
+            "editorial_review",
         ):
             payload[key] = previous.get(key)
         payload["status"] = "STALE"

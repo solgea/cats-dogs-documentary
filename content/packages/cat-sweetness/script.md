@@ -87,4 +87,4 @@ A cat's indifference to sweets is receptor biology, not pickiness or a preferenc
 - **Source verification:** Read the open-access PLOS Genetics article and checked the gene structure, expression assays, comparative species sample, and authors' conclusion against the DOI and PubMed metadata.
 - **Myth or anecdote:** The idea that cats are simply picky or spoiled about sweets. The study identifies a broken receptor gene rather than a preference or training effect.
 - **Human sign-off:** required before upload. This file is not a claim of human review.
-- **Disclosure:** Illustrative, AI-assisted visuals; not documentary footage.
+- **Disclosure:** Real-footage montage using third-party clips for illustration; not documentary footage or scientific evidence.

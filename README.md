@@ -14,15 +14,20 @@ real MP4 has been downloaded from ViewMade and validated locally.
 | --- | --- |
 | Batch | `2026-10-29-cats-dogs-01` |
 | Packages | 6 original topics, targeted at 45 seconds and six scenes each |
+| Editorial direction | **Real-footage montage** accepted on 2026-10-29 |
 | Editorial QA | PASS for all six packages, with no batch duplicate pair at the review thresholds |
-| Render | **NOT RENDERED** |
-| ViewMade | **BLOCKED**: no OAuth token, no discovered tools, no bound tools |
+| Render | Pilot MP4 validated locally; pilot **rejected** on editorial grounds |
+| ViewMade | OAuth, discovery, and bindings complete; balance tool still returns `internal_error` |
 | Human sign-off | Required and not recorded |
 | YouTube upload | Manual only; not implemented |
 
 The source-checked batch is not publication-ready. A package-level QA result of
 `PASS` means the editorial and artifact checks did not fail. It does not mean a
-video exists or that a human approved it.
+video exists, that a human approved it, or that the provider's footage is
+licensed for publication. The pilot used entertainment/compilation clips,
+visible watermarks, multiple dogs, and a narrative that diverged from the local
+evidence record, so it must not be published. See
+[docs/viewmade-output-review.md](docs/viewmade-output-review.md).
 
 ## Quick start
 
@@ -89,7 +94,7 @@ the evidence supports, what it only suggests, and what remains unknown.
   verification verdict.
 - Narration and metadata may not contain unsupported certainty or medical-advice
   language. Visual instructions may not request distress, injury, or aggression.
-- Every package must disclose: `Illustrative, AI-assisted visuals; not documentary footage.`
+- Every package must disclose: `Real-footage montage using third-party clips for illustration; not documentary footage or scientific evidence.`
 - Subtitles must start at zero, end at the target duration, stay readable, and
   reproduce the narration.
 - Duplicate topics are checked against committed history and within the batch.
@@ -123,10 +128,14 @@ Then, only after reviewing the bindings:
 
 ```powershell
 $env:CDDOCS_LIVE_CONFIRM = "YES"
-cddocs batch render 2026-10-29-cats-dogs-01 --allow-live
+# Pilot-first: one paid render, 20 credits.
+cddocs batch render 2026-10-29-cats-dogs-01 --package cat-sweetness --allow-live
+# Only after explicit approval of that render:
+cddocs batch render 2026-10-29-cats-dogs-01 --all --allow-live
 ```
 
-Until those steps are complete, ViewMade is `BLOCKED`. See
+ViewMade is authenticated and bound, but a new paid render still requires an
+explicit `--package` selection and live confirmation. See
 [docs/viewmade-oauth.md](docs/viewmade-oauth.md),
 [docs/viewmade-tool-binding.md](docs/viewmade-tool-binding.md), and
 [docs/rendering.md](docs/rendering.md).

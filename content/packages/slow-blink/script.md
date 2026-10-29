@@ -88,4 +88,4 @@ A slow blink may be a low-pressure greeting, but it is not a guaranteed sign of 
 - **Source verification:** Read the open-access Scientific Reports paper and its PubMed record, then checked the sample sizes, exclusions, experimental conditions, behavioral measures, and the authors' caution about emotional conclusions against the DOI, PMID, and PMC metadata.
 - **Myth or anecdote:** The popular claim that a slow blink is a secret cat password that always means trust and affection. The experiments show a measurable response tendency, but the authors say firm conclusions about the cat's emotional state need more research.
 - **Human sign-off:** required before upload. This file is not a claim of human review.
-- **Disclosure:** Illustrative, AI-assisted visuals; not documentary footage.
+- **Disclosure:** Real-footage montage using third-party clips for illustration; not documentary footage or scientific evidence.

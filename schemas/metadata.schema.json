@@ -19,8 +19,11 @@
     "language",
     "visibility",
     "made_for_kids",
+    "visual_mode",
     "contains_synthetic_media",
-    "synthetic_media_disclosure",
+    "visual_disclosure",
+    "footage_provider",
+    "footage_attributions",
     "educational_disclaimer",
     "manual_upload_required",
     "duration_s",
@@ -53,7 +56,7 @@
       "type": "string",
       "minLength": 100,
       "maxLength": 5000,
-      "pattern": "Illustrative, AI-assisted visuals; not documentary footage\\."
+      "pattern": "not documentary footage"
     },
     "hashtags": {
       "type": "array",
@@ -94,12 +97,25 @@
     "made_for_kids": {
       "const": false
     },
-    "contains_synthetic_media": {
-      "const": true
+    "visual_mode": {
+      "enum": ["real_footage_montage", "ai_illustration"]
     },
-    "synthetic_media_disclosure": {
+    "contains_synthetic_media": {
+      "type": "boolean"
+    },
+    "visual_disclosure": {
       "type": "string",
       "pattern": "[Nn]ot documentary footage"
+    },
+    "footage_provider": {
+      "type": ["string", "null"]
+    },
+    "footage_attributions": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 10
+      }
     },
     "educational_disclaimer": {
       "type": "string",

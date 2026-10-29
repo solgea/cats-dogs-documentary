@@ -83,9 +83,6 @@ def _generated_files(
         max_line_chars=int(channel["format"]["subtitle_max_line_chars"]),
     )
     srt_text = format_srt(cues)
-    metadata = build_metadata(package, research, channel)
-    script = build_script(package, research, channel)
-    visual_plan = build_visual_plan(package, channel)
     previous_request = None
     previous_path = folder / "viewmade-request.json"
     if previous_path.is_file():
@@ -93,6 +90,15 @@ def _generated_files(
             previous_request = read_json(previous_path)
         except PipelineError:
             previous_request = None
+    provider_package = (previous_request or {}).get("provider_package")
+    metadata = build_metadata(
+        package,
+        research,
+        channel,
+        provider_package=provider_package if isinstance(provider_package, dict) else None,
+    )
+    script = build_script(package, research, channel)
+    visual_plan = build_visual_plan(package, channel)
     request = build_viewmade_request(
         package,
         cues,
@@ -351,6 +357,17 @@ def _write_batch_report(
 ) -> tuple[Path, dict]:
     summary = summarize_results(results)
     rendered = [result.package_id for result in results if result.render_status == "PASS"]
+    rejected: list[str] = []
+    for result in results:
+        try:
+            request = read_json(
+                project.package_path(result.package_id) / "viewmade-request.json"
+            )
+        except (PipelineError, OSError):
+            continue
+        review = request.get("editorial_review") or {}
+        if str(review.get("status") or "").upper() == "REJECTED":
+            rejected.append(result.package_id)
     if rendered and len(rendered) == len(results):
         render_gate_status = "COMPLETE"
     elif rendered:
@@ -379,7 +396,8 @@ def _write_batch_report(
         "render_gate": {
             "status": render_gate_status,
             "validated_packages": rendered,
-            "note": "Live ViewMade rendering is separate from QA. A validated MP4 is not editorial approval; only the listed packages have a local render.",
+            "rejected_packages": rejected,
+            "note": "Live ViewMade rendering is separate from QA. A validated MP4 is not editorial approval; rejected packages must not be published.",
         },
         "publishing_gate": {
             "manual_youtube_upload": True,
@@ -524,7 +542,7 @@ def _render_readme(project: Project, outcome: BatchOutcome, batch: dict) -> str:
         "",
         "1. Read `research.json` and verify every DOI/PMID link yourself.",
         "2. Watch the rendered Short end to end. Reject malformed animals or uncanny motion.",
-        "3. Confirm the visual disclosure matches the actual renderer (AI-assisted vs real footage) and add provider attribution lines when applicable.",
+        "3. Confirm the description uses the real-footage disclosure and credits every provider footage source URL; remove any AI-assisted claim.",
         "4. Upload manually as a YouTube Short (9:16). Do not let YouTube convert a horizontal file.",
         "5. Keep the visibility private until a human editor signs off.",
         "",
@@ -559,13 +577,14 @@ def _render_readme(project: Project, outcome: BatchOutcome, batch: dict) -> str:
             "",
             "## Disclosure and attribution",
             "",
-            "The checked-in metadata uses the pre-render disclosure:",
+            "The checked-in metadata uses the channel's real-footage disclosure:",
             "",
-            "> Illustrative, AI-assisted visuals; not documentary footage.",
+            "> Real-footage montage using third-party clips for illustration; "
+            "not documentary footage or scientific evidence.",
             "",
-            "This disclosure may be false for a real-footage provider render. "
-            "Reconcile it with the actual visuals before publishing, and include the "
-            "provider attribution lines in the YouTube description when required.",
+            "ViewMade renders are real third-party footage, not AI-generated "
+            "illustration. The description must credit every provider source URL. "
+            "A render without a completed attribution review is not publishable.",
             "",
         ]
     )
@@ -628,6 +647,7 @@ def render_batch(
     settings: Settings,
     poll_interval: float = 5.0,
     timeout_s: float = 900.0,
+    only_packages: list[str] | None = None,
 ) -> dict:
     """Submit only when every gate is open; never fabricate a render.
 
@@ -635,6 +655,14 @@ def render_batch(
     deferred so offline build/validate commands never need OAuth configuration.
     """
     settings.require_live_authorisation(allow_live, provider="ViewMade")
+    batch, _folder = project.load_batch(batch_id)
+    requested = list(only_packages or batch["packages"])
+    unknown = [slug for slug in requested if slug not in batch["packages"]]
+    if unknown:
+        raise PipelineError(
+            f"package(s) {unknown} are not in batch {batch_id}; expected {batch['packages']}"
+        )
+    skipped = [slug for slug in batch["packages"] if slug not in requested]
     outcome = validate_batch(project, batch_id)
     if outcome.status == "FAIL":
         raise PipelineError(
@@ -654,9 +682,8 @@ def render_batch(
             "ViewMade MCP tools are not fully bound. Run `cddocs viewmade discover` and "
             "`cddocs viewmade bind` first."
         )
-    batch, _folder = project.load_batch(batch_id)
     jobs: list[dict] = []
-    for slug in batch["packages"]:
+    for slug in requested:
         request_path = project.package_path(slug) / "viewmade-request.json"
         request = read_json(request_path)
         try:
@@ -674,6 +701,8 @@ def render_batch(
     report = {
         "batch_id": batch_id,
         "status": "COMPLETE" if jobs and all(job["status"] == "COMPLETE" for job in jobs) else "BLOCKED_OR_FAILED",
+        "requested_packages": requested,
+        "skipped_packages": skipped,
         "jobs": jobs,
     }
     write_json(project.batch_path(batch_id) / "render-report.json", report)

@@ -88,4 +88,4 @@ A dog's nose is a routing system as well as a sensor; its shape helps scent reac
 - **Source verification:** Read the open-access Journal of the Royal Society Interface paper and its PubMed record, then checked the sniff measurements, the MRI-derived model, the CFD conditions, reported airflow percentages, and the authors' functional interpretations against the DOI, PMID, and PMC metadata.
 - **Myth or anecdote:** The popular shorthand that a dog's nose is simply a super-powered detector. The study shows that nasal geometry routes air into separate streams and that each nostril samples a separate region, which is a different claim from receptor sensitivity alone.
 - **Human sign-off:** required before upload. This file is not a claim of human review.
-- **Disclosure:** Illustrative, AI-assisted visuals; not documentary footage.
+- **Disclosure:** Real-footage montage using third-party clips for illustration; not documentary footage or scientific evidence.

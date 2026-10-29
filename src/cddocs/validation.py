@@ -408,9 +408,10 @@ def validate_package(
                 _nonempty(visual_policy.get(key), 15)
                 for key in ("style", "anatomy", "welfare", "disclosure")
             )
-            and "not documentary footage" in str(visual_policy.get("disclosure", "")).lower()
+            and str(visual_policy.get("disclosure", "")).strip()
+            == str(editorial_cfg["required_disclosure"]).strip()
         ),
-        "style/anatomy/welfare/disclosure must all be present",
+        "style/anatomy/welfare/disclosure must be present and match channel policy",
     )
     add(
         "visual.negative_prompt",
@@ -657,6 +658,7 @@ def validate_package(
 
     # --- rendered artifact, if one exists ----------------------------
     render_path = None
+    request_payload = None
     request_path = folder / "viewmade-request.json"
     if request_path.is_file():
         try:
@@ -698,6 +700,94 @@ def validate_package(
             "Rendered MP4",
             "SKIP",
             "not rendered yet; live ViewMade rendering is a separate gated stage",
+        )
+
+    provider_package = (
+        request_payload.get("provider_package")
+        if isinstance(request_payload, dict)
+        else None
+    )
+    if render_path is not None and render_path.is_file():
+        provider_package = provider_package if isinstance(provider_package, dict) else {}
+        source_urls = [
+            str(source.get("url") or "").strip()
+            for source in provider_package.get("sources") or []
+            if str(source.get("url") or "").strip()
+        ]
+        attributions = [
+            str(item).strip()
+            for item in provider_package.get("attributions") or []
+            if str(item).strip()
+        ]
+        description = str((metadata or {}).get("description") or "")
+        missing_urls = [url for url in source_urls if url not in description]
+        if not source_urls:
+            add(
+                "render.attribution",
+                "Rendered real-footage video credits every provider source",
+                "FAIL",
+                "rendered package has no provider source URLs",
+            )
+        elif missing_urls:
+            add(
+                "render.attribution",
+                "Rendered real-footage video credits every provider source",
+                "FAIL",
+                "metadata description is missing footage source URLs: "
+                + ", ".join(missing_urls),
+            )
+        elif not attributions:
+            add(
+                "render.attribution",
+                "Rendered real-footage video credits every provider source",
+                "WARN",
+                "source URLs are credited, but the provider returned no attribution lines",
+            )
+        else:
+            add(
+                "render.attribution",
+                "Rendered real-footage video credits every provider source",
+                "PASS",
+                f"{len(attributions)} attribution lines and {len(source_urls)} source URLs credited",
+            )
+
+        review = request_payload.get("editorial_review") if isinstance(request_payload, dict) else None
+        review = review if isinstance(review, dict) else {}
+        review_status = str(review.get("status") or "PENDING").upper()
+        reason = str(review.get("reason") or "").strip()
+        if review_status == "APPROVED":
+            add(
+                "render.editorial_review",
+                "Editorial review disposition is recorded",
+                "PASS",
+                "APPROVED",
+            )
+        elif review_status == "REJECTED":
+            add(
+                "render.editorial_review",
+                "Editorial review disposition is recorded",
+                "PASS",
+                "REJECTED: " + (reason or "no reason recorded"),
+            )
+        else:
+            add(
+                "render.editorial_review",
+                "Editorial review disposition is recorded",
+                "WARN",
+                "no editorial review recorded; the render is not publishable",
+            )
+    else:
+        add(
+            "render.attribution",
+            "Rendered real-footage video credits every provider source",
+            "SKIP",
+            "not rendered yet",
+        )
+        add(
+            "render.editorial_review",
+            "Editorial review disposition is recorded",
+            "SKIP",
+            "not rendered yet",
         )
 
     # publish_ready is only true when there is a real render and human signoff.

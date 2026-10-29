@@ -5,9 +5,9 @@ import copy
 import unittest
 
 try:
-    from ._support import ROOT
+    from ._support import ROOT, load_json
 except ImportError:  # pragma: no cover
-    from _support import ROOT
+    from _support import ROOT, load_json
 
 from cddocs.config import Project
 from cddocs.metadata import build_metadata
@@ -31,7 +31,18 @@ class ValidationTests(unittest.TestCase):
     ):
         package = package or self.package
         research = research or self.research
-        metadata = metadata or build_metadata(package, research, self.channel)
+        provider_package = None
+        request_path = self.folder / "viewmade-request.json"
+        if request_path.is_file():
+            request_payload = load_json(request_path)
+            candidate = request_payload.get("provider_package")
+            provider_package = candidate if isinstance(candidate, dict) else None
+        metadata = metadata or build_metadata(
+            package,
+            research,
+            self.channel,
+            provider_package=provider_package,
+        )
         cues = build_cues(
             package["scenes"],
             total_duration_s=float(package["target_duration_s"]),
@@ -61,9 +72,14 @@ class ValidationTests(unittest.TestCase):
         if render_file.is_file():
             self.assertEqual(result.render_status, "PASS")
             self.assertEqual(checks["render.artifact"].status, "PASS")
+            self.assertEqual(checks["render.attribution"].status, "PASS")
+            self.assertEqual(checks["render.editorial_review"].status, "PASS")
+            self.assertIn("REJECTED", checks["render.editorial_review"].detail)
         else:
             self.assertEqual(result.render_status, "NOT_RENDERED")
             self.assertEqual(checks["render.artifact"].status, "SKIP")
+            self.assertEqual(checks["render.attribution"].status, "SKIP")
+            self.assertEqual(checks["render.editorial_review"].status, "SKIP")
         summary = summarize_results([result])
         self.assertEqual(summary["status"], "PASS")
         self.assertFalse(summary["publish_ready"])
@@ -98,7 +114,42 @@ class ValidationTests(unittest.TestCase):
         self.assertEqual(result.status, "FAIL")
         check = next(check for check in result.checks if check.id == "metadata.valid")
         self.assertEqual(check.status, "FAIL")
-        self.assertIn("synthetic-media disclosure", check.detail)
+        self.assertIn("required visual disclosure", check.detail)
+
+    def test_real_footage_ai_assisted_claim_fails(self) -> None:
+        metadata = build_metadata(
+            self.package,
+            self.research,
+            self.channel,
+            provider_package=load_json(
+                self.folder / "viewmade-request.json"
+            ).get("provider_package"),
+        )
+        metadata["description"] += "\nIllustrative, AI-assisted visuals; not documentary footage."
+        result = self._validate(metadata=metadata)
+        self.assertEqual(result.status, "FAIL")
+        check = next(check for check in result.checks if check.id == "metadata.valid")
+        self.assertEqual(check.status, "FAIL")
+        self.assertIn("must not claim AI-assisted", check.detail)
+
+    def test_missing_footage_source_url_fails_attribution(self) -> None:
+        request = load_json(self.folder / "viewmade-request.json")
+        provider_package = request.get("provider_package") or {}
+        render_file = self.project.root / "renders" / "dog-guilty-look.mp4"
+        if not render_file.is_file():
+            self.skipTest("no local pilot render to attribute")
+        metadata = build_metadata(
+            self.package,
+            self.research,
+            self.channel,
+            provider_package=provider_package,
+        )
+        url = provider_package["sources"][0]["url"]
+        metadata["description"] = metadata["description"].replace(url, "")
+        result = self._validate(metadata=metadata)
+        check = next(check for check in result.checks if check.id == "render.attribution")
+        self.assertEqual(check.status, "FAIL")
+        self.assertIn(url, check.detail)
 
     def test_visual_distress_term_fails(self) -> None:
         package = copy.deepcopy(self.package)

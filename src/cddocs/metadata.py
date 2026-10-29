@@ -45,10 +45,39 @@ def citation(source: dict) -> str:
     return " ".join(pieces)
 
 
-def build_metadata(package: dict, research: dict, channel: dict) -> dict:
+def _footage_attributions(provider_package: dict | None) -> list[str]:
+    if not provider_package:
+        return []
+    attributions = [
+        str(item).strip()
+        for item in provider_package.get("attributions") or []
+        if str(item).strip()
+    ]
+    if attributions:
+        return attributions
+    lines: list[str] = []
+    for source in provider_package.get("sources") or []:
+        title = str(source.get("title") or "").strip()
+        url = str(source.get("url") or "").strip()
+        if title and url:
+            lines.append(f"{title} — {url}")
+        elif url:
+            lines.append(url)
+    return lines
+
+
+def build_metadata(
+    package: dict,
+    research: dict,
+    channel: dict,
+    *,
+    provider_package: dict | None = None,
+) -> dict:
     youtube = package.get("youtube") or {}
     editorial = channel["editorial"]
     format_cfg = channel["format"]
+    visual_mode = str((channel.get("visual") or {}).get("mode") or "real_footage_montage")
+    contains_synthetic_media = bool(editorial.get("contains_synthetic_media", False))
 
     title = str(youtube.get("title") or package.get("title") or "").strip()
     central_fact = normalise_whitespace(str(package.get("central_fact", "")))
@@ -66,12 +95,17 @@ def build_metadata(package: dict, research: dict, channel: dict) -> dict:
     sources = research.get("sources") or []
     citations = [citation(source) for source in sources]
     source_lines = "\n".join(f"- {item}" for item in citations)
+    footage = _footage_attributions(provider_package)
+    footage_block = ""
+    if footage:
+        footage_block = "Footage:\n" + "\n".join(f"- {item}" for item in footage) + "\n\n"
     hashtag_line = " ".join(hashtags)
 
     description = (
         f"{central_fact}\n\n"
         f"{takeaway}\n\n"
         f"Sources:\n{source_lines}\n\n"
+        f"{footage_block}"
         f"{editorial['required_disclosure']} "
         f"{editorial['educational_disclaimer']}\n\n"
         f"{hashtag_line}"
@@ -93,8 +127,11 @@ def build_metadata(package: dict, research: dict, channel: dict) -> dict:
         "language": channel.get("language", "en"),
         "visibility": str(youtube.get("visibility") or channel["publishing"]["visibility_default"]),
         "made_for_kids": bool(channel["publishing"]["made_for_kids"]),
-        "contains_synthetic_media": True,
-        "synthetic_media_disclosure": editorial["required_disclosure"],
+        "visual_mode": visual_mode,
+        "contains_synthetic_media": contains_synthetic_media,
+        "visual_disclosure": editorial["required_disclosure"],
+        "footage_provider": "viewmade" if provider_package else None,
+        "footage_attributions": footage,
         "educational_disclaimer": editorial["educational_disclaimer"],
         "manual_upload_required": bool(channel["publishing"]["manual_upload"]),
         "duration_s": package.get("target_duration_s"),
@@ -148,8 +185,24 @@ def validate_metadata(metadata: dict, package: dict, research: dict, channel: di
             f"metadata description is {len(description)} chars (max {editorial['max_description_chars']})"
         )
     disclosure = editorial["required_disclosure"]
+    visual_mode = str((channel.get("visual") or {}).get("mode") or "real_footage_montage")
+    expected_synthetic = bool(editorial.get("contains_synthetic_media", False))
     if disclosure.lower() not in description.lower():
-        issues.append("metadata description is missing the synthetic-media disclosure")
+        issues.append("metadata description is missing the required visual disclosure")
+    if metadata.get("visual_disclosure") != disclosure:
+        issues.append("metadata visual_disclosure does not match channel policy")
+    if metadata.get("visual_mode") != visual_mode:
+        issues.append("metadata visual_mode does not match channel policy")
+    if metadata.get("contains_synthetic_media") is not expected_synthetic:
+        issues.append(
+            "metadata contains_synthetic_media does not match channel policy "
+            f"(expected {expected_synthetic})"
+        )
+    if not expected_synthetic and "ai-assisted" in description.lower():
+        issues.append("real-footage metadata must not claim AI-assisted visuals")
+    if editorial.get("visual_attribution_required"):
+        if not isinstance(metadata.get("footage_attributions"), list):
+            issues.append("metadata footage_attributions must be a list")
     if editorial["educational_disclaimer"].lower() not in description.lower():
         issues.append("metadata description is missing the educational disclaimer")
     if not re.search(r"(?im)^sources:\s*$", description):
@@ -183,8 +236,6 @@ def validate_metadata(metadata: dict, package: dict, research: dict, channel: di
         issues.append("metadata visibility must be private, unlisted, or public")
     if metadata.get("made_for_kids") is not False:
         issues.append("metadata made_for_kids must be false for this channel")
-    if metadata.get("contains_synthetic_media") is not True:
-        issues.append("metadata must disclose synthetic media")
     if metadata.get("duration_s") != package.get("target_duration_s"):
         issues.append("metadata duration does not match the package target duration")
     if metadata.get("aspect_ratio") != format_cfg["aspect_ratio"]:

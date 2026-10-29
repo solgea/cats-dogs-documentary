@@ -18,17 +18,20 @@ Do not upload until all of the following are true:
 - [ ] A human has watched the entire render, including the last frame and audio.
 - [ ] Every source has been opened and checked against the citation.
 - [ ] The narration matches the final audio; no line was changed during rendering.
-- [ ] The generated animal anatomy is coherent. Reject extra limbs, tails, ears,
-      eyes, merged hands, impossible gaits, or uncanny mouth motion.
+- [ ] Every animal on screen is anatomically coherent and species-correct. Reject
+      extra limbs, tails, ears, eyes, merged bodies, impossible gaits, or uncanny
+      mouth motion.
 - [ ] No scene manufactures distress, punishment, aggression, or a false "guilty"
       or "sad" emotion for engagement.
-- [ ] The visual disclosure matches the actual renderer: use the AI-assisted
-      disclosure only for AI-assisted visuals; use the provider attribution lines
-      and an accurate real-footage description for a stock/archival montage.
-- [ ] The description carries the educational disclaimer, `Sources:` section, and
-      `#Shorts`.
+- [ ] The description uses the real-footage disclosure:
+      `Real-footage montage using third-party clips for illustration; not documentary footage or scientific evidence.`
+      It must not claim AI-assisted visuals.
+- [ ] The description carries the educational disclaimer, `Sources:` section,
+      `Footage:` section, and `#Shorts`.
 - [ ] When ViewMade produced the render, its `sources` and `attributions` have
-      been reviewed and the required attribution lines are in the description.
+      been reviewed and every source URL is in the description.
+- [ ] The provider clips are permitted for this channel's use. Attribution is not
+      a licence; if the rights are unclear, do not upload.
 - [ ] The title is accurate and under the length limit.
 - [ ] Human editorial sign-off has been recorded in the team's approval record.
 
@@ -52,10 +55,10 @@ and update the pipeline deliberately if a sign-off workflow is added.
 6. Check the Shorts preview, captions, audio mix, and end card.
 7. Do not add a claim, source, quote, statistic, or medical instruction that is
    absent from the reviewed package.
-8. If YouTube requires a synthetic/altered-content disclosure, follow the current
-   platform UI. Use `Illustrative, AI-assisted visuals; not documentary footage.`
-   only when the render is actually AI-assisted. A ViewMade real-footage montage
-   must not carry that claim; use accurate attribution instead.
+8. The channel's current mode is real footage. Do not tick a synthetic/altered
+   media disclosure for a ViewMade render, and do not use the old AI-assisted
+   sentence. If the channel later switches back to an AI renderer, change the
+   channel config and regenerate metadata first.
 9. Upload manually. Do not automate the final publish action.
 
 ## After upload
@@ -88,6 +91,8 @@ notes:
 - **Wrong citation:** stop, fix the source/claim, rebuild, re-render if narration
   changed, and review again.
 - **Malformed animal:** reject the render. Do not publish a "close enough" shot.
+- **Watermark, logo, or social handle:** reject the render. Do not crop or blur a
+  watermark and call the clip clean.
 - **Audio/caption mismatch:** fix the request and re-render; do not patch captions
   only in YouTube if the burned-in text is wrong.
 - **Overclaim or medical advice:** rewrite the narration and metadata, re-run QA,

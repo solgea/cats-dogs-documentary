@@ -6,8 +6,9 @@
   "voice": "atlas",
   "narration_pace": "standard",
   "music_mood": "auto",
-  "style_hint": "Calm, evidence-led documentary tone; natural light, realistic fur, species-correct anatomy, no staged distress.",
+  "style_hint": "Observational real pet footage, natural light, calm behavior; no staged distress, watermarks, logos, or on-screen text.",
   "sound_effects": "off",
+  "engine": "clearcut",
   "speech": "standard",
-  "operation_key": "$package_id"
+  "operation_key": "$operation_key"
 }

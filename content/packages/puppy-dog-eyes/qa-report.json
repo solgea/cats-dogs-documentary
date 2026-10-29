@@ -2,7 +2,7 @@
   "schema_version": 1,
   "package_id": "puppy-dog-eyes",
   "batch_id": "2026-10-29-cats-dogs-01",
-  "generated_at": "2026-10-29T00:03:12Z",
+  "generated_at": "2026-10-29T03:35:17Z",
   "status": "PASS",
   "publish_ready": false,
   "render_status": "NOT_RENDERED",
@@ -10,7 +10,7 @@
     "PASS": 85,
     "WARN": 0,
     "FAIL": 0,
-    "SKIP": 1
+    "SKIP": 3
   },
   "checks": [
     {
@@ -353,7 +353,7 @@
       "id": "visual.policy",
       "label": "Package carries a visual style, anatomy, welfare, and disclosure policy",
       "status": "PASS",
-      "detail": "style/anatomy/welfare/disclosure must all be present"
+      "detail": "style/anatomy/welfare/disclosure must be present and match channel policy"
     },
     {
       "id": "visual.negative_prompt",
@@ -512,6 +512,18 @@
       "detail": "not rendered yet; live ViewMade rendering is a separate gated stage"
     },
     {
+      "id": "render.attribution",
+      "label": "Rendered real-footage video credits every provider source",
+      "status": "SKIP",
+      "detail": "not rendered yet"
+    },
+    {
+      "id": "render.editorial_review",
+      "label": "Editorial review disposition is recorded",
+      "status": "SKIP",
+      "detail": "not rendered yet"
+    },
+    {
       "id": "artifacts.hashes",
       "label": "Generated artifacts were hashed for integrity",
       "status": "PASS",
@@ -531,12 +543,12 @@
     }
   ],
   "artifacts": {
-    "package.json": "f1bd290f90a49a6f6d550af22b7d12183e15d48012dd999e6a94dd604687a0de",
+    "package.json": "b4cb22452ceaf8c89009a188295bd805a7bb4b6c147139cf0146649584982bbb",
     "research.json": "6e982531f9f768536933c486ad6dc23959cd20d5b10bdaa5350a29b21c4983e2",
-    "script.md": "7eaaf42d18fd73ad45f637f0a4576cb7cb7525f4baacd0fdb2e9b8d2ed63b192",
+    "script.md": "5f98010b547853c8a7fd31cfe2b5231d0ae36b216a808774c4c35c651c58d5b1",
     "subtitles.srt": "00bcf4ab9627b8c5f00f098faa42a20c30d95310a7685df164a7cd4384b0e419",
-    "metadata.json": "6aac25b917a6b05589e634a9b13162cc4d9d3f674f5c5cbc42892c47a016002c",
-    "visual-plan.md": "18053dea24536ae3933a25e0548ad62b3e4abd84822ab74617070a36b48aeb0a",
-    "viewmade-request.json": "e61b95358238f9782d59925e290fd306862a916b6f62567e01be5408f46bbee1"
+    "metadata.json": "7e0d90c56e7ddc341c086939c4b0dce66e3c71dc04fd7c8d35b80267cd904456",
+    "visual-plan.md": "0954f59783901727622256f2bdc1ac552682389f850cd9b7e82c7329245470cd",
+    "viewmade-request.json": "135a925fa3053fe995c779e31f63d9e080ad5282f1bf51e6cf3b304b53eb2e06"
   }
 }

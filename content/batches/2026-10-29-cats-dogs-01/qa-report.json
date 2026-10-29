@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "batch_id": "2026-10-29-cats-dogs-01",
-  "generated_at": "2026-10-29T00:03:12Z",
+  "generated_at": "2026-10-29T03:35:17Z",
   "mode": "validate",
   "status": "PASS",
   "summary": {
@@ -25,7 +25,7 @@
       "id": "dog-guilty-look",
       "status": "PASS",
       "counts": {
-        "PASS": 86,
+        "PASS": 88,
         "WARN": 0,
         "FAIL": 0,
         "SKIP": 0
@@ -41,7 +41,7 @@
         "PASS": 85,
         "WARN": 0,
         "FAIL": 0,
-        "SKIP": 1
+        "SKIP": 3
       },
       "render_status": "NOT_RENDERED",
       "publish_ready": false,
@@ -54,7 +54,7 @@
         "PASS": 85,
         "WARN": 0,
         "FAIL": 0,
-        "SKIP": 1
+        "SKIP": 3
       },
       "render_status": "NOT_RENDERED",
       "publish_ready": false,
@@ -67,7 +67,7 @@
         "PASS": 87,
         "WARN": 0,
         "FAIL": 0,
-        "SKIP": 1
+        "SKIP": 3
       },
       "render_status": "NOT_RENDERED",
       "publish_ready": false,
@@ -80,7 +80,7 @@
         "PASS": 85,
         "WARN": 0,
         "FAIL": 0,
-        "SKIP": 1
+        "SKIP": 3
       },
       "render_status": "NOT_RENDERED",
       "publish_ready": false,
@@ -93,7 +93,7 @@
         "PASS": 87,
         "WARN": 0,
         "FAIL": 0,
-        "SKIP": 1
+        "SKIP": 3
       },
       "render_status": "NOT_RENDERED",
       "publish_ready": false,
@@ -106,7 +106,10 @@
     "validated_packages": [
       "dog-guilty-look"
     ],
-    "note": "Live ViewMade rendering is separate from QA. A validated MP4 is not editorial approval; only the listed packages have a local render."
+    "rejected_packages": [
+      "dog-guilty-look"
+    ],
+    "note": "Live ViewMade rendering is separate from QA. A validated MP4 is not editorial approval; rejected packages must not be published."
   },
   "publishing_gate": {
     "manual_youtube_upload": true,

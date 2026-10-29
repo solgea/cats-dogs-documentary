@@ -3,7 +3,7 @@
   "package_id": "dog-guilty-look",
   "provider": "viewmade",
   "provider_endpoint": "https://mcp.viewmade.com/mcp",
-  "status": "COMPLETE",
+  "status": "STALE",
   "submission_allowed": false,
   "blocked_reason": null,
   "preflight": {
@@ -242,9 +242,9 @@
     },
     "voice": "natural English narration, warm and measured",
     "music": "subtle, low, non-distracting documentary bed",
-    "visual_style": "Cinematic documentary-style illustration with natural light, realistic fur, species-correct anatomy, and calm, non-staged behavior.",
-    "negative_prompt": "No extra limbs, no extra ears, no extra tails, no distorted eyes, no human hands merging with fur, no text artifacts, no logos, no watermarks, no photorealistic claim of archival footage, no distressed animals, no staged aggression.",
-    "disclosure": "Illustrative, AI-assisted visuals; not documentary footage.",
+    "visual_style": "Observational real-footage montage from third-party pet clips, with natural light, calm pacing, species-correct behavior, and no watermarks or on-screen text.",
+    "negative_prompt": "No extra limbs, no extra ears, no extra tails, no distorted eyes, no malformed or merged animals, no text artifacts, no logos, no watermarks, no social handles, no distressed animals, no staged aggression, no implied documentary evidence.",
+    "disclosure": "Real-footage montage using third-party clips for illustration; not documentary footage or scientific evidence.",
     "output": {
       "container": "mp4",
       "width": 1080,
@@ -256,10 +256,17 @@
   "submission": null,
   "job_id": "f59f8a91-7b2b-4dbb-a03d-62effc911581",
   "render_path": "renders/dog-guilty-look.mp4",
+  "editorial_review": {
+    "status": "REJECTED",
+    "reviewed_at": "2026-10-29T03:33:17Z",
+    "reviewer": "channel owner",
+    "reason": "Rejected for publication: the provider used entertainment/compilation clips, multiple dogs, and visible watermarks, and the narrative diverged from the local evidence record."
+  },
   "notes": [
     "This is a local request specification, not evidence that ViewMade accepted a job.",
     "No MCP tool name is hardcoded. The adapter uses the official discovered and bound tools.",
-    "A render is COMPLETE only after the downloaded MP4 passes local media validation."
+    "A render is COMPLETE only after the downloaded MP4 passes local media validation.",
+    "Existing job and render were preserved as STALE after a request change."
   ],
   "provider_state": "ready",
   "render_sha256": "ac8ab8917d71d22548077d12fe6f0c535878ff709abd3fd41375b8b1b41e2f61",
@@ -322,6 +329,5 @@
     "credits_refunded": 0,
     "net_credits": 20
   },
-  "error": null,
-  "updated_at": "2026-10-28T23:50:27Z"
+  "error": "request specification changed after the provider job; the existing render is stale and must not be published"
 }

@@ -8,9 +8,9 @@ sources and attribution lines. Ready jobs inspected in the connected account
 were 1440x2560, 45–49 seconds, with 17–21 scenes assembled from multiple YouTube
 clips.
 
-This is not the same artifact described by the local package plan:
+This is not the same artifact described by the previous local package plan:
 
-| Local package plan | ViewMade output |
+| Previous local plan | ViewMade output |
 | --- | --- |
 | 1080x1920 | 1440x2560 (normalized locally to 1080x1920) |
 | Six planned scenes | 17–21 edited scenes |
@@ -65,15 +65,16 @@ the local six-scene, continuous-subject, species-correct visual plan. The
 burned-in captions are word-by-word and change too quickly for comfortable
 reading; the local SRT was not used.
 
-The current metadata disclosure (“Illustrative, AI-assisted visuals; not
-documentary footage.”) is false for this output, because the pilot uses real
-third-party footage. It must not be published unchanged.
+The old metadata disclosure (“Illustrative, AI-assisted visuals; not documentary
+footage.”) was false for this output because the pilot uses real third-party
+footage. The channel policy has since been changed to the real-footage disclosure,
+and this pilot is marked `REJECTED`; it must not be published.
 
 ## Consequences
 
-1. **Do not call a real-footage render "AI-assisted."** The local metadata
-   disclosure is part of the pre-render plan, not proof of the provider's visual
-   provenance. Reconcile the disclosure after inspecting the finished video.
+1. **Do not call a real-footage render "AI-assisted."** The channel now uses the
+   real-footage disclosure by default, and QA rejects an AI-assisted claim in
+   real-footage metadata.
 2. **Attribution lines are mandatory.** The provider returns `sources` and
    `attributions`. YouTube publication must include the attribution lines in the
    description.
@@ -85,16 +86,20 @@ third-party footage. It must not be published unchanged.
 5. **`COMPLETE` means the file exists and passes media checks.** It does not mean
    the video is editorially approved or publication-ready.
 
-## Decision required before publishing
+## Decision recorded: 2026-10-29
 
-Choose one editorial direction:
+The channel owner chose **real-footage montage** as the channel format.
 
-- **Accept real-footage montage:** update the channel standard, metadata
-  disclosure, and QA gates to require source attributions and allow multiple
-  animals; then review each render frame by frame.
-- **Keep continuous-subject illustrative visuals:** do not publish ViewMade
-  footage as the final video. Use ViewMade for research or a rough cut, and use
-  a renderer that supports a fixed character and the local shot plan.
+- The pilot is **rejected for publication** because of entertainment/compilation
+  sources, multiple dogs, visible watermarks, and a narrative that diverges from
+  the local evidence record.
+- The channel disclosure, visual policy, metadata schema, and QA gates now use a
+  real-footage standard and require every provider source URL in the description.
+- The next step is one new pilot from a single package, using the local script
+  and `engine: clearcut`. The remaining packages stay unrendered until that pilot
+  is reviewed.
+- Attribution is not a licence. A human must confirm the provider's clip rights
+  before publication.
 
-Until that decision is recorded, the batch remains `NOT_RENDERED` or
-`COMPLETE` but never `publish_ready`.
+The batch remains `PARTIAL` with one validated MP4 and one rejected package; it
+is never `publish_ready` without a future approved render and human sign-off.

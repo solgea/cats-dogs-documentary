@@ -118,6 +118,13 @@ def cmd_batch_package(args: argparse.Namespace) -> int:
 def cmd_batch_render(args: argparse.Namespace) -> int:
     project = _open_project(args)
     settings = Settings.from_env(project)
+    if not args.only_package and not args.all_packages:
+        print(
+            "Refusing to render: specify --package <slug> for one pilot or --all "
+            "to authorise a paid render for every package in the batch.",
+            file=sys.stderr,
+        )
+        return 2
     try:
         report = render_batch(
             project,
@@ -126,6 +133,7 @@ def cmd_batch_render(args: argparse.Namespace) -> int:
             settings=settings,
             poll_interval=args.poll_interval,
             timeout_s=args.timeout,
+            only_packages=[args.only_package] if args.only_package else None,
         )
     except ViewMadeBlocked as exc:
         print(f"BLOCKED: {exc}", file=sys.stderr)
@@ -462,6 +470,13 @@ def build_parser() -> argparse.ArgumentParser:
     batch_package.set_defaults(func=cmd_batch_package)
     batch_render = batch_sub.add_parser("render", help="Submit to ViewMade through bound official MCP tools")
     batch_render.add_argument("batch_id")
+    batch_render.add_argument("--package", dest="only_package", help="Render one package only (pilot-first)")
+    batch_render.add_argument(
+        "--all",
+        dest="all_packages",
+        action="store_true",
+        help="Authorise a paid render for every package in the batch",
+    )
     batch_render.add_argument("--allow-live", action="store_true")
     batch_render.add_argument("--poll-interval", type=float, default=5.0)
     batch_render.add_argument("--timeout", type=float, default=900.0)

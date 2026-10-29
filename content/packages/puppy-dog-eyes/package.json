@@ -25,7 +25,12 @@
         "motion": "slow push-in; the dog's inner brows lift slightly",
         "framing": "vertical 9:16, eyes on the upper-third line, caption-safe lower third",
         "continuity": "same dog, coat, and warm home setting throughout",
-        "avoid": ["human face", "tears", "whimpering", "text overlays"]
+        "avoid": [
+          "human face",
+          "tears",
+          "whimpering",
+          "text overlays"
+        ]
       },
       "transition": "cut"
     },
@@ -41,7 +46,12 @@
         "motion": "very slow lateral drift, shallow focus",
         "framing": "vertical 9:16, eye in the center, brow near the top third",
         "continuity": "same eye color, white chest fur at frame edge, same lighting direction",
-        "avoid": ["anatomical cutaway", "blood", "needles", "text overlays"]
+        "avoid": [
+          "anatomical cutaway",
+          "blood",
+          "needles",
+          "text overlays"
+        ]
       },
       "transition": "cut"
     },
@@ -57,7 +67,13 @@
         "motion": "almost still; slight breathing and ear movement",
         "framing": "vertical 9:16 split horizontally, dog above wolf, each face in its own half",
         "continuity": "dog matches previous scenes; wolf has natural gray coat and yellow eyes",
-        "avoid": ["dissection", "wounds", "cages", "growling", "text overlays"]
+        "avoid": [
+          "dissection",
+          "wounds",
+          "cages",
+          "growling",
+          "text overlays"
+        ]
       },
       "transition": "cut"
     },
@@ -73,7 +89,12 @@
         "motion": "gentle handheld observation, no sudden moves",
         "framing": "vertical 9:16, dog centered behind the gate, visitor's shoulder at the edge",
         "continuity": "same dog and coat; kennel is clean, dry, and calm",
-        "avoid": ["crying dog", "barred cage close-up", "human face", "text overlays"]
+        "avoid": [
+          "crying dog",
+          "barred cage close-up",
+          "human face",
+          "text overlays"
+        ]
       },
       "transition": "cut"
     },
@@ -89,7 +110,12 @@
         "motion": "slow dolly-in toward the dog's face",
         "framing": "vertical 9:16, dog's face in the middle third, owner's hand in the lower third",
         "continuity": "same dog, living room, and oatmeal sweater as the opening",
-        "avoid": ["sad music cue", "tears", "owner looming", "text overlays"]
+        "avoid": [
+          "sad music cue",
+          "tears",
+          "owner looming",
+          "text overlays"
+        ]
       },
       "transition": "cut"
     },
@@ -105,7 +131,12 @@
         "motion": "slow pull-back and one cross-dissolve",
         "framing": "vertical 9:16, dog in the lower middle third, open space above",
         "continuity": "same rug and dog; wolf remains a distant separate animal, not a hybrid",
-        "avoid": ["hybrid animals", "howling", "cages", "text overlays"]
+        "avoid": [
+          "hybrid animals",
+          "howling",
+          "cages",
+          "text overlays"
+        ]
       },
       "transition": "fade out"
     }
@@ -114,49 +145,64 @@
     {
       "id": "c1",
       "text": "The levator anguli oculi medialis muscle was consistently present in the dogs dissected and was not present as a separate muscle in the wolves.",
-      "source_ids": ["kaminski-2019"],
+      "source_ids": [
+        "kaminski-2019"
+      ],
       "evidence_level": "peer-reviewed comparative anatomy",
       "limits": "Four wolves and six dogs were dissected; one husky specimen lacked a locatable LAOM, and the sample is small."
     },
     {
       "id": "c2",
       "text": "Dogs produced the inner-eyebrow movement more often and at higher intensity than wolves.",
-      "source_ids": ["kaminski-2019"],
+      "source_ids": [
+        "kaminski-2019"
+      ],
       "evidence_level": "peer-reviewed behavioral observation",
       "limits": "The 27 dogs were mainly shelter Staffies and the 9 wolves lived in parks, so setting and sample composition may affect the comparison."
     },
     {
       "id": "c3",
       "text": "The highest-intensity inner-eyebrow movements were produced exclusively by dogs in the study.",
-      "source_ids": ["kaminski-2019"],
+      "source_ids": [
+        "kaminski-2019"
+      ],
       "evidence_level": "peer-reviewed behavioral observation",
       "limits": "This is a sample result, not a claim that no individual wolf can ever produce a strong movement."
     },
     {
       "id": "c4",
       "text": "The authors hypothesize that humans preferred dogs with expressive eyebrows, giving those dogs a selection advantage.",
-      "source_ids": ["kaminski-2019"],
+      "source_ids": [
+        "kaminski-2019"
+      ],
       "evidence_level": "authors' evolutionary hypothesis",
       "limits": "The study documents anatomy and behavior; it does not directly observe human selection or measure fitness over generations."
     },
     {
       "id": "c5",
       "text": "The muscle difference is anatomical, while the story of human-driven selection remains a hypothesis.",
-      "source_ids": ["kaminski-2019"],
+      "source_ids": [
+        "kaminski-2019"
+      ],
       "evidence_level": "interpretation of peer-reviewed evidence",
       "limits": "Anatomy is directly observed; the evolutionary cause is inferred from the pattern and does not exclude other pressures."
     }
   ],
   "visual_policy": {
-    "style": "Naturalistic, warm documentary illustration with macro facial detail and restrained split-screen comparisons.",
-    "anatomy": "One brown mixed-breed dog with a white chest patch and consistent brows. The wolf is a separate gray wolf with correct facial proportions, yellow eyes, and a natural coat. No hybrids.",
-    "welfare": "All animals are calm and alive. No dissection, injury, restraint, kennel distress, or staged sadness. The shelter scene is clean, dry, and non-threatening.",
-    "continuity": "Same dog, sweater, rug, and lighting across home scenes; the wolf appears only in separate natural settings.",
-    "disclosure": "Illustrative, AI-assisted visuals; not documentary footage."
+    "style": "Observational real-footage montage built from third-party pet clips, natural light, calm pacing, and species-correct behavior.",
+    "anatomy": "Every animal must be species-correct and anatomically coherent. Multiple individuals may appear across clips; reject malformed, uncanny, or merged animals.",
+    "welfare": "All animals are calm and alive. No dissection, injury, restraint, kennel distress, or staged sadness. The shelter scene is clean, dry, and non-threatening. Reject any clip with staged distress, restraint, injury, aggression, or a visible watermark.",
+    "continuity": "Keep the question, tone, and caption position consistent across clips. Do not imply that different animals are the same individual. Avoid repeated or watermarked clips.",
+    "disclosure": "Real-footage montage using third-party clips for illustration; not documentary footage or scientific evidence."
   },
   "youtube": {
     "title": "The Muscle Behind Puppy-Dog Eyes",
-    "hashtags": ["#Dogs", "#DogEvolution", "#AnimalScience", "#Shorts"],
+    "hashtags": [
+      "#Dogs",
+      "#DogEvolution",
+      "#AnimalScience",
+      "#Shorts"
+    ],
     "tags": [
       "puppy dog eyes",
       "dog eyebrow muscle",

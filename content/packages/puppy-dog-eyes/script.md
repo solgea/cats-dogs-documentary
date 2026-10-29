@@ -87,4 +87,4 @@ Puppy-dog eyes are built into dog anatomy. The idea that humans selected for the
 - **Source verification:** Read the open-access PNAS article on PMC and checked the dissection sample, behavioral sample, facial-movement coding, statistical results, and the authors' hypothesis against the DOI and PubMed records.
 - **Myth or anecdote:** The common claim that dogs deliberately evolved a 'manipulative' sad face. The study documents anatomy and behavior; the selection story is explicitly a hypothesis.
 - **Human sign-off:** required before upload. This file is not a claim of human review.
-- **Disclosure:** Illustrative, AI-assisted visuals; not documentary footage.
+- **Disclosure:** Real-footage montage using third-party clips for illustration; not documentary footage or scientific evidence.

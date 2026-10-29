@@ -14,10 +14,14 @@ normalized to 1080x1920, and passed local media validation:
 - provider output: 21 scenes, 1440x2560 coded, six third-party YouTube sources.
 
 `COMPLETE` only means the file is parseable and matches the channel format. The
-pilot has **not** passed editorial review, and its provider sources are
-entertainment/compilation clips rather than the peer-reviewed evidence in the
-local research record. Do not render the remaining five packages until the
-editorial direction is decided. See
+channel owner accepted **real-footage montage** as the visual direction on
+2026-10-29, but this pilot is **rejected**: its provider sources are
+entertainment/compilation clips, it shows multiple dogs and a visible watermark,
+and its narrative diverges from the local evidence record. Do not publish it.
+
+The next render must be a single package, with `engine: clearcut`, the local
+script, and the new real-footage policy. Do not render all five remaining
+packages until that pilot is reviewed. See
 [viewmade-output-review.md](viewmade-output-review.md).
 
 ## Gate order
@@ -39,8 +43,11 @@ A render request passes through all of these gates:
     the render fails closed. Normalization forces square pixels (`setsar=1`) and
     re-probes the temporary output, because preserving a non-square source SAR
     can leave a 1080-wide file with a 1071-pixel display width.
-11. Human review: a person must watch the result and approve it. This does not
-    happen inside this repository.
+11. Attribution: every provider footage source URL must appear in the metadata
+    description before the package can be published.
+12. Human review: a person must watch the result and record an explicit
+    `APPROVED` or `REJECTED` disposition. This does not happen automatically
+    inside this repository.
 
 If any gate fails, the result stays blocked or failed. There is no stand-in video,
 placeholder MP4, remote URL claimed without a download, or optimistic success.
@@ -51,14 +58,20 @@ Only after OAuth and binding:
 
 ```powershell
 $env:CDDOCS_LIVE_CONFIRM = "YES"
-cddocs batch render 2026-10-29-cats-dogs-01 --allow-live --poll-interval 5 --timeout 900
+# One paid pilot (20 credits):
+cddocs batch render 2026-10-29-cats-dogs-01 --package cat-sweetness --allow-live --poll-interval 5 --timeout 900
 ```
 
-The batch renderer validates first, checks adapter status, then processes packages
-in manifest order. It stops at the first blocked or failed job. A batch report is
-written to `content/batches/<batch-id>/render-report.json`; package state is
-written to `viewmade-request.json` and local job records under
-`state/viewmade-jobs/`.
+`batch render` now refuses to run without `--package <slug>` or `--all`. The
+single-package form is the pilot-first default. `--all` authorises a paid render
+for every package in the batch and should only be used after the pilot review.
+
+The batch renderer validates first, checks adapter status, then processes the
+requested packages in manifest order. It stops at the first blocked or failed
+job. A batch report is written to
+`content/batches/<batch-id>/render-report.json` with the requested and skipped
+packages; package state is written to `viewmade-request.json` and local job
+records under `state/viewmade-jobs/`.
 
 If `viewmade_create_short` returns a transport error but `viewmade_list_videos`
 shows a matching production, do **not** submit a second job. Verify the job id
@@ -105,6 +118,12 @@ specification and must not be published. A status without a job id fails
 validation. A `render_path` must exist on disk. The adapter records provider
 state and errors rather than hiding them.
 
+`editorial_review` records the human disposition:
+`PENDING`, `APPROVED`, or `REJECTED`, with a timestamp, reviewer role, and
+reason. A rejected render remains technically valid but cannot be published.
+The pilot is marked `REJECTED`, and its request became `STALE` after the
+real-footage policy changed; the preserved MP4 must not be published.
+
 `batch build` preserves an existing job id, provider state, render path, hash,
 normalization record, and provider package when the `request` object is
 unchanged. If the script or other request fields changed, the preserved job is
@@ -138,13 +157,21 @@ the adapter returns the existing verified render rather than submitting again.
 It also refuses to submit a second paid job when a job id exists in an active
 provider state (`queued`, `rendering`, or `ready`), or when a `COMPLETE` request
 is missing a valid local file. Recover the existing job instead; see the recovery
-command above. To intentionally replace a bad render, inspect and archive the old
-files and state, then reset the request through a deliberate operator workflow.
-Do not hand-edit a job to `COMPLETE`; that is the one status the pipeline treats
-as evidence of a verified file.
+command above.
+
+The render template uses `$operation_key`, which is the package id plus a short
+hash of the request specification. Identical requests keep the same idempotency
+key; a materially changed script or policy gets a new key. This prevents both
+accidental duplicate charges and silent reuse of an old job after an edit. To
+intentionally replace a rejected render, inspect and archive the old files and
+state, then reset the request through a deliberate operator workflow. Do not
+hand-edit a job to `COMPLETE`; that is the one status the pipeline treats as
+evidence of a verified file.
 
 ## What rendering does not authorize
 
 A successful render is not publication approval. Human editorial review, source
-spot-checks, caption review, welfare review, and manual YouTube upload are still
-required. This repository has no YouTube upload integration.
+spot-checks, caption review, welfare review, footage-rights review, attribution
+review, and manual YouTube upload are still required. Attribution is not a
+licence: if the provider's clip rights are unclear, do not publish. This
+repository has no YouTube upload integration.

@@ -87,4 +87,4 @@ Read the situation and the dog's behavior instead of treating the look as a conf
 - **Source verification:** Read the peer-reviewed study record and abstract, then checked the sample size, experimental manipulation, dependent measures, and authors' conclusions against the DOI and PubMed metadata.
 - **Myth or anecdote:** The popular story that a dog 'knows it did wrong' because it looks guilty. The study tested the look against actual disobedience and found owner cues were the stronger predictor.
 - **Human sign-off:** required before upload. This file is not a claim of human review.
-- **Disclosure:** Illustrative, AI-assisted visuals; not documentary footage.
+- **Disclosure:** Real-footage montage using third-party clips for illustration; not documentary footage or scientific evidence.

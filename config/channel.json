@@ -21,7 +21,9 @@
   "editorial": {
     "voice": "Warm, curious, precise, and calm. Explain one idea rather than listing facts.",
     "point_of_view": "Evidence first. Separate what a study shows from what it suggests. Never invent a story, quote, number, or citation.",
-    "required_disclosure": "Illustrative, AI-assisted visuals; not documentary footage.",
+    "required_disclosure": "Real-footage montage using third-party clips for illustration; not documentary footage or scientific evidence.",
+    "contains_synthetic_media": false,
+    "visual_attribution_required": true,
     "educational_disclaimer": "Educational content, not veterinary advice. Consult a veterinarian for health concerns.",
     "require_sources": true,
     "require_claim_checks": true,
@@ -52,13 +54,14 @@
     ]
   },
   "visual": {
-    "style": "Cinematic documentary-style illustration with natural light, realistic fur, species-correct anatomy, and calm, non-staged behavior.",
+    "mode": "real_footage_montage",
+    "style": "Observational real-footage montage from third-party pet clips, with natural light, calm pacing, species-correct behavior, and no watermarks or on-screen text.",
     "default_subject_rules": [
-      "Use one cat or dog as the continuous subject unless the scene explicitly calls for two animals.",
-      "Keep coat markings, eye color, collar, and body proportions consistent between scenes.",
-      "Show natural, relaxed behavior. Never stage fear, pain, aggression, or distress.",
-      "No voice-over mouth movement is required; avoid lip-sync shots of animals.",
-      "Vertical 9:16 composition with the subject in the middle third and caption-safe lower area."
+      "Real footage may show different animals across clips; never imply that different individuals are the same animal.",
+      "Each clip must show species-correct, anatomically coherent animals in natural, non-staged behavior.",
+      "Reject fear, pain, injury, punishment, restraint, aggression, or staged distress even if the clip is otherwise usable.",
+      "Reject watermarks, logos, burned-in captions, visible social handles, or low-light footage that hides the animal.",
+      "Vertical 9:16 composition with the subject clear of the caption-safe lower area."
     ],
     "banned_description_terms": [
       "bleeding",
@@ -79,8 +82,8 @@
       "snarling",
       "shaking with fear"
     ],
-    "negative_prompt": "No extra limbs, no extra ears, no extra tails, no distorted eyes, no human hands merging with fur, no text artifacts, no logos, no watermarks, no photorealistic claim of archival footage, no distressed animals, no staged aggression.",
-    "disclosure_note": "Generated visuals are illustrative. Do not present them as archival or documentary footage."
+    "negative_prompt": "No extra limbs, no extra ears, no extra tails, no distorted eyes, no malformed or merged animals, no text artifacts, no logos, no watermarks, no social handles, no distressed animals, no staged aggression, no implied documentary evidence.",
+    "disclosure_note": "Real footage is illustrative B-roll, not evidence of the claims. Credit every third-party clip source."
   },
   "pillars": {
     "behavior": "Behavior science and body-language research",

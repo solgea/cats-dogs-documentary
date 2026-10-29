@@ -25,7 +25,12 @@
         "motion": "slow push-in as the dog sniffs the leaf",
         "framing": "vertical 9:16, nose in the lower middle third, eye on the upper-third line",
         "continuity": "same black dog, red collar, and garden path in every scene",
-        "avoid": ["human face", "leash tugging", "wet or injured nose", "text overlays"]
+        "avoid": [
+          "human face",
+          "leash tugging",
+          "wet or injured nose",
+          "text overlays"
+        ]
       },
       "transition": "cut"
     },
@@ -41,7 +46,12 @@
         "motion": "very slow lateral drift; the ribbons divide and settle",
         "framing": "vertical 9:16, nostrils centered, ribbons flowing into the upper and lower thirds",
         "continuity": "same glossy nose, graying muzzle, and red collar edge",
-        "avoid": ["smoke", "fire", "human hands", "text overlays"]
+        "avoid": [
+          "smoke",
+          "fire",
+          "human hands",
+          "text overlays"
+        ]
       },
       "transition": "cut"
     },
@@ -57,7 +67,12 @@
         "motion": "slow orbital rotation, then a gentle hold",
         "framing": "vertical 9:16, model centered with generous dark negative space",
         "continuity": "same amber palette and dark background throughout the model sequence",
-        "avoid": ["dissection", "blood", "medical labels", "text overlays"]
+        "avoid": [
+          "dissection",
+          "blood",
+          "medical labels",
+          "text overlays"
+        ]
       },
       "transition": "cut"
     },
@@ -73,7 +88,12 @@
         "motion": "slow forward drift; the upper ribbon spreads into a delicate mesh",
         "framing": "vertical 9:16, both ribbons centered with clear separation",
         "continuity": "same amber palette, grain, and dark background as the model scene",
-        "avoid": ["readable characters", "medical diagram", "flashing lights", "text overlays"]
+        "avoid": [
+          "readable characters",
+          "medical diagram",
+          "flashing lights",
+          "text overlays"
+        ]
       },
       "transition": "cut"
     },
@@ -89,7 +109,12 @@
         "motion": "static camera; the ribbons pulse gently inward",
         "framing": "vertical 9:16, nose centered, one ribbon entering from each side",
         "continuity": "same glossy nose, graying muzzle, and red collar edge",
-        "avoid": ["merged nostrils", "smoke", "human hands", "text overlays"]
+        "avoid": [
+          "merged nostrils",
+          "smoke",
+          "human hands",
+          "text overlays"
+        ]
       },
       "transition": "cut"
     },
@@ -105,7 +130,12 @@
         "motion": "slow pull-back; the dog lifts its nose and holds",
         "framing": "vertical 9:16, dog in the lower middle third, open garden above",
         "continuity": "same dog, red collar, garden path, and soft daylight; no other animals",
-        "avoid": ["human face", "leash tugging", "hybrid animals", "text overlays"]
+        "avoid": [
+          "human face",
+          "leash tugging",
+          "hybrid animals",
+          "text overlays"
+        ]
       },
       "transition": "fade out"
     }
@@ -114,56 +144,73 @@
     {
       "id": "c1",
       "text": "Seven dogs weighing 6.8-52.9 kg were trained to sniff while wearing a flow-measuring muzzle; their sniff frequency was 4-7 Hz.",
-      "source_ids": ["craven-2010"],
+      "source_ids": [
+        "craven-2010"
+      ],
       "evidence_level": "peer-reviewed experimental measurement",
       "limits": "Seven dogs is a small sample, and the muzzle was a specialized measurement device rather than a natural tracking setup."
     },
     {
       "id": "c2",
       "text": "The computational model was reconstructed from high-resolution MRI scans of the left nasal airway of a 29.5 kg female Labrador retriever mixed-breed dog.",
-      "source_ids": ["craven-2010"],
+      "source_ids": [
+        "craven-2010"
+      ],
       "evidence_level": "peer-reviewed anatomical model",
       "limits": "The model represents one dog's anatomy and is described by the authors as generally representative of a mesaticephalic canine nasal cavity."
     },
     {
       "id": "c3",
       "text": "The simulation showed separate olfactory and respiratory airflow paths; in the modeled relaxed, undilated nostril case, about 12-13% of inspired air reached the chemosensory region.",
-      "source_ids": ["craven-2010"],
+      "source_ids": [
+        "craven-2010"
+      ],
       "evidence_level": "peer-reviewed computational fluid dynamics",
       "limits": "The percentage comes from a simulation with a relaxed nostril; the authors note that realistic nostril motion could change it."
     },
     {
       "id": "c4",
       "text": "At peak inspiration, each nostril's reach was about 1 cm, smaller than the separation between the nostrils, yielding spatially separate air samples that may support bilateral comparison and odor source localization.",
-      "source_ids": ["craven-2010"],
+      "source_ids": [
+        "craven-2010"
+      ],
       "evidence_level": "peer-reviewed computational fluid dynamics",
       "limits": "The bilateral comparison and localization functions are proposed interpretations, not direct behavioral measurements in this study."
     },
     {
       "id": "c5",
       "text": "The expiratory jet was directed ventrolaterally, which the authors propose can mix nearby odorants and reduce blow-off directly ahead of the nostril.",
-      "source_ids": ["craven-2010"],
+      "source_ids": [
+        "craven-2010"
+      ],
       "evidence_level": "peer-reviewed computational fluid dynamics",
       "limits": "The expiratory flow was modeled and described qualitatively; the mixing benefit is an interpretation of the airflow pattern."
     },
     {
       "id": "c6",
       "text": "The study proposes that nasal airflow architecture helps explain canine olfactory acuity, but it does not show that airflow alone accounts for every difference between dogs and other species.",
-      "source_ids": ["craven-2010"],
+      "source_ids": [
+        "craven-2010"
+      ],
       "evidence_level": "authors' interpretation of peer-reviewed evidence",
       "limits": "The study combines flow measurements and a single anatomical model; it does not test all possible contributors to olfactory performance."
     }
   ],
   "visual_policy": {
-    "style": "Naturalistic garden documentary illustration with macro nose detail and two restrained amber airflow visualizations.",
-    "anatomy": "One black Labrador mix with a graying muzzle, glossy black nose, two symmetrical nostrils, natural whiskers, and a red collar. The translucent model is a separate anatomical representation, not a living animal or a hybrid.",
-    "welfare": "The dog is calm, curious, and unrestrained in a quiet garden. No leash jerking, force, injury, or distress. The model sequence contains no dissection or animal tissue.",
-    "continuity": "Same black dog, red collar, garden path, and soft daylight. The abstract airflow scenes keep the same amber palette and dark background.",
-    "disclosure": "Illustrative, AI-assisted visuals; not documentary footage."
+    "style": "Observational real-footage montage built from third-party pet clips, natural light, calm pacing, and species-correct behavior.",
+    "anatomy": "Every animal must be species-correct and anatomically coherent. Multiple individuals may appear across clips; reject malformed, uncanny, or merged animals.",
+    "welfare": "The dog is calm, curious, and unrestrained in a quiet garden. No leash jerking, force, injury, or distress. The model sequence contains no dissection or animal tissue. Reject any clip with staged distress, restraint, injury, aggression, or a visible watermark.",
+    "continuity": "Keep the question, tone, and caption position consistent across clips. Do not imply that different animals are the same individual. Avoid repeated or watermarked clips.",
+    "disclosure": "Real-footage montage using third-party clips for illustration; not documentary footage or scientific evidence."
   },
   "youtube": {
     "title": "Why a Dog's Nose Works in Stereo",
-    "hashtags": ["#Dogs", "#DogScience", "#AnimalScience", "#Shorts"],
+    "hashtags": [
+      "#Dogs",
+      "#DogScience",
+      "#AnimalScience",
+      "#Shorts"
+    ],
     "tags": [
       "dog nose",
       "dog smell",

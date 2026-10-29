@@ -25,7 +25,12 @@
         "motion": "slow push-in; the cat half-closes its eyes once",
         "framing": "vertical 9:16, the cat's face in the upper middle third, caption-safe lower third",
         "continuity": "same gray tabby, window seat, and warm living room in every scene",
-        "avoid": ["human face", "forced eye contact", "startled expression", "text overlays"]
+        "avoid": [
+          "human face",
+          "forced eye contact",
+          "startled expression",
+          "text overlays"
+        ]
       },
       "transition": "cut"
     },
@@ -41,7 +46,12 @@
         "motion": "steady camera; one human slow blink, then one cat half-blink",
         "framing": "vertical 9:16, cat centered, owner's brow and cheek as a soft foreground edge",
         "continuity": "same cat, window seat, and oatmeal sweater; no other animals",
-        "avoid": ["direct stare", "human face fully visible", "grabbing the cat", "text overlays"]
+        "avoid": [
+          "direct stare",
+          "human face fully visible",
+          "grabbing the cat",
+          "text overlays"
+        ]
       },
       "transition": "cut"
     },
@@ -57,7 +67,12 @@
         "motion": "gentle lateral follow as the cat takes two steps forward",
         "framing": "vertical 9:16, cat in the middle third, hand in the lower third with clear floor space",
         "continuity": "same cat and living room; the researcher wears a plain blue shirt",
-        "avoid": ["reaching or grabbing", "human face", "cornering the cat", "text overlays"]
+        "avoid": [
+          "reaching or grabbing",
+          "human face",
+          "cornering the cat",
+          "text overlays"
+        ]
       },
       "transition": "cut"
     },
@@ -73,7 +88,12 @@
         "motion": "very slow push-in, one complete half-blink sequence",
         "framing": "vertical 9:16, both eyes on the upper-third line, whiskers inside frame",
         "continuity": "same eye color, stripe pattern, and window light as the opening",
-        "avoid": ["human-like eyelids", "extra whiskers", "tears", "text overlays"]
+        "avoid": [
+          "human-like eyelids",
+          "extra whiskers",
+          "tears",
+          "text overlays"
+        ]
       },
       "transition": "cut"
     },
@@ -89,7 +109,12 @@
         "motion": "slow pull-back with no sudden movement",
         "framing": "vertical 9:16, cat in the lower middle third, soft negative space above",
         "continuity": "same blanket, window seat, and morning light; no new animals",
-        "avoid": ["awkward sleeping pose", "human face", "startling sound cue", "text overlays"]
+        "avoid": [
+          "awkward sleeping pose",
+          "human face",
+          "startling sound cue",
+          "text overlays"
+        ]
       },
       "transition": "cut"
     },
@@ -105,7 +130,12 @@
         "motion": "static camera; the cat blinks once and settles",
         "framing": "vertical 9:16, cat and hand in the lower middle third, caption-safe top",
         "continuity": "same cat, window seat, blanket, and oatmeal sleeve",
-        "avoid": ["chasing the cat", "restraint", "human face", "text overlays"]
+        "avoid": [
+          "chasing the cat",
+          "restraint",
+          "human face",
+          "text overlays"
+        ]
       },
       "transition": "fade out"
     }
@@ -114,56 +144,73 @@
     {
       "id": "c1",
       "text": "Experiment 1 included 21 cats from 14 households; after excluding three outlier dyads, the analysis used 18 cat-owner pairs.",
-      "source_ids": ["humphrey-2020"],
+      "source_ids": [
+        "humphrey-2020"
+      ],
       "evidence_level": "peer-reviewed behavioral experiment",
       "limits": "Home-based naturalistic study with a modest sample; three dyads were excluded as outliers."
     },
     {
       "id": "c2",
       "text": "In Experiment 1, cats showed higher rates of half-blinking and eye narrowing during owner slow-blink trials than during no-interaction trials.",
-      "source_ids": ["humphrey-2020"],
+      "source_ids": [
+        "humphrey-2020"
+      ],
       "evidence_level": "peer-reviewed behavioral experiment",
       "limits": "Owners varied in how they delivered the slow blink, and the control condition differed in social engagement."
     },
     {
       "id": "c3",
       "text": "In Experiment 2, 24 cats were recruited and 18 were analyzed; slow blinking by an unfamiliar experimenter was associated with more half-blinks and eye narrowing than a neutral face without direct eye contact.",
-      "source_ids": ["humphrey-2020"],
+      "source_ids": [
+        "humphrey-2020"
+      ],
       "evidence_level": "peer-reviewed behavioral experiment",
       "limits": "Six cats were excluded as outliers; the neutral control avoided direct eye contact, which may have influenced the response."
     },
     {
       "id": "c4",
       "text": "In Experiment 2, cats had a higher approach score toward the experimenter's hand after the slow-blink interaction than after the neutral-face condition.",
-      "source_ids": ["humphrey-2020"],
+      "source_ids": [
+        "humphrey-2020"
+      ],
       "evidence_level": "peer-reviewed behavioral experiment",
       "limits": "Approach is an indirect indicator and does not by itself establish a specific emotional state."
     },
     {
       "id": "c5",
       "text": "The authors interpret the results as evidence that slow blinking may function as positive emotional communication, while cautioning that firm conclusions about emotion require further research.",
-      "source_ids": ["humphrey-2020"],
+      "source_ids": [
+        "humphrey-2020"
+      ],
       "evidence_level": "authors' interpretation of peer-reviewed evidence",
       "limits": "The study measured behavior and approach, not a direct assay of the cat's internal state."
     },
     {
       "id": "c6",
       "text": "A slow blink is not a guarantee of feline trust; the response depends on the individual cat and the situation.",
-      "source_ids": ["humphrey-2020"],
+      "source_ids": [
+        "humphrey-2020"
+      ],
       "evidence_level": "interpretation of peer-reviewed evidence",
       "limits": "The experiments used specific home settings and a small number of cats; they cannot predict every cat's reaction."
     }
   ],
   "visual_policy": {
-    "style": "Warm, quiet documentary-style illustration with natural window light, realistic fur, and restrained close-ups.",
-    "anatomy": "One gray tabby with dark stripes, pale green eyes, a white chin, natural eyelids, and symmetrical whiskers. Keep markings, eye color, and body proportions identical in every scene.",
-    "welfare": "The cat is calm and free to look away or leave. No restraint, chasing, forced eye contact, or staged fear. The owner's hand stays open and still.",
-    "continuity": "Same gray tabby, window seat, folded blanket, living room, and morning light throughout. The owner appears only as a brow, hand, or sleeve.",
-    "disclosure": "Illustrative, AI-assisted visuals; not documentary footage."
+    "style": "Observational real-footage montage built from third-party pet clips, natural light, calm pacing, and species-correct behavior.",
+    "anatomy": "Every animal must be species-correct and anatomically coherent. Multiple individuals may appear across clips; reject malformed, uncanny, or merged animals.",
+    "welfare": "The cat is calm and free to look away or leave. No restraint, chasing, forced eye contact, or staged fear. The owner's hand stays open and still. Reject any clip with staged distress, restraint, injury, aggression, or a visible watermark.",
+    "continuity": "Keep the question, tone, and caption position consistent across clips. Do not imply that different animals are the same individual. Avoid repeated or watermarked clips.",
+    "disclosure": "Real-footage montage using third-party clips for illustration; not documentary footage or scientific evidence."
   },
   "youtube": {
     "title": "What a Cat's Slow Blink Really Means",
-    "hashtags": ["#Cats", "#CatBehavior", "#AnimalScience", "#Shorts"],
+    "hashtags": [
+      "#Cats",
+      "#CatBehavior",
+      "#AnimalScience",
+      "#Shorts"
+    ],
     "tags": [
       "cat slow blink",
       "cat behavior",

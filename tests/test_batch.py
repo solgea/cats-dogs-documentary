@@ -1,6 +1,8 @@
 """Full batch build, validation, packaging, and live-render refusal flow."""
 from __future__ import annotations
 
+import contextlib
+import io
 import tempfile
 import unittest
 import zipfile
@@ -12,6 +14,7 @@ except ImportError:  # pragma: no cover
     from _support import BATCH_ID, copy_project, load_json, write_json
 
 from cddocs.batch import build_batch, package_batch, render_batch, validate_batch
+from cddocs.cli import main
 from cddocs.config import Settings
 from cddocs.util import PipelineError
 
@@ -101,30 +104,75 @@ class BatchFlowTests(unittest.TestCase):
             self.assertIn("CDDOCS_LIVE_CONFIRM=YES", str(caught.exception))
             self.assertFalse((project.batch_path(BATCH_ID) / "render-report.json").exists())
 
-    def test_rebuild_preserves_complete_render_state(self) -> None:
+    def test_rebuild_marks_changed_policy_stale_and_preserves_render_evidence(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             project = copy_project(Path(tmp) / "project")
             request_path = project.package_path("dog-guilty-look") / "viewmade-request.json"
             before = load_json(request_path)
-            self.assertEqual(before["status"], "COMPLETE")
             self.assertEqual(
                 before["job_id"], "f59f8a91-7b2b-4dbb-a03d-62effc911581"
             )
+            self.assertTrue(before["render_path"])
+            self.assertTrue(before["provider_package"])
 
             outcome = build_batch(project, BATCH_ID)
             self.assertEqual(outcome.status, "PASS", outcome.to_dict())
 
             after = load_json(request_path)
+            self.assertEqual(after["status"], "STALE")
             for key in (
-                "status",
                 "job_id",
                 "provider_state",
                 "render_path",
                 "render_sha256",
                 "normalization",
                 "provider_package",
+                "editorial_review",
             ):
                 self.assertEqual(after.get(key), before.get(key), key)
+
+            report = load_json(outcome.report_path)
+            self.assertEqual(
+                report["render_gate"]["rejected_packages"], ["dog-guilty-look"]
+            )
+
+    def test_cli_render_requires_explicit_package_or_all(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            project = copy_project(Path(tmp) / "project")
+            stderr = io.StringIO()
+            with contextlib.redirect_stderr(stderr):
+                code = main(
+                    [
+                        "--root",
+                        str(project.root),
+                        "batch",
+                        "render",
+                        BATCH_ID,
+                    ]
+                )
+            self.assertEqual(code, 2)
+            self.assertIn("--package", stderr.getvalue())
+            self.assertFalse(
+                (project.batch_path(BATCH_ID) / "render-report.json").exists()
+            )
+
+    def test_render_batch_rejects_package_outside_batch(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            project = copy_project(Path(tmp) / "project")
+            settings = Settings(
+                mcp_token=None,
+                live_confirm="YES",
+                state_dir=project.state_dir,
+            )
+            with self.assertRaises(PipelineError) as caught:
+                render_batch(
+                    project,
+                    BATCH_ID,
+                    allow_live=True,
+                    settings=settings,
+                    only_packages=["not-in-this-batch"],
+                )
+            self.assertIn("not in batch", str(caught.exception))
 
 
 if __name__ == "__main__":

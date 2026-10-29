@@ -42,10 +42,10 @@ fail. In this batch the editorial gate intentionally remains at
 - Every scene has a long, specific description, subject, motion, continuity, 9:16
   framing, and at least two avoid notes.
 - No banned distress or aggression terms in the visual instruction.
-- No request for text, logos, or watermarks inside generated imagery.
+- No request for text, logos, watermarks, or social handles inside the footage.
 - Package visual policy covers style, anatomy, welfare, continuity, and the
-  synthetic-media disclosure.
-- Global negative prompt includes anatomy and distress controls.
+  real-footage disclosure, and matches the channel policy exactly.
+- Global negative prompt includes anatomy, watermark, and distress controls.
 
 ### Evidence and sources
 
@@ -65,10 +65,11 @@ fail. In this batch the editorial gate intentionally remains at
 ### Metadata
 
 Generated metadata is checked for title length and copy policy, description
-length, synthetic-media disclosure, educational disclaimer, `Sources:` section,
+length, the real-footage disclosure, educational disclaimer, `Sources:` section,
 HTTPS links, source-list agreement, hashtags including `#Shorts`, tag budget,
-visibility, `made_for_kids: false`, synthetic-media flag, duration, 9:16
-resolution, and manual-only upload status.
+visibility, `made_for_kids: false`, visual-mode/synthetic-media consistency,
+duration, 9:16 resolution, and manual-only upload status. A real-footage package
+must not claim AI-assisted visuals.
 
 ### Subtitles
 
@@ -96,9 +97,15 @@ thresholds. The first batch has no failing or warning pairs.
 
 ### Render artifact
 
-If `render.mp4` exists, local probing requires an MP4 container, 1080x1920, a 9:16
-ratio, 30–60 seconds, audio, and plausible file size. A render that fails becomes
-`FAIL`; a missing render is `SKIP`, not a pass.
+If a render exists at the path recorded in `viewmade-request.json`, local probing
+requires an MP4 container, 1080x1920, a 9:16 ratio, 30–60 seconds, audio, and
+plausible file size. A render that fails becomes `FAIL`; a missing render is
+`SKIP`, not a pass.
+
+For a real-footage render, QA also checks that every provider source URL appears
+in the metadata description. A rendered package with no provider attribution is a
+`FAIL`. The editorial-review disposition is recorded separately: a rejected
+render keeps its technical media result but must never be published.
 
 ### Artifact hashes
 

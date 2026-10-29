@@ -2,15 +2,15 @@
 
 **Package:** `purr-cry`  
 **Format:** 9:16 vertical, 1080x1920, 45 seconds  
-**Disclosure:** Illustrative, AI-assisted visuals; not documentary footage.
+**Disclosure:** Real-footage montage using third-party clips for illustration; not documentary footage or scientific evidence.
 
 ## Global direction
 
-- **Style:** Warm kitchen documentary illustration with realistic fur and two restrained abstract sound visualizations using the same amber palette.
-- **Anatomy:** One gray cat with a white chest, pale yellow eyes, a natural closed mouth, correct whiskers, and four sound legs. Keep markings and proportions identical in every scene.
-- **Welfare:** The cat is calm, fed a small plain portion, and never shown starving, begging in distress, or eating unsafe food. No restraint or forced interaction.
-- **Continuity:** Same gray cat, kitchen, windowsill, ceramic bowl, gray sleeve, and morning light. The abstract scenes keep the same amber palette and grain.
-- **Negative prompt:** No extra limbs, no extra ears, no extra tails, no distorted eyes, no human hands merging with fur, no text artifacts, no logos, no watermarks, no photorealistic claim of archival footage, no distressed animals, no staged aggression.
+- **Style:** Observational real-footage montage built from third-party pet clips, natural light, calm pacing, and species-correct behavior.
+- **Anatomy:** Every animal must be species-correct and anatomically coherent. Multiple individuals may appear across clips; reject malformed, uncanny, or merged animals.
+- **Welfare:** The cat is calm, fed a small plain portion, and never shown starving, begging in distress, or eating unsafe food. No restraint or forced interaction. Reject any clip with staged distress, restraint, injury, aggression, or a visible watermark.
+- **Continuity:** Keep the question, tone, and caption position consistent across clips. Do not imply that different animals are the same individual. Avoid repeated or watermarked clips.
+- **Negative prompt:** No extra limbs, no extra ears, no extra tails, no distorted eyes, no malformed or merged animals, no text artifacts, no logos, no watermarks, no social handles, no distressed animals, no staged aggression, no implied documentary evidence.
 
 ## Scene-by-scene direction
 
@@ -77,7 +77,8 @@
 ## Welfare and authenticity review
 
 - No scene asks for fear, pain, injury, aggression, or staged distress.
-- No scene presents generated imagery as archival or documentary footage.
-- Species anatomy, coat markings, and body proportions must remain consistent.
-- Reject any shot with extra limbs, merged faces, malformed eyes, or text artifacts.
+- Real footage is illustrative B-roll, not evidence; never present a clip as an archival record of the claim.
+- Every clip must show species-correct, anatomically coherent animals; reject malformed or uncanny animals.
+- Reject watermarks, logos, social handles, burned-in captions, extra limbs, or merged faces.
+- Credit every third-party clip source in the YouTube description.
 - Keep captions in the lower third and outside the main subject's face.

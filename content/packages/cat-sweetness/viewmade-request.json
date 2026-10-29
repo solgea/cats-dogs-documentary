@@ -252,9 +252,9 @@
     },
     "voice": "natural English narration, warm and measured",
     "music": "subtle, low, non-distracting documentary bed",
-    "visual_style": "Cinematic documentary-style illustration with natural light, realistic fur, species-correct anatomy, and calm, non-staged behavior.",
-    "negative_prompt": "No extra limbs, no extra ears, no extra tails, no distorted eyes, no human hands merging with fur, no text artifacts, no logos, no watermarks, no photorealistic claim of archival footage, no distressed animals, no staged aggression.",
-    "disclosure": "Illustrative, AI-assisted visuals; not documentary footage.",
+    "visual_style": "Observational real-footage montage from third-party pet clips, with natural light, calm pacing, species-correct behavior, and no watermarks or on-screen text.",
+    "negative_prompt": "No extra limbs, no extra ears, no extra tails, no distorted eyes, no malformed or merged animals, no text artifacts, no logos, no watermarks, no social handles, no distressed animals, no staged aggression, no implied documentary evidence.",
+    "disclosure": "Real-footage montage using third-party clips for illustration; not documentary footage or scientific evidence.",
     "output": {
       "container": "mp4",
       "width": 1080,
@@ -266,6 +266,7 @@
   "submission": null,
   "job_id": null,
   "render_path": null,
+  "editorial_review": null,
   "notes": [
     "This is a local request specification, not evidence that ViewMade accepted a job.",
     "No MCP tool name is hardcoded. The adapter uses the official discovered and bound tools.",

@@ -2,12 +2,12 @@
   "schema_version": 1,
   "package_id": "dog-guilty-look",
   "batch_id": "2026-10-29-cats-dogs-01",
-  "generated_at": "2026-10-29T00:03:12Z",
+  "generated_at": "2026-10-29T03:35:17Z",
   "status": "PASS",
   "publish_ready": false,
   "render_status": "PASS",
   "summary": {
-    "PASS": 86,
+    "PASS": 88,
     "WARN": 0,
     "FAIL": 0,
     "SKIP": 0
@@ -353,7 +353,7 @@
       "id": "visual.policy",
       "label": "Package carries a visual style, anatomy, welfare, and disclosure policy",
       "status": "PASS",
-      "detail": "style/anatomy/welfare/disclosure must all be present"
+      "detail": "style/anatomy/welfare/disclosure must be present and match channel policy"
     },
     {
       "id": "visual.negative_prompt",
@@ -512,6 +512,18 @@
       "detail": "{'format': 'mp4', 'ok': True, 'problems': [], 'width': 1080, 'height': 1920, 'duration_s': 47.733, 'sample_rate': None, 'channels': None, 'bits_per_sample': None, 'has_audio': True}"
     },
     {
+      "id": "render.attribution",
+      "label": "Rendered real-footage video credits every provider source",
+      "status": "PASS",
+      "detail": "6 attribution lines and 6 source URLs credited"
+    },
+    {
+      "id": "render.editorial_review",
+      "label": "Editorial review disposition is recorded",
+      "status": "PASS",
+      "detail": "REJECTED: Rejected for publication: the provider used entertainment/compilation clips, multiple dogs, and visible watermarks, and the narrative diverged from the local evidence record."
+    },
+    {
       "id": "artifacts.hashes",
       "label": "Generated artifacts were hashed for integrity",
       "status": "PASS",
@@ -527,16 +539,16 @@
       "id": "artifacts.request_state",
       "label": "ViewMade request is honest about submission state",
       "status": "PASS",
-      "detail": "status='COMPLETE'"
+      "detail": "status='STALE'"
     }
   ],
   "artifacts": {
-    "package.json": "4d78f9d22a989664e258f4cd24996f316a720a688930a9c7432fc4779e5e6518",
+    "package.json": "53a81719b02ae51cb975c39679b94b2b73044d170addbd7c808eb82863a73ba7",
     "research.json": "ccf1f4329a232be68dd89b38995714123a47ff900970eefc2a5bd4cad0441f30",
-    "script.md": "662a20869dc101232d6349a44c2d85a4dfa0b0e468f2cd00a04800d08ea62c82",
+    "script.md": "186559ebc7ed2517ab2e38e3c32fa43ffdbed5c5d0fadc2be8b732376e9434d6",
     "subtitles.srt": "6f33f477ee10cb74a29f8c355e31c53b43c7d1e2b4311c0df70ee0a8934f06fb",
-    "metadata.json": "425ba8ec2ec73ffb7f7de02484ce42bf1f1d2a432333795c63fb0556230f6cec",
-    "visual-plan.md": "cddb1946ddf393f9cf398d749b3cec3665d1ff14730baf8019533752e0f8c865",
-    "viewmade-request.json": "865548bccbce0efa4a5568294a80d1a1b86823a7184b4bdcbc41e38bc7841b0d"
+    "metadata.json": "392585252f20234956e29527ed9a539015f1a262c987ab7c07eb7a935c83ce48",
+    "visual-plan.md": "cfbaa26991dfcd4e2fe9a0de762ad78195a76cdddc8db8db788e1c63bd7b0803",
+    "viewmade-request.json": "1eb14c2ff65561018b570adb9052c664dbabf6fb570a843eba1a4f97cd6eafa8"
   }
 }

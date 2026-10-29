@@ -25,7 +25,12 @@
         "motion": "slow push-in; the cat blinks once and holds a calm gaze",
         "framing": "vertical 9:16, cat's face in the upper middle third, bowl at the bottom edge",
         "continuity": "same gray cat, kitchen, and ceramic bowl in every scene",
-        "avoid": ["human face", "food mess", "starving appearance", "text overlays"]
+        "avoid": [
+          "human face",
+          "food mess",
+          "starving appearance",
+          "text overlays"
+        ]
       },
       "transition": "cut"
     },
@@ -41,7 +46,12 @@
         "motion": "slow lateral drift; the bright thread gradually becomes more distinct",
         "framing": "vertical 9:16, ribbons centered with generous negative space above",
         "continuity": "same amber palette and fine grain as the kitchen scenes; no sudden style shift",
-        "avoid": ["readable characters", "musical notes", "flashing lights", "text overlays"]
+        "avoid": [
+          "readable characters",
+          "musical notes",
+          "flashing lights",
+          "text overlays"
+        ]
       },
       "transition": "cut"
     },
@@ -57,7 +67,12 @@
         "motion": "gentle tilt down from hand to bowl",
         "framing": "vertical 9:16, cat and bowl in the lower middle third, clean space above",
         "continuity": "same kitchen, bowl, and cat; the owner wears a plain gray sleeve",
-        "avoid": ["food aggression", "human face", "overflowing bowl", "text overlays"]
+        "avoid": [
+          "food aggression",
+          "human face",
+          "overflowing bowl",
+          "text overlays"
+        ]
       },
       "transition": "cut"
     },
@@ -73,7 +88,12 @@
         "motion": "slow push-in toward the crest, then a gentle hold",
         "framing": "vertical 9:16, crest on the upper-third line, lower ribbon across the bottom third",
         "continuity": "same amber palette, grain, and ribbon shapes as the previous abstract scene",
-        "avoid": ["readable characters", "scientific labels", "flashing lights", "text overlays"]
+        "avoid": [
+          "readable characters",
+          "scientific labels",
+          "flashing lights",
+          "text overlays"
+        ]
       },
       "transition": "cut"
     },
@@ -89,7 +109,12 @@
         "motion": "very slow lateral slide from the cat's face to the bowl",
         "framing": "vertical 9:16, cat in the middle third, hand and bowl in the lower third",
         "continuity": "same cat, bowl, counter, and gray sleeve; no other animals",
-        "avoid": ["human face", "grabbing the bowl", "food mess", "text overlays"]
+        "avoid": [
+          "human face",
+          "grabbing the bowl",
+          "food mess",
+          "text overlays"
+        ]
       },
       "transition": "cut"
     },
@@ -105,7 +130,12 @@
         "motion": "slow pull-back; the cat remains still and calm",
         "framing": "vertical 9:16, cat in the lower middle third, window light above",
         "continuity": "same windowsill, bowl, and gray cat; no new people or animals",
-        "avoid": ["empty bowl close-up", "crying cat", "human face", "text overlays"]
+        "avoid": [
+          "empty bowl close-up",
+          "crying cat",
+          "human face",
+          "text overlays"
+        ]
       },
       "transition": "fade out"
     }
@@ -114,49 +144,64 @@
     {
       "id": "c1",
       "text": "Solicitation purrs contain a high-frequency voiced component with a peak in the 220-520 Hz range, averaging about 380 Hz, embedded in the low-frequency purr.",
-      "source_ids": ["mccomb-2009"],
+      "source_ids": [
+        "mccomb-2009"
+      ],
       "evidence_level": "peer-reviewed acoustic analysis",
       "limits": "The range and mean describe the recorded purrs in this study, not every purr from every cat."
     },
     {
       "id": "c2",
       "text": "The study recorded purrs from ten cats in solicitation and non-solicitation situations and played them to fifty human listeners at equal amplitude.",
-      "source_ids": ["mccomb-2009"],
+      "source_ids": [
+        "mccomb-2009"
+      ],
       "evidence_level": "peer-reviewed playback experiment",
       "limits": "Ten cats and fifty listeners are modest samples; the recordings were edited into short sequences for playback."
     },
     {
       "id": "c3",
       "text": "Listeners rated solicitation purrs as more urgent and less pleasant than non-solicitation purrs.",
-      "source_ids": ["mccomb-2009"],
+      "source_ids": [
+        "mccomb-2009"
+      ],
       "evidence_level": "peer-reviewed playback experiment",
       "limits": "The ratings measure human perception of the sounds, not the cat's intent or emotional state."
     },
     {
       "id": "c4",
       "text": "The authors interpret the embedded high-frequency component as a cry-like signal that can make a solicitation purr harder to ignore.",
-      "source_ids": ["mccomb-2009"],
+      "source_ids": [
+        "mccomb-2009"
+      ],
       "evidence_level": "authors' interpretation of acoustic and playback data",
       "limits": "The study shows an acoustic feature and a listener response; it does not directly demonstrate deliberate manipulation by cats."
     },
     {
       "id": "c5",
       "text": "The result does not show that cats consciously calculate the effect or that the purr indicates distress.",
-      "source_ids": ["mccomb-2009"],
+      "source_ids": [
+        "mccomb-2009"
+      ],
       "evidence_level": "interpretation of peer-reviewed evidence",
       "limits": "The experiment was not designed to test intention, learning, or welfare state."
     }
   ],
   "visual_policy": {
-    "style": "Warm kitchen documentary illustration with realistic fur and two restrained abstract sound visualizations using the same amber palette.",
-    "anatomy": "One gray cat with a white chest, pale yellow eyes, a natural closed mouth, correct whiskers, and four sound legs. Keep markings and proportions identical in every scene.",
-    "welfare": "The cat is calm, fed a small plain portion, and never shown starving, begging in distress, or eating unsafe food. No restraint or forced interaction.",
-    "continuity": "Same gray cat, kitchen, windowsill, ceramic bowl, gray sleeve, and morning light. The abstract scenes keep the same amber palette and grain.",
-    "disclosure": "Illustrative, AI-assisted visuals; not documentary footage."
+    "style": "Observational real-footage montage built from third-party pet clips, natural light, calm pacing, and species-correct behavior.",
+    "anatomy": "Every animal must be species-correct and anatomically coherent. Multiple individuals may appear across clips; reject malformed, uncanny, or merged animals.",
+    "welfare": "The cat is calm, fed a small plain portion, and never shown starving, begging in distress, or eating unsafe food. No restraint or forced interaction. Reject any clip with staged distress, restraint, injury, aggression, or a visible watermark.",
+    "continuity": "Keep the question, tone, and caption position consistent across clips. Do not imply that different animals are the same individual. Avoid repeated or watermarked clips.",
+    "disclosure": "Real-footage montage using third-party clips for illustration; not documentary footage or scientific evidence."
   },
   "youtube": {
     "title": "The Cry Hidden in a Cat's Purr",
-    "hashtags": ["#Cats", "#CatBehavior", "#AnimalScience", "#Shorts"],
+    "hashtags": [
+      "#Cats",
+      "#CatBehavior",
+      "#AnimalScience",
+      "#Shorts"
+    ],
     "tags": [
       "cat purr",
       "solicitation purr",

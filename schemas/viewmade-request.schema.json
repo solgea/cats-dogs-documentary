@@ -275,6 +275,26 @@
     "provider_package": {
       "type": ["object", "null"]
     },
+    "editorial_review": {
+      "type": ["object", "null"],
+      "additionalProperties": false,
+      "required": ["status", "reviewed_at", "reviewer", "reason"],
+      "properties": {
+        "status": {
+          "enum": ["PENDING", "APPROVED", "REJECTED"]
+        },
+        "reviewed_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "reviewer": {
+          "type": ["string", "null"]
+        },
+        "reason": {
+          "type": ["string", "null"]
+        }
+      }
+    },
     "error": {
       "type": ["string", "null"]
     },
