@@ -15,14 +15,14 @@ def test_upload_defaults_to_unlisted():
     tm.get_credentials.return_value = MagicMock()
 
     with patch("youtube.upload.YouTubeAPIClient") as MockClient:
-        mock_service = MagicMock()
-        mock_insert = MagicMock()
-        mock_insert.execute.return_value = {
-            "id": "test_video_id",
-            "status": {"privacyStatus": "unlisted"}
+        # UploadManager.__init__ içinde YouTubeAPIClient oluşturuluyor,
+        # bu yüzden MockClient.return_value.upload_short'ı doğrudan yapılandırıyoruz
+        MockClient.return_value.upload_short.return_value = {
+            "video_id": "test_video_id",
+            "video_url": "https://www.youtube.com/watch?v=test_video_id",
+            "view_url": "https://www.youtube.com/embed/test_video_id",
+            "status": {"privacyStatus": "unlisted"},
         }
-        mock_service.videos().insert.return_value = mock_insert
-        MockClient.return_value.service = mock_service
 
         um = UploadManager(tm)
         result = um.upload_short(
@@ -63,14 +63,12 @@ def test_upload_public_allowed_with_confirmation():
     tm.get_credentials.return_value = MagicMock()
 
     with patch("youtube.upload.YouTubeAPIClient") as MockClient:
-        mock_service = MagicMock()
-        mock_insert = MagicMock()
-        mock_insert.execute.return_value = {
-            "id": "test_video_public",
-            "status": {"privacyStatus": "public"}
+        MockClient.return_value.upload_short.return_value = {
+            "video_id": "test_video_public",
+            "video_url": "https://www.youtube.com/watch?v=test_video_public",
+            "view_url": "https://www.youtube.com/embed/test_video_public",
+            "status": {"privacyStatus": "public"},
         }
-        mock_service.videos().insert.return_value = mock_insert
-        MockClient.return_value.service = mock_service
 
         um = UploadManager(tm)
         result = um.upload_short(
