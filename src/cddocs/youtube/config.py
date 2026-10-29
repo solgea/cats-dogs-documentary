@@ -14,7 +14,13 @@ class YouTubeConfig:
     # OAuth 2.0
     client_id: str = field(default_factory=lambda: os.environ.get("YOUTUBE_CLIENT_ID", ""))
     client_secret: str = field(default_factory=lambda: os.environ.get("YOUTUBE_CLIENT_SECRET", ""))
-    redirect_uris: List[str] = field(default_factory=lambda: ["http://localhost:8501"])
+    redirect_uris: List[str] = field(
+        default_factory=lambda: [
+            uri.strip()
+            for uri in os.environ.get("YOUTUBE_REDIRECT_URIS", "http://localhost:8501").split(",")
+            if uri.strip()
+        ]
+    )
     auth_uri: str = "https://accounts.google.com/o/oauth2/auth"
     token_uri: str = "https://oauth2.googleapis.com/token"
 
