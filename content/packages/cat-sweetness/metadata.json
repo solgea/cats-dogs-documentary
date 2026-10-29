@@ -4,7 +4,7 @@
   "platform": "youtube",
   "format": "short",
   "title": "Why Cats Can't Taste Sweetness",
-  "description": "Domestic cats carry an unexpressed Tas1r2 pseudogene, so the two-part sweet-taste receptor cannot form.\n\nA cat's indifference to sweets is receptor biology, not pickiness or a preference for expensive food.\n\nSources:\n- Li, X. et al. (2005). Pseudogenization of a Sweet-Receptor Gene Accounts for Cats' Indifference toward Sugar. PLoS Genetics 1(1), e3. https://doi.org/10.1371/journal.pgen.0010003\n\nReal-footage montage using third-party clips for illustration; not documentary footage or scientific evidence. Educational content, not veterinary advice. Consult a veterinarian for health concerns.\n\n#Cats #CatScience #AnimalScience #Shorts",
+  "description": "Domestic cats carry an unexpressed Tas1r2 pseudogene, so the two-part sweet-taste receptor cannot form.\n\nA cat's indifference to sweets is receptor biology, not pickiness or a preference for expensive food.\n\nSources:\n- Li, X. et al. (2005). Pseudogenization of a Sweet-Receptor Gene Accounts for Cats' Indifference toward Sugar. PLoS Genetics 1(1), e3. https://doi.org/10.1371/journal.pgen.0010003\n\nFootage:\n- Why Your Cat Ignores Sweets: The Science Behind Feline Taste Buds! — Mr. RandomVideo · https://www.youtube.com/watch?v=MjLCe5541ZI\n- How do humans, cats, and cockroaches taste sweetness? — Oxford Academic (Oxford University Press) · https://www.youtube.com/watch?v=zS6J6BAwEPU\n- Secrets of the feline tongue — Science Magazine · https://www.youtube.com/watch?v=Nu3a6rn2HZM\n- Why can't cats taste sweet food? | Surprising Science — Natural History Museum · https://www.youtube.com/watch?v=1k2nrY90gZo\n\nReal-footage montage using third-party clips for illustration; not documentary footage or scientific evidence. Educational content, not veterinary advice. Consult a veterinarian for health concerns.\n\n#Cats #CatScience #AnimalScience #Shorts",
   "hashtags": [
     "#Cats",
     "#CatScience",
@@ -30,8 +30,13 @@
   "visual_mode": "real_footage_montage",
   "contains_synthetic_media": false,
   "visual_disclosure": "Real-footage montage using third-party clips for illustration; not documentary footage or scientific evidence.",
-  "footage_provider": null,
-  "footage_attributions": [],
+  "footage_provider": "viewmade",
+  "footage_attributions": [
+    "Why Your Cat Ignores Sweets: The Science Behind Feline Taste Buds! — Mr. RandomVideo · https://www.youtube.com/watch?v=MjLCe5541ZI",
+    "How do humans, cats, and cockroaches taste sweetness? — Oxford Academic (Oxford University Press) · https://www.youtube.com/watch?v=zS6J6BAwEPU",
+    "Secrets of the feline tongue — Science Magazine · https://www.youtube.com/watch?v=Nu3a6rn2HZM",
+    "Why can't cats taste sweet food? | Surprising Science — Natural History Museum · https://www.youtube.com/watch?v=1k2nrY90gZo"
+  ],
   "educational_disclaimer": "Educational content, not veterinary advice. Consult a veterinarian for health concerns.",
   "manual_upload_required": true,
   "duration_s": 45,

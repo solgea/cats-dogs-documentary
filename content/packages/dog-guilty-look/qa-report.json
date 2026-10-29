@@ -2,7 +2,7 @@
   "schema_version": 1,
   "package_id": "dog-guilty-look",
   "batch_id": "2026-10-29-cats-dogs-01",
-  "generated_at": "2026-10-29T03:35:17Z",
+  "generated_at": "2026-10-29T06:05:41Z",
   "status": "PASS",
   "publish_ready": false,
   "render_status": "PASS",
@@ -549,6 +549,6 @@
     "subtitles.srt": "6f33f477ee10cb74a29f8c355e31c53b43c7d1e2b4311c0df70ee0a8934f06fb",
     "metadata.json": "392585252f20234956e29527ed9a539015f1a262c987ab7c07eb7a935c83ce48",
     "visual-plan.md": "cfbaa26991dfcd4e2fe9a0de762ad78195a76cdddc8db8db788e1c63bd7b0803",
-    "viewmade-request.json": "1eb14c2ff65561018b570adb9052c664dbabf6fb570a843eba1a4f97cd6eafa8"
+    "viewmade-request.json": "92bae412bcd2afd59b67ea26b9fedac18eba96e5395338f7ea2296ba5308cceb"
   }
 }

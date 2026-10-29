@@ -265,8 +265,7 @@
   "notes": [
     "This is a local request specification, not evidence that ViewMade accepted a job.",
     "No MCP tool name is hardcoded. The adapter uses the official discovered and bound tools.",
-    "A render is COMPLETE only after the downloaded MP4 passes local media validation.",
-    "Existing job and render were preserved as STALE after a request change."
+    "A render is COMPLETE only after the downloaded MP4 passes local media validation."
   ],
   "provider_state": "ready",
   "render_sha256": "ac8ab8917d71d22548077d12fe6f0c535878ff709abd3fd41375b8b1b41e2f61",

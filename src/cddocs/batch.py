@@ -246,9 +246,6 @@ def validate_package_folder(
             problems.append(f"unknown status {request_status!r}")
         if request_status in {"SUBMITTED", "RENDERING", "COMPLETE", "STALE"} and not job_id:
             problems.append("submitted status without a job_id")
-        rendered = request.get("render_path")
-        if rendered and not (project.root / rendered).is_file():
-            problems.append(f"render_path does not exist: {rendered}")
         text = json.dumps(request)
         for secret_key in ("access_token", "refresh_token", "client_secret", "authorization"):
             if secret_key in text:

@@ -19,6 +19,8 @@ state/viewmade-tools.json
 state/viewmade-binding.json
 state/viewmade-jobs/
 state/oauth-*.json
+state/review/
+state/recovery-*.log
 
 # Generated media (large, not source-controlled)
 renders/

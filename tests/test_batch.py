@@ -40,6 +40,11 @@ class BatchFlowTests(unittest.TestCase):
                 }
             )
             write_json(request_path, request)
+            # The test requires a clean request state; reset editorial_review
+            # so the build/validate flow starts from a neutral state.
+            request = load_json(request_path)
+            request["editorial_review"] = None
+            write_json(request_path, request)
             outcome = build_batch(project, BATCH_ID)
             self.assertEqual(outcome.status, "PASS", outcome.to_dict())
             self.assertEqual(len(outcome.results), 6)

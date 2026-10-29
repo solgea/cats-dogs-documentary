@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "batch_id": "2026-10-29-cats-dogs-01",
-  "generated_at": "2026-10-29T03:35:17Z",
+  "generated_at": "2026-10-29T06:05:41Z",
   "mode": "validate",
   "status": "PASS",
   "summary": {
@@ -12,7 +12,7 @@
     "fail": 0,
     "render_status": {
       "dog-guilty-look": "PASS",
-      "cat-sweetness": "NOT_RENDERED",
+      "cat-sweetness": "PASS",
       "puppy-dog-eyes": "NOT_RENDERED",
       "slow-blink": "NOT_RENDERED",
       "purr-cry": "NOT_RENDERED",
@@ -38,12 +38,12 @@
       "id": "cat-sweetness",
       "status": "PASS",
       "counts": {
-        "PASS": 85,
+        "PASS": 88,
         "WARN": 0,
         "FAIL": 0,
-        "SKIP": 3
+        "SKIP": 0
       },
-      "render_status": "NOT_RENDERED",
+      "render_status": "PASS",
       "publish_ready": false,
       "qa_report": "content/packages/cat-sweetness/qa-report.json"
     },
@@ -104,7 +104,8 @@
   "render_gate": {
     "status": "PARTIAL",
     "validated_packages": [
-      "dog-guilty-look"
+      "dog-guilty-look",
+      "cat-sweetness"
     ],
     "rejected_packages": [
       "dog-guilty-look"

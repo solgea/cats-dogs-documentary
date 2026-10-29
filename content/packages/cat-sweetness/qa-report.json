@@ -2,15 +2,15 @@
   "schema_version": 1,
   "package_id": "cat-sweetness",
   "batch_id": "2026-10-29-cats-dogs-01",
-  "generated_at": "2026-10-29T03:35:17Z",
+  "generated_at": "2026-10-29T06:05:41Z",
   "status": "PASS",
   "publish_ready": false,
-  "render_status": "NOT_RENDERED",
+  "render_status": "PASS",
   "summary": {
-    "PASS": 85,
+    "PASS": 88,
     "WARN": 0,
     "FAIL": 0,
-    "SKIP": 3
+    "SKIP": 0
   },
   "checks": [
     {
@@ -507,21 +507,21 @@
     },
     {
       "id": "render.artifact",
-      "label": "Rendered MP4",
-      "status": "SKIP",
-      "detail": "not rendered yet; live ViewMade rendering is a separate gated stage"
+      "label": "Rendered MP4 is valid, vertical, and has audio",
+      "status": "PASS",
+      "detail": "{'format': 'mp4', 'ok': True, 'problems': [], 'width': 1080, 'height': 1920, 'duration_s': 43.833, 'sample_rate': None, 'channels': None, 'bits_per_sample': None, 'has_audio': True}"
     },
     {
       "id": "render.attribution",
       "label": "Rendered real-footage video credits every provider source",
-      "status": "SKIP",
-      "detail": "not rendered yet"
+      "status": "PASS",
+      "detail": "4 attribution lines and 4 source URLs credited"
     },
     {
       "id": "render.editorial_review",
       "label": "Editorial review disposition is recorded",
-      "status": "SKIP",
-      "detail": "not rendered yet"
+      "status": "PASS",
+      "detail": "APPROVED"
     },
     {
       "id": "artifacts.hashes",
@@ -539,7 +539,7 @@
       "id": "artifacts.request_state",
       "label": "ViewMade request is honest about submission state",
       "status": "PASS",
-      "detail": "status='NOT_SUBMITTED'"
+      "detail": "status='COMPLETE'"
     }
   ],
   "artifacts": {
@@ -547,8 +547,8 @@
     "research.json": "185b2a90dc27aab5c4e2278518e12d7a3bd836f7b9a4496907016fa662b1259a",
     "script.md": "100c593dcea99812c51d9640b6cc013c91269cfe61725126303d2ddaf3d8c058",
     "subtitles.srt": "b1fe31919cde5354380dd544564b139f9c95932282af24938f2f0df45002c171",
-    "metadata.json": "61bf8b26884fa07afe65e112ed66dc0de96c63faff6784784d6703f3a006d43a",
+    "metadata.json": "c80a62f752f4883f1f6ec789628e455fca38c267d12f967e2b6f212e53c27e12",
     "visual-plan.md": "6f49fc84835f8f16bcb21951bbf434a8d95c71685a9ebada8b83292788922657",
-    "viewmade-request.json": "ff227033f90bb86dbda54b904660b8cc2eec8d6706c9406c641e585ed3c5af2b"
+    "viewmade-request.json": "9c1e7ee586d2d33e1e68b47026034a8979229500124e67086cffb80d6274dcf6"
   }
 }

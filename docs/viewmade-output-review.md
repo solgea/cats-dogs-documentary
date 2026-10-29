@@ -70,6 +70,63 @@ footage.”) was false for this output because the pilot uses real third-party
 footage. The channel policy has since been changed to the real-footage disclosure,
 and this pilot is marked `REJECTED`; it must not be published.
 
+## Second pilot review: `cat-sweetness`
+
+The second paid pilot completed on 2026-10-29. It is a valid local MP4 and passes
+the technical render gates, but it is **not editorially approved**.
+
+| Field | Observed value |
+| --- | --- |
+| Provider job | `74955fe4-199a-49e3-bf8c-305d7ba0c36c` |
+| Local file | `renders/cat-sweetness.mp4`, 28,526,396 bytes |
+| SHA-256 | `7bcdfa60f237f1e670cf525a8367f51e81dee7e10bd54b10dec0f43ae273459c` |
+| Media | 43.833 s, 1080x1920 after normalization, H.264 + AAC stereo |
+| Provider title | “The Sugar-Blind Predator” |
+| Provider tags | `T1R2+3`, `sweetness`, `receptor` |
+| Provider description | “A genetic mutation turned cats into obligate carnivores that are biologically blind to sugar.” |
+| Scenes | 18 (local plan: six) |
+| Credits | 20 charged, 0 refunded, net 20 |
+| Source list | Four YouTube clips: Mr. RandomVideo, Oxford Academic, Science Magazine, Natural History Museum |
+
+Technical QA is sound: the artifact is 1080x1920 with audio, the duration is
+within the Shorts limit, all four provider source URLs appear in the description,
+and `render.attribution` passes. The remaining problem is editorial.
+
+Sampled frames and captions show a different script and a weaker visual argument
+than the approved local package:
+
+- At 0.5 s a red arrow annotation from the source clip points into an orange
+  cat's head; the caption is “CAT”.
+- At 4 s the cat is eating grass while the caption says “SUGAR”.
+- At 8 s the caption is “ENERGY-RICH”; at 20 s sugar cubes are captioned
+  “RECEPTORS”; at 24 s a histology slide is captioned “TO”; at 32 s a laboratory
+  technician is captioned “BIOLOGICAL”.
+- From about 36 s to the end, the same cat-eating-grass clip repeats. Captions in
+  that tail include “THEM”, “CAT”, “RODENTS”, “TO”, “STORES”, “CAT”, “SUGAR”,
+  “IS”, and “INVISIBLE”.
+- At 40.0 s there is a chromatic-aberration transition with red/green fringing
+  and vertical edge lines.
+
+The provider's own description reverses the causal claim: cats were already
+obligate carnivores, and the Tas1r2 pseudogene explains the loss of sweet taste,
+not the origin of carnivory. The captions contain terms such as “GENETIC”,
+“ENERGY-RICH”, “MICROSCOPIC BIOLOGICAL ARCHITECTURE”, “RODENTS TO STORES”, and
+“CAT SUGAR IS INVISIBLE” that do not appear in the approved local script. The
+local SRT remains the researched narration; the provider re-authored the story
+and did not use it.
+
+No corner watermark was detected in the sampled frames at 2, 10, 18, 26, 34, and
+42 s, but the video contains laboratory, histology, and sugar-cube footage that
+is not represented by the four provider-reported source URLs. The provider also
+returned no clip-level `clips` mapping (`clips: 0` in the status payload), so the
+provenance of those shots cannot be checked from the package. Attribution covers
+only the sources the provider reported; it does not establish a licence or prove
+that every visual is accounted for.
+
+**Recommendation: reject for publication.** The render is retained as evidence,
+but it must not be published, and no further paid render should be submitted
+without a new explicit approval.
+
 ## Consequences
 
 1. **Do not call a real-footage render "AI-assisted."** The channel now uses the
