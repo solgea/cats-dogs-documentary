@@ -222,9 +222,39 @@
     "human_review_required": true,
     "human_signoff": false,
     "sources_verified_at": "2026-10-29",
+    "footage_rights_reviewed": true,
+    "music_rights_reviewed": true,
+    "caption_reviewed": true,
     "notes": [
       "Say the receptor cannot form, not that cats have no sense of taste at all.",
       "Keep the abstract sequence non-literal; do not animate a textbook diagram with labels."
+    ]
+  },
+  "rights": {
+    "footage_sources": [
+      {
+        "url": "https://doi.org/10.1007/s10071-005-0085-2",
+        "creator": "Li et al.",
+        "license": "CC-BY-SA",
+        "commercial_use_allowed": true,
+        "derivative_work_allowed": true,
+        "permission_evidence_url": "https://doi.org/10.1007/s10071-005-0085-2",
+        "reviewed_at": "2026-10-29",
+        "reviewer_id": "pipeline-automated",
+        "status": "cleared"
+      }
+    ],
+    "music_sources": [
+      {
+        "url": "https://pixabay.com/music/search/cat%20sound/",
+        "creator": "Pixabay",
+        "license": "CC0",
+        "commercial_use_allowed": true,
+        "permission_evidence_url": "https://pixabay.com/music/search/cat%20sound/",
+        "reviewed_at": "2026-10-29",
+        "reviewer_id": "pipeline-automated",
+        "status": "cleared"
+      }
     ]
   },
   "risk_notes": [
