@@ -89,11 +89,13 @@ prints the bearer token.
 For a fixed, self-refreshing terminal dashboard instead of a scrolling log:
 
 ```powershell
-pwsh -File scripts/watch_render.ps1
+pwsh -File scripts/watch_render.ps1 -PackageId cat-sweetness
 ```
 
-The dashboard shows provider status, stage, progress, provider ETA, estimated
-time remaining, elapsed time, local request state, and whether the MP4 exists.
+Use `-Once` for a single snapshot. The dashboard reads the recovery or render
+log, refreshes in place, and shows provider status, stage, progress, provider
+ETA, estimated time remaining, elapsed time, local request state, recorded
+credits, and whether the MP4 exists.
 
 Without both live confirmations, even an accidental command with a valid token
 does not submit:

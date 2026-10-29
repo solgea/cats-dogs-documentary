@@ -232,6 +232,8 @@ def main() -> int:
     provider_package = {
         key: download_data.get(key)
         for key in (
+            "id",
+            "status",
             "title",
             "description",
             "tags",
@@ -241,11 +243,15 @@ def main() -> int:
             "scene_count",
             "sources",
             "attributions",
+            "source_window",
+            "source_note",
+            "clips",
             "subject_note",
             "view_url",
             "credits_charged",
             "credits_refunded",
             "net_credits",
+            "created_at",
         )
     }
     render_rel = safe_relative(target, project.root)

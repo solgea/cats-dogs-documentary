@@ -385,6 +385,10 @@ class ViewMadeAdapter:
         payload.update(changes)
         payload["updated_at"] = utc_now_iso()
         write_json(path, payload)
+        # Keep the in-memory copy current: later status/master updates reuse this
+        # object and must not overwrite fields recorded by an earlier update.
+        request_payload.clear()
+        request_payload.update(payload)
 
     def _job_state_path(self, package_id: str) -> Path:
         folder = self.project.state_dir / "viewmade-jobs"
@@ -741,6 +745,8 @@ class ViewMadeAdapter:
         provider_package = {
             key: provider_payload.get(key)
             for key in (
+                "id",
+                "status",
                 "title",
                 "description",
                 "tags",
@@ -750,11 +756,15 @@ class ViewMadeAdapter:
                 "scene_count",
                 "sources",
                 "attributions",
+                "source_window",
+                "source_note",
+                "clips",
                 "subject_note",
                 "view_url",
                 "credits_charged",
                 "credits_refunded",
                 "net_credits",
+                "created_at",
             )
         }
         render_rel = safe_relative(target, self.project.root)

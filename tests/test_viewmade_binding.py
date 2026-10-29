@@ -102,6 +102,33 @@ class BindingTests(unittest.TestCase):
             "74955fe4-199a-49e3-bf8c-305d7ba0c36c",
         )
 
+    def test_update_request_keeps_prior_fields_for_later_updates(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            project = copy_project(Path(tmp))
+            request_path = project.package_path("cat-sweetness") / "viewmade-request.json"
+            payload = read_json(request_path)
+            adapter = ViewMadeAdapter(project)
+            adapter._update_request(
+                "cat-sweetness",
+                payload,
+                status="SUBMITTED",
+                error=None,
+                submission={"submitted_at": "2026-10-29T03:40:34Z"},
+            )
+            adapter._update_request(
+                "cat-sweetness",
+                payload,
+                status="RENDERING",
+                provider_state="rendering",
+            )
+            saved = read_json(request_path)
+            self.assertEqual(saved["status"], "RENDERING")
+            self.assertEqual(saved["provider_state"], "rendering")
+            self.assertIsNone(saved["error"])
+            self.assertEqual(
+                saved["submission"]["submitted_at"], "2026-10-29T03:40:34Z"
+            )
+
     def test_package_id_placeholder_is_available(self) -> None:
         resolved = _resolve_placeholders(
             {"operation_key": "$package_id"},
