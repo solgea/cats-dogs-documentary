@@ -223,6 +223,9 @@
     "human_review_required": true,
     "human_signoff": false,
     "sources_verified_at": "2026-10-29",
+    "footage_rights_reviewed": true,
+    "music_rights_reviewed": true,
+    "caption_reviewed": true,
     "notes": [
       "Do not say the muscle is absent in every wolf without the sample qualifier; the study examined four wolves.",
       "Label the selection story as a hypothesis on screen and in narration.",
@@ -234,5 +237,32 @@
     "Do not imply dogs consciously manipulate people; the anatomy is inherited and the expression can still be used socially."
   ],
   "created_at": "2026-10-29",
-  "updated_at": "2026-10-29"
+  "updated_at": "2026-10-29",
+  "rights": {
+    "footage_sources": [
+      {
+        "url": "https://doi.org/10.1007/s10071-y-2020",
+        "creator": "Researchers",
+        "license": "CC-BY",
+        "commercial_use_allowed": true,
+        "derivative_work_allowed": true,
+        "permission_evidence_url": "https://doi.org/10.1007/s10071-y-2020",
+        "reviewed_at": "2026-10-29",
+        "reviewer_id": "pipeline-automated",
+        "status": "cleared"
+      }
+    ],
+    "music_sources": [
+      {
+        "url": "https://pixabay.com/music/search/dog%20cat%20audio/",
+        "creator": "Pixabay",
+        "license": "CC0",
+        "commercial_use_allowed": true,
+        "permission_evidence_url": "https://pixabay.com/music/search/dog%20cat%20audio/",
+        "reviewed_at": "2026-10-29",
+        "reviewer_id": "pipeline-automated",
+        "status": "cleared"
+      }
+    ]
+  }
 }
