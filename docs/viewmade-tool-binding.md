@@ -105,6 +105,12 @@ is absent, the adapter has a small fallback list such as `job_id`, `id`,
 `render_id`, `video_id` for a job id and `url`, `download_url`, `video_url` for a
 download URL. Fallbacks are a recovery aid, not permission to guess success.
 
+The adapter unwraps the MCP `structuredContent.data` envelope before applying a
+path. ViewMade returns `data.video_id` from `viewmade_create_short` and
+`data.status` from `viewmade_check_video_status`; those are therefore found by
+the default/fallback paths without a second paid call. The raw transport envelope
+is never treated as success by itself.
+
 ## Binding record
 
 The resulting `state/viewmade-binding.json` records:

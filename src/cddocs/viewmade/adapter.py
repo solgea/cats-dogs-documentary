@@ -183,6 +183,17 @@ def _first_present(data: Any, candidates: tuple[str, ...]) -> Any:
     return None
 
 
+def _tool_payload(result: Any) -> Any:
+    """Unwrap the MCP ``structuredContent.data`` envelope when present."""
+    if not isinstance(result, dict):
+        return result
+    structured = result.get("structuredContent")
+    if isinstance(structured, dict):
+        data = structured.get("data")
+        return data if isinstance(data, dict) else structured
+    return result
+
+
 def _script_lines(narration: str, max_lines: int = 12) -> str:
     """Turn narration into the 7-12 semantic lines the provider expects."""
     text = " ".join(str(narration).split())
@@ -509,9 +520,14 @@ class ViewMadeAdapter:
             self._update_request(package_id, request_payload, status="FAILED", error=str(exc))
             return RenderResult(package_id=package_id, status="FAILED", error=str(exc))
 
-        job_id = _extract_path(submit, binding.get("job_id_path") or ["job_id"])
+        submit_payload = _tool_payload(submit)
+        job_id = _extract_path(
+            submit_payload, binding.get("job_id_path") or ["job_id"]
+        )
         if not job_id:
-            job_id = _first_present(submit, ("job_id", "id", "render_id", "video_id"))
+            job_id = _first_present(
+                submit_payload, ("job_id", "id", "render_id", "video_id")
+            )
         if not job_id:
             message = (
                 "ViewMade render tool returned no job id. Update the binding with "
@@ -552,6 +568,7 @@ class ViewMadeAdapter:
 
         deadline = time.monotonic() + max(1.0, timeout_s)
         provider_state: Any = None
+        provider_data: dict = {}
         final_state = ""
         while time.monotonic() < deadline:
             time.sleep(max(0.5, min(poll_interval, 30.0)))
@@ -559,11 +576,13 @@ class ViewMadeAdapter:
                 "status",
                 self._context(request_payload, job_id=job_id),
             )
+            status_payload = _tool_payload(status_result)
+            provider_data = status_payload if isinstance(status_payload, dict) else {}
             provider_state = _extract_path(
-                status_result, binding.get("provider_state_path") or ["status"]
+                status_payload, binding.get("provider_state_path") or ["status"]
             )
             if provider_state is None:
-                provider_state = _first_present(status_result, ("status", "state"))
+                provider_state = _first_present(status_payload, ("status", "state"))
             final_state = str(provider_state or "").strip().lower()
             record.update(
                 {
@@ -633,14 +652,21 @@ class ViewMadeAdapter:
                 provider_state=str(provider_state),
             )
 
-        url = _extract_path(download_result, binding.get("download_url_path") or ["url"])
+        download_payload = _tool_payload(download_result)
+        url = _extract_path(
+            download_payload, binding.get("download_url_path") or ["url"]
+        )
         if not url:
-            url = _first_present(download_result, ("url", "download_url", "video_url"))
+            url = _first_present(
+                download_payload, ("url", "download_url", "video_url")
+            )
         file_path = _extract_path(
-            download_result, binding.get("download_file_path") or ["path"]
+            download_payload, binding.get("download_file_path") or ["path"]
         )
         if not file_path:
-            file_path = _first_present(download_result, ("path", "file", "file_path"))
+            file_path = _first_present(
+                download_payload, ("path", "file", "file_path")
+            )
 
         target_dir = self.project.renders_dir
         target_dir.mkdir(parents=True, exist_ok=True)
@@ -709,6 +735,28 @@ class ViewMadeAdapter:
                 provider_state=str(provider_state) if provider_state else None,
             )
 
+        provider_payload = (
+            download_payload if isinstance(download_payload, dict) else provider_data
+        )
+        provider_package = {
+            key: provider_payload.get(key)
+            for key in (
+                "title",
+                "description",
+                "tags",
+                "duration",
+                "aspect",
+                "resolution",
+                "scene_count",
+                "sources",
+                "attributions",
+                "subject_note",
+                "view_url",
+                "credits_charged",
+                "credits_refunded",
+                "net_credits",
+            )
+        }
         render_rel = safe_relative(target, self.project.root)
         self._update_request(
             package_id,
@@ -719,6 +767,7 @@ class ViewMadeAdapter:
             render_path=render_rel,
             render_sha256=sha256_file(target),
             normalization=normalization,
+            provider_package=provider_package,
             error=None,
         )
         record.update(
@@ -728,6 +777,7 @@ class ViewMadeAdapter:
                 "render_path": render_rel,
                 "render_sha256": sha256_file(target),
                 "normalization": normalization,
+                "provider_package": provider_package,
                 "completed_at": utc_now_iso(),
                 "media": info.to_dict() if info else None,
             }

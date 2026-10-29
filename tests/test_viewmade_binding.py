@@ -16,8 +16,10 @@ from cddocs.util import PipelineError, read_json
 from cddocs.viewmade.adapter import (
     ViewMadeAdapter,
     ViewMadeBlocked,
+    _extract_path,
     _resolve_placeholders,
     _script_lines,
+    _tool_payload,
 )
 
 
@@ -82,6 +84,23 @@ class BindingTests(unittest.TestCase):
             with self.assertRaises(ViewMadeBlocked) as caught:
                 adapter.render(payload)
             self.assertIn("Do not submit a second paid render", str(caught.exception))
+
+    def test_structured_mcp_content_is_unwrapped(self) -> None:
+        response = {
+            "content": [{"type": "text", "text": '{"video_id": "74955fe4"}'}],
+            "structuredContent": {
+                "data": {
+                    "video_id": "74955fe4-199a-49e3-bf8c-305d7ba0c36c",
+                    "status": "rendering",
+                }
+            },
+        }
+        payload = _tool_payload(response)
+        self.assertEqual(payload["status"], "rendering")
+        self.assertEqual(
+            _extract_path(payload, ["video_id"]),
+            "74955fe4-199a-49e3-bf8c-305d7ba0c36c",
+        )
 
     def test_package_id_placeholder_is_available(self) -> None:
         resolved = _resolve_placeholders(

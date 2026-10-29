@@ -40,5 +40,7 @@ def copy_project(tmp_path: str | Path) -> Project:
     shutil.copytree(ROOT / "config", destination / "config")
     shutil.copytree(ROOT / "content" / "packages", destination / "content" / "packages")
     shutil.copytree(ROOT / "content" / "batches", destination / "content" / "batches")
+    for report in (destination / "content" / "batches").rglob("render-report.json"):
+        report.unlink()
     (destination / "state").mkdir(parents=True, exist_ok=True)
     return Project(root=destination, state_dir=(destination / "state").resolve())
