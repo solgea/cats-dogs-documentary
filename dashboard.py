@@ -438,6 +438,11 @@ else:
 # Kanal listesini yükle (API çağrısı)
 def _load_channels():
     """Kanalları API'den çek ve session_state'e kaydet."""
+    # Token durumunu kontrol et
+    if not token_manager.is_valid():
+        st.sidebar.error("❌ Token geçersiz veya yok! Önce OAuth yetkilendirmesi yapın.")
+        return {}
+
     try:
         client = YouTubeAPIClient(token_manager, config=config)
         channels = client.list_accessible_channels()
@@ -450,9 +455,25 @@ def _load_channels():
                 "videos": ch["video_count"],
             }
         st.session_state["channel_options"] = channel_options
+        if not channel_options:
+            st.sidebar.warning("⚠️ Hiç kanal bulunamadı. Bu Google hesabına bağlı YouTube kanalı yok olabilir.")
         return channel_options
+    except ValueError as ve:
+        st.sidebar.error(f"❌ Kimlik doğrulama hatası: {str(ve)[:150]}")
+        st.sidebar.info("🔑 .env dosyanızdaki YOUTUBE_CLIENT_ID ve YOUTUBE_CLIENT_SECRET değerlerini kontrol edin.")
+        return {}
     except Exception as e:
-        st.sidebar.error(f"{T['channel_load_fail']}: {str(e)[:100]}")
+        error_msg = str(e)
+        st.sidebar.error(f"❌ Kanal yükleme hatası: {error_msg[:150]}")
+
+        # Yaygın hatalar için özel ipuçları
+        if "403" in error_msg:
+            st.sidebar.info("🚫 403 Hatası: YouTube API kotaları veya izinler yetersiz olabilir.")
+        elif "401" in error_msg:
+            st.sidebar.info("🔐 401 Hatası: Token süresi dolmuş veya geçersiz. Yeniden yetkilendirin.")
+        elif "redirect_uri" in error_msg.lower() or "redirect" in error_msg.lower():
+            st.sidebar.info("🔗 Redirect URI hatası: Google Cloud Console'da http://localhost:8502 ekleyin.")
+
         return {}
 
 if st.sidebar.button(T["refresh_channels"], key="refresh_btn", use_container_width=True):
@@ -462,6 +483,8 @@ if st.sidebar.button(T["refresh_channels"], key="refresh_btn", use_container_wid
 # İlk yükleme veya refresh
 if "channel_options" not in st.session_state or not st.session_state["channel_options"]:
     _load_channels()
+    if not st.session_state.get("channel_options") and token_manager.is_valid():
+        st.sidebar.info("ℹ️ Kanallar yüklenemedi. Sol panelden 'Kanalları Yenile ve Seç' butonuna tekrar deneyin.")
 
 channel_options = st.session_state.get("channel_options", {})
 
