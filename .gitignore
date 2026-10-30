@@ -49,5 +49,6 @@ activity_log.json
 production_pipeline.json
 video_production_history.json
 upload_history.json
+content_registry.json
 state/dashboard-render-*.json
 state/dashboard-render-*.log

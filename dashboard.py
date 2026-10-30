@@ -59,6 +59,10 @@ SETTINGS_FILE = ROOT / "panel_settings.json"
 PIPELINE_FILE = ROOT / "production_pipeline.json"
 ACTIVITY_FILE = ROOT / "activity_log.json"
 
+# Dikey (9:16) önizlemeler için ideal genişlikler — piksel cinsinden.
+PREVIEW_WIDTH = 320
+GALLERY_PREVIEW_WIDTH = 220
+
 DEFAULT_SETTINGS: Dict[str, Any] = {
     "theme": "standart",
     "default_privacy": "unlisted",
@@ -1218,6 +1222,290 @@ def upload_history_entries(limit: int = 5) -> List[Dict[str, Any]]:
 
 
 # ============================================================================
+# İçerik sicili — ViewMade ↔ YouTube eşleşmesi ve tekrar üretim engeli
+# ============================================================================
+REGISTRY_FILE = ROOT / "content_registry.json"
+
+_FOLD_MAP = str.maketrans({
+    "ı": "i", "İ": "i", "I": "i", "ş": "s", "Ş": "s", "ğ": "g", "Ğ": "g",
+    "ü": "u", "Ü": "u", "ö": "o", "Ö": "o", "ç": "c", "Ç": "c",
+    "â": "a", "Â": "a", "î": "i", "Î": "i", "û": "u", "Û": "u",
+    "'": "", "’": "", "“": "", "”": "", "`": "",
+})
+
+_REGISTRY_STOPWORDS = {
+    "the", "a", "an", "of", "in", "to", "and", "or", "is", "are", "was", "were",
+    "why", "how", "your", "you", "it", "its", "this", "that", "these", "those",
+    "be", "been", "being", "do", "does", "did", "can", "cant", "cannot", "with",
+    "for", "on", "at", "by", "from", "not", "no", "but", "if", "then", "than",
+    "bir", "bu", "su", "ve", "ile", "icin", "neden", "nasil", "daha", "cok",
+}
+
+
+def _fold(text: Any) -> str:
+    cleaned = str(text or "").replace(",", "").translate(_FOLD_MAP)
+    return " ".join(cleaned.lower().split())
+
+
+def content_tokens(text: Any) -> List[str]:
+    words = re.findall(r"[a-z0-9]+", _fold(text))
+    return sorted({word for word in words
+                   if len(word) > 2 and word not in _REGISTRY_STOPWORDS})
+
+
+def registry_similarity(left: List[str], right: List[str]) -> float:
+    left_set, right_set = set(left or []), set(right or [])
+    if not left_set or not right_set:
+        return 0.0
+    return len(left_set & right_set) / min(len(left_set), len(right_set))
+
+
+def load_registry() -> List[Dict[str, Any]]:
+    data = _read_json_file(REGISTRY_FILE)
+    entries = data.get("entries")
+    if not isinstance(entries, list):
+        return []
+    return [entry for entry in entries if isinstance(entry, dict)]
+
+
+def save_registry(entries: List[Dict[str, Any]]) -> None:
+    REGISTRY_FILE.write_text(
+        json.dumps({
+            "schema_version": 1,
+            "updated_at": datetime.now().isoformat(timespec="seconds"),
+            "entries": entries,
+        }, ensure_ascii=False, indent=2),
+        encoding="utf-8",
+    )
+
+
+def registry_texts(entry: Dict[str, Any]) -> List[str]:
+    texts = [str(entry.get("title") or "")]
+    aliases = entry.get("aliases")
+    if isinstance(aliases, list):
+        texts.extend(str(alias) for alias in aliases)
+    return [text for text in texts if text.strip()]
+
+
+def registry_find(entries: List[Dict[str, Any]], title: Optional[str] = None,
+                  *, viewmade_id: Optional[str] = None,
+                  youtube_id: Optional[str] = None,
+                  min_score: float = 0.85) -> Optional[Dict[str, Any]]:
+    if viewmade_id:
+        for entry in entries:
+            if str(entry.get("viewmade_id") or "") == str(viewmade_id):
+                return entry
+    if youtube_id:
+        for entry in entries:
+            if str(entry.get("youtube_id") or "") == str(youtube_id):
+                return entry
+    tokens = content_tokens(title or "")
+    if not tokens:
+        return None
+    best, best_score = None, 0.0
+    for entry in entries:
+        score = registry_similarity(tokens, entry.get("tokens") or [])
+        if score > best_score:
+            best, best_score = entry, score
+    return best if best is not None and best_score >= min_score else None
+
+
+def registry_merge(entries: List[Dict[str, Any]], title: Any, *, source: str,
+                   viewmade_id: Optional[str] = None,
+                   youtube_id: Optional[str] = None,
+                   package: Optional[str] = None,
+                   rejected: bool = False,
+                   status: Optional[str] = None) -> bool:
+    title = " ".join(str(title or "").split())
+    tokens = content_tokens(title)
+    if not title or not tokens:
+        return False
+    now = datetime.now().isoformat(timespec="seconds")
+    entry = registry_find(entries, title, viewmade_id=viewmade_id,
+                          youtube_id=youtube_id)
+    if entry is None:
+        entries.append({
+            "title": title,
+            "aliases": [],
+            "tokens": tokens,
+            "sources": [source],
+            "viewmade_id": viewmade_id,
+            "youtube_id": youtube_id,
+            "package": package,
+            "rejected": bool(rejected),
+            "status": status or "",
+            "first_seen": now,
+            "updated_at": now,
+        })
+        return True
+
+    changed = False
+    folded_title = _fold(title)
+    known_folded = {_fold(text) for text in registry_texts(entry)}
+    if folded_title and folded_title not in known_folded:
+        aliases = entry.setdefault("aliases", [])
+        if len(aliases) < 8:
+            aliases.append(title)
+        changed = True
+    merged_tokens = sorted(set(entry.get("tokens") or []) | set(tokens))
+    if merged_tokens != (entry.get("tokens") or []):
+        entry["tokens"] = merged_tokens
+        changed = True
+    sources = entry.setdefault("sources", [])
+    if source and source not in sources:
+        sources.append(source)
+        changed = True
+    if viewmade_id and str(entry.get("viewmade_id") or "") != str(viewmade_id):
+        entry["viewmade_id"] = str(viewmade_id)
+        changed = True
+    if youtube_id and str(entry.get("youtube_id") or "") != str(youtube_id):
+        entry["youtube_id"] = str(youtube_id)
+        changed = True
+    if package and str(entry.get("package") or "") != str(package):
+        entry["package"] = str(package)
+        changed = True
+    if rejected and not entry.get("rejected"):
+        entry["rejected"] = True
+        changed = True
+    if status and str(entry.get("status") or "") != str(status):
+        entry["status"] = str(status)
+        changed = True
+    if changed:
+        entry["updated_at"] = now
+    return changed
+
+
+def registry_state(entry: Optional[Dict[str, Any]]) -> str:
+    if not entry:
+        return "new"
+    if entry.get("youtube_id"):
+        return "published"
+    if entry.get("rejected"):
+        return "rejected"
+    status = str(entry.get("status") or "").lower()
+    if entry.get("viewmade_id") and status in {
+            "", "ready", "complete", "completed", "rendering", "submitted"}:
+        return "produced"
+    if status in {"submitted", "rendering", "complete", "completed"}:
+        return "produced"
+    if entry.get("package"):
+        return "planned"
+    return "known"
+
+
+@st.cache_data(ttl=600, show_spinner=False)
+def channel_videos_index() -> List[Dict[str, str]]:
+    try:
+        reporter = get_reporter()
+        rows = reporter.get_recent_videos(max_results=50)
+    except Exception:
+        return []
+    clean = []
+    for row in rows:
+        if isinstance(row, dict) and row.get("title") and row.get("video_id"):
+            clean.append({
+                "video_id": str(row["video_id"]),
+                "title": str(row["title"]),
+                "published_at": str(row.get("published_at") or ""),
+            })
+    return clean
+
+
+def sync_content_registry() -> List[Dict[str, Any]]:
+    """YouTube kanalı, ViewMade üretimleri ve yerel paketleri tek sicilde eşler."""
+    entries = load_registry()
+    changed = False
+    for video in channel_videos_index():
+        changed |= registry_merge(entries, video["title"], source="youtube",
+                                  youtube_id=video["video_id"], status="youtube")
+    vm_list = list_viewmade_videos()
+    if vm_list.get("ok"):
+        for item in vm_list.get("items", []):
+            changed |= registry_merge(
+                entries, item.get("title"), source="viewmade",
+                viewmade_id=str(item.get("id") or "") or None,
+                status=str(item.get("status") or ""),
+            )
+    packages_dir = ROOT / "content" / "packages"
+    if packages_dir.is_dir():
+        for request_path in packages_dir.glob("*/viewmade-request.json"):
+            request = _read_json_file(request_path)
+            body = request.get("request") if isinstance(request.get("request"), dict) else {}
+            title = str(body.get("title") or "").strip()
+            if not title:
+                continue
+            package_status = str(request.get("status") or "")
+            provider_package = request.get("provider_package")
+            rejected = (package_status in {"REJECTED", "STALE"} or
+                        bool(isinstance(provider_package, dict)
+                             and provider_package.get("rejected")))
+            changed |= registry_merge(
+                entries, title, source="package",
+                package=str(request.get("package_id") or request_path.parent.name),
+                viewmade_id=str(request.get("job_id") or "") or None,
+                rejected=rejected,
+                status=package_status.lower() if package_status else None,
+            )
+    if changed:
+        save_registry(entries)
+    return entries
+
+
+def _idea_matches_text(idea: Dict[str, str], text: str) -> bool:
+    folded = _fold(text)
+    if not folded:
+        return False
+    for keyword in idea.get("kw", []):
+        if keyword and _fold(keyword) in folded:
+            return True
+    return registry_similarity(content_tokens(idea.get("t") or ""),
+                               content_tokens(text)) >= 0.85
+
+
+def registry_status_for_idea(idea: Dict[str, str], entries: List[Dict[str, Any]],
+                             pipeline_items: List[Dict[str, Any]]) -> Optional[Dict[str, Any]]:
+    soft_match: Optional[Dict[str, Any]] = None
+    for entry in entries:
+        if not any(_idea_matches_text(idea, text) for text in registry_texts(entry)):
+            continue
+        state = registry_state(entry)
+        if state == "published":
+            return {"state": "published", "entry": entry}
+        if state == "produced":
+            return {"state": "produced", "entry": entry}
+        if state in {"rejected", "planned"} and soft_match is None:
+            soft_match = {"state": state, "entry": entry}
+    for item in pipeline_items:
+        script = str(item.get("script") or "")
+        english_title = extract_script_field(script, "Video başlığı (EN)")
+        if (_idea_matches_text(idea, str(item.get("title") or "")) or
+                _idea_matches_text(idea, english_title)):
+            return {"state": "pipeline", "title": str(item.get("title") or "")}
+    return soft_match
+
+
+def choose_proposal(cursor: int, entries: List[Dict[str, Any]],
+                    pipeline_items: List[Dict[str, Any]]) -> tuple:
+    """Havuzdan yayında/üretimde olmayan ilk konuyu seçer."""
+    total = len(NICHE_IDEAS)
+    for offset in range(total):
+        index = (cursor + offset) % total
+        idea = NICHE_IDEAS[index]
+        status = registry_status_for_idea(idea, entries, pipeline_items)
+        if status is None or status.get("state") in {"rejected", "planned"}:
+            proposal = build_proposal(index)
+            proposal["registry"] = status
+            return proposal, index + 1
+    return None, cursor
+
+
+def registry_title_for_item(item: Dict[str, Any]) -> str:
+    script = str(item.get("script") or "")
+    return (extract_script_field(script, "Video başlığı (EN)") or
+            str(item.get("title") or "")).strip()
+
+
+# ============================================================================
 # Sol Panel
 # ============================================================================
 with st.sidebar:
@@ -1582,6 +1870,28 @@ NICHE_IDEAS: List[Dict[str, str]] = [
      "th": "Ses dalgası grafiği üzerinde kedi silüeti, neon vurgu."},
 ]
 
+# Öneri havuzu ile kanal/ViewMade üretimleri arasındaki eşleşme anahtarları.
+# Başlıklar birebir aynı olmasa da konu anahtar kelimeden yakalanır.
+NICHE_KEYWORDS: Dict[str, List[str]] = {
+    "Kedilerin gece görüşü": ["glow", "dark", "tapetum", "night vision", "gece"],
+    "Köpeklerin koku dünyası": ["nose", "smell", "scent", "koku", "burun"],
+    "Kediler neden kutuya girer": ["box", "kutu", "karton"],
+    "Köpeklerin suçluluk bakışı": ["guilty", "guilt", "sucluluk", "suclu"],
+    "Kedilerin mırlaması": ["purr", "mirla"],
+    "Köpeklerin kuyruk dili": ["tail", "kuyruk"],
+    "Dokuz can miti": ["nine lives", "dokuz can"],
+    "Köpeğin evrimi": ["wolf", "woof", "evrim"],
+    "Kediler kendini evcilleştirdi": ["domesticat", "evcilles"],
+    "Hayvanlar rüya görür mü": ["dream", "ruya", "rem sleep"],
+    "Köpeklerin zaman algısı": ["clock", "tell time", "zaman"],
+    "Kedilerin sessiz dili": ["silent", "body language", "blink", "sessiz"],
+    "Köpekler renk görür mü": ["colorblind", "colour vision", "renk"],
+    "Kedilerin yüz sesi": ["meow", "miyav", "100 words", "vocal"],
+}
+
+for _idea in NICHE_IDEAS:
+    _idea["kw"] = NICHE_KEYWORDS.get(_idea["s"], [])
+
 
 def build_proposal(cursor: int) -> Dict[str, Any]:
     idea = NICHE_IDEAS[cursor % len(NICHE_IDEAS)]
@@ -1653,7 +1963,8 @@ def render_project_viewmade(item: Dict[str, Any], vm_status: Dict[str, Any]) -> 
             badge("VIEWMADE HAZIR", "ok"),
             badge("İNCELEME GEREKLİ", "warn"),
         ]), unsafe_allow_html=True)
-        st.video(str(local_path), alt=f"ViewMade çıktısı: {item.get('title', '')}")
+        st.video(str(local_path), alt=f"ViewMade çıktısı: {item.get('title', '')}",
+                 width=PREVIEW_WIDTH)
         probe = probe_video(str(local_path), local_path.stat().st_mtime)
         duration = probe.get("duration_s")
         resolution = (f"{probe.get('width')}×{probe.get('height')}"
@@ -1690,9 +2001,48 @@ def render_project_viewmade(item: Dict[str, Any], vm_status: Dict[str, Any]) -> 
                            width="stretch")
         return
 
+    # Tekrar üretim engeli — YouTube kanalı ve ViewMade sicili
+    registry_entries = load_registry()
+    own_package = str(item.get("viewmade_package") or "")
+    registry_match = registry_find(registry_entries, registry_title_for_item(item))
+    if (registry_match and own_package and
+            str(registry_match.get("package") or "") == own_package):
+        registry_match = None
+    registry_value = registry_state(registry_match)
+    registry_warning = ""
+    if registry_value == "published":
+        youtube_id = str((registry_match or {}).get("youtube_id") or "")
+        st.error(f"Bu konu YouTube kanalınızda zaten yayında: "
+                 f"“{registry_match.get('title')}”. Tekrar üretmeyin.")
+        if youtube_id:
+            st.link_button("YouTube'da aç", f"https://www.youtube.com/watch?v={youtube_id}",
+                           width="stretch")
+        viewmade_id = str((registry_match or {}).get("viewmade_id") or "")
+        if viewmade_id:
+            st.link_button("ViewMade'de aç", f"https://viewmade.com/v/{viewmade_id}",
+                           width="stretch")
+        return
+    if registry_value == "produced":
+        st.error("Bu konu için zaten hazır bir ViewMade üretimi var: "
+                 f"“{registry_match.get('title')}”. Tekrar üretim kredi harcar; "
+                 "mevcut üretimi önizleyin.")
+        viewmade_id = str((registry_match or {}).get("viewmade_id") or "")
+        if viewmade_id:
+            st.link_button("ViewMade'de aç", f"https://viewmade.com/v/{viewmade_id}",
+                           width="stretch")
+        return
+    if registry_value == "rejected":
+        registry_warning = ("Önceki sürüm reddedilmişti; düzeltilmiş yeni bir sürüm "
+                            "üretmenizde sakınca yok.")
+    elif registry_value == "planned":
+        registry_warning = ("Bu konu için planlanmış ama henüz üretilmemiş bir paket var; "
+                            "yeni render bu planın yerini alır.")
+
     # Yeni ücretli render formu
     if phase == "failed" and state.get("error"):
         st.warning(f"Önceki render denemesi başarısız: {str(state.get('error'))[:300]}")
+    if registry_warning:
+        st.warning(registry_warning)
     narration_key = f"vm_narration_{item['id']}"
     if narration_key not in st.session_state:
         st.session_state[narration_key] = default_viewmade_narration(item)
@@ -1791,6 +2141,13 @@ def render_production() -> None:
         if publish_url:
             st.link_button("YouTube'da aç", publish_url)
 
+    # İçerik sicili — YouTube kanalı ve ViewMade üretimleri tek sicilde eşlenir
+    registry_entries = sync_content_registry()
+    published_count = sum(1 for entry in registry_entries
+                          if registry_state(entry) == "published")
+    produced_count = sum(1 for entry in registry_entries
+                         if registry_state(entry) in {"published", "produced"})
+
     # İçerik Ajanı — niş odaklı proje önerisi
     panel_open("İÇERİK AJANI · NİŞ ÖNERİSİ")
     st.markdown(
@@ -1812,13 +2169,23 @@ def render_production() -> None:
         """,
         unsafe_allow_html=True,
     )
+    st.caption(f"İçerik sicili: {len(registry_entries)} eşleşen içerik · {published_count} YouTube'da "
+               f"yayında · {produced_count} üretilmiş. Yayındaki ve üretilmiş konular öneri havuzundan "
+               "otomatik çıkarılır.")
 
     has_proposal = bool(st.session_state.get("agent_proposal"))
 
     def _new_proposal() -> None:
         cursor = int(st.session_state.get("proposal_cursor", 0))
-        st.session_state["agent_proposal"] = build_proposal(cursor)
-        st.session_state["proposal_cursor"] = cursor + 1
+        proposal_item, next_cursor = choose_proposal(cursor, registry_entries, load_pipeline())
+        if proposal_item is None:
+            st.session_state.pop("agent_proposal", None)
+            st.session_state["agent_notice"] = (
+                "Havuzdaki tüm konular üretildi veya YouTube'da yayında. "
+                "Tekrar üretim yapılmadı; yeni konu için havuzu genişletin.")
+            return
+        st.session_state["agent_proposal"] = proposal_item
+        st.session_state["proposal_cursor"] = next_cursor
 
     suggest_col, next_col, close_col = st.columns([2, 2, 2])
     with suggest_col:
@@ -1844,10 +2211,18 @@ def render_production() -> None:
             f'<span>{escape(str(text))}</span></div>'
             for label, text in proposal["scenes"]
         )
+        registry_info = proposal.get("registry") or {}
+        registry_info_state = registry_info.get("state")
+        if registry_info_state == "rejected":
+            registry_badge = badge("ÖNCEKİ SÜRÜM REDDEDİLDİ · YENİDEN ÜRETİLEBİLİR", "warn")
+        elif registry_info_state == "planned":
+            registry_badge = badge("PLANDA VAR · HENÜZ ÜRETİLMEDİ", "warn")
+        else:
+            registry_badge = badge("YENİ KONU · KANALDA YOK", "ok")
         st.markdown(
             f"""
             <div class="cd-proposal">
-              <div class="cd-proposal-kicker">Öneri {proposal['index']} / {proposal['total']} · Belgesel</div>
+              <div class="cd-proposal-kicker">Öneri {proposal['index']} / {proposal['total']} · Belgesel {registry_badge}</div>
               <div class="cd-proposal-name">{escape(proposal['project_name'])}</div>
               <div class="cd-proposal-title">{escape(proposal['video_title'])}</div>
               <div class="cd-hook">“{escape(proposal['hook'])}”</div>
@@ -1893,6 +2268,9 @@ def render_production() -> None:
         with hint_col:
             st.caption("Eklenen proje Planlama aşamasından başlar; video başlığı, kanca, senaryo, "
                        "etiketler ve kapak konsepti proje detayına kaydedilir.")
+            if registry_info.get("state") == "rejected":
+                st.caption("Not: bu konunun önceki sürümü reddedilmişti; yeni sürümde kaynak, "
+                           "kalite ve telif kontrollerini mutlaka yapın.")
 
     st.markdown("<div style='height:18px'></div>", unsafe_allow_html=True)
 
@@ -1987,7 +2365,10 @@ def render_production() -> None:
         else:
             def _vm_label(item: Dict[str, Any]) -> str:
                 created = str(item.get("created_at") or "")[:10]
-                return f"{item.get('title') or 'Başlıksız'} · {created}"
+                entry = registry_find(registry_entries, str(item.get("title") or ""),
+                                      viewmade_id=str(item.get("id") or ""))
+                mark = " · ✓ YouTube'da" if (entry or {}).get("youtube_id") else ""
+                return f"{item.get('title') or 'Başlıksız'} · {created}{mark}"
 
             selected_vm_id = st.selectbox(
                 "ViewMade üretimi",
@@ -2001,7 +2382,8 @@ def render_production() -> None:
             vm_preview_col, vm_meta_col = st.columns([3, 2])
             with vm_preview_col:
                 if local_vm:
-                    st.video(str(local_vm), alt=f"ViewMade önizlemesi: {selected_vm.get('title')}")
+                    st.video(str(local_vm), alt=f"ViewMade önizlemesi: {selected_vm.get('title')}",
+                             width=PREVIEW_WIDTH)
                 else:
                     st.markdown(
                         f"""
@@ -2016,12 +2398,19 @@ def render_production() -> None:
                         """,
                         unsafe_allow_html=True,
                     )
+            selected_entry = registry_find(registry_entries,
+                                           str(selected_vm.get("title") or ""),
+                                           viewmade_id=selected_vm_id)
+            selected_youtube_id = str((selected_entry or {}).get("youtube_id") or "")
             with vm_meta_col:
-                status_badges = [
-                    badge("VIEWMADE HAZIR", "ok"),
-                    badge("İNCELEME GEREKLİ", "warn"),
-                ]
+                status_badges = [badge("VIEWMADE HAZIR", "ok")]
+                status_badges.append(badge("YOUTUBE'DA YAYINDA", "err") if selected_youtube_id
+                                     else badge("İNCELEME GEREKLİ", "warn"))
                 st.markdown(" ".join(status_badges), unsafe_allow_html=True)
+                if selected_youtube_id:
+                    st.link_button("YouTube'da aç",
+                                   f"https://www.youtube.com/watch?v={selected_youtube_id}",
+                                   width="stretch")
                 if local_vm:
                     probe = probe_video(str(local_vm), local_vm.stat().st_mtime)
                     duration = probe.get("duration_s")
@@ -2052,6 +2441,52 @@ def render_production() -> None:
                     st.write(f"**Durum:** {selected_vm.get('status') or '—'}")
                     st.write(f"**Oluşturma:** {str(selected_vm.get('created_at') or '—')[:19]}")
                     st.caption("ViewMade çıktıları yayın öncesi insan incelemesi ve atıf kontrolü gerektirir.")
+
+    st.markdown("<div style='height:18px'></div>", unsafe_allow_html=True)
+
+    # ViewMade ↔ YouTube eşleşmesi — aynı video tekrar tekrar üretilmez
+    panel_open("VIEWMADE ↔ YOUTUBE EŞLEŞMESİ")
+    matched_rows: List[Dict[str, str]] = []
+    if vm_list.get("ok"):
+        for item in vm_list.get("items", []):
+            vm_id = str(item.get("id") or "")
+            entry = registry_find(registry_entries, str(item.get("title") or ""),
+                                  viewmade_id=vm_id)
+            youtube_id = str((entry or {}).get("youtube_id") or "")
+            local_copy = find_local_viewmade_video(vm_id)
+            matched_rows.append({
+                "ViewMade Videosu": str(item.get("title") or "Başlıksız"),
+                "Üretim": "Hazır" if item.get("status") == "ready" else str(item.get("status") or "—"),
+                "Yerel Kopya": "Var" if local_copy else "Yok",
+                "YouTube": f"https://www.youtube.com/watch?v={youtube_id}" if youtube_id else "",
+                "Durum": "YouTube'da yayında" if youtube_id else "Henüz yayınlanmadı",
+            })
+    if matched_rows:
+        matched_total = sum(1 for row in matched_rows if row["YouTube"])
+        st.markdown(" ".join([
+            badge(f"{matched_total}/{len(matched_rows)} YOUTUBE'DA", "ok" if matched_total else "warn"),
+            badge("BAŞLIK + VIEWMADE KİMLİĞİ EŞLEŞMESİ", "muted", dot=False),
+        ]), unsafe_allow_html=True)
+        st.dataframe(
+            matched_rows,
+            hide_index=True,
+            width="stretch",
+            alt="ViewMade üretimlerinin YouTube kanalıyla eşleşme tablosu",
+            column_config={
+                "YouTube": st.column_config.LinkColumn("YouTube", display_text="İzle"),
+                "Üretim": st.column_config.TextColumn("Üretim", width="small"),
+                "Yerel Kopya": st.column_config.TextColumn("Yerel Kopya", width="small"),
+            },
+        )
+        st.caption("Eşleşen üretimler YouTube kanalınızda yayında; panel bunlar için yeni ücretli "
+                   "render göndermez ve tekrar yüklemeyi engeller.")
+        if st.button("🔄 Eşleşmeyi yenile", key="registry_refresh", width="stretch"):
+            channel_videos_index.clear()
+            list_viewmade_videos.clear()
+            st.session_state["viewmade_notice"] = "İçerik sicili ve YouTube eşleşmesi yenilendi."
+            st.rerun()
+    else:
+        st.caption("Eşleşme tablosu için ViewMade video listesi gerekir.")
 
     st.markdown("<div style='height:18px'></div>", unsafe_allow_html=True)
 
@@ -2112,11 +2547,18 @@ def render_production() -> None:
                 elif not provider_avail.get(provider_id, False):
                     st.error("Seçilen sağlayıcı yapılandırılmamış. Ayarlar sayfasından API anahtarlarını ekleyin.")
                 else:
-                    add_project(title.strip(), topic.strip(), provider_id)
-                    st.session_state["pending_project_meta"] = {
-                        "duration": int(duration), "aspect": aspect}
-                    st.success(f"Proje oluşturuldu: {title.strip()} — Planlama aşamasında.")
-                    st.rerun()
+                    existing = (registry_find(registry_entries, title.strip()) or
+                                registry_find(registry_entries, topic.strip()))
+                    if registry_state(existing) in {"published", "produced"}:
+                        st.error("Bu konu zaten yayında veya üretilmiş: "
+                                 f"“{existing.get('title')}”. Tekrar proje açmak yerine mevcut "
+                                 "üretimi Yayın Merkezi'nden yönetin.")
+                    else:
+                        add_project(title.strip(), topic.strip(), provider_id)
+                        st.session_state["pending_project_meta"] = {
+                            "duration": int(duration), "aspect": aspect}
+                        st.success(f"Proje oluşturuldu: {title.strip()} — Planlama aşamasında.")
+                        st.rerun()
     with info_col:
         panel_open("HAT AKIŞI")
         st.markdown(
@@ -2184,7 +2626,8 @@ def render_production() -> None:
             if output_path and os.path.exists(output_path) and item["stage_index"] >= 3:
                 st.markdown("<div style='height:8px'></div>", unsafe_allow_html=True)
                 st.markdown(badge("ÖNİZLEME HAZIR", "info"), unsafe_allow_html=True)
-                st.video(output_path)
+                st.video(output_path, alt=f"Proje önizlemesi: {item['title']}",
+                         width=PREVIEW_WIDTH)
                 try:
                     with open(output_path, "rb") as handle:
                         st.download_button("⬇️ Videoyu İndir", data=handle.read(),
@@ -2246,7 +2689,8 @@ def render_production() -> None:
         grid = st.columns(3)
         for index, entry in enumerate(entries[:6]):
             with grid[index % 3]:
-                st.video(str(entry["path"]), alt=f"Önizleme: {entry['title']}")
+                st.video(str(entry["path"]), alt=f"Önizleme: {entry['title']}",
+                         width=GALLERY_PREVIEW_WIDTH)
                 st.markdown(f"**{entry['title']}**")
                 meta_bits = [entry["source"], f"{entry['size_mb']:.1f} MB"]
                 duration = (entry.get("probe") or {}).get("duration_s")
@@ -2284,24 +2728,33 @@ def render_production() -> None:
     )
     entry = next(item for item in entries if str(item["path"]) == selected_path)
     probe = entry.get("probe") or {}
+    publish_registry = registry_find(registry_entries, entry["title"])
+    published_youtube_url = ""
+    if registry_state(publish_registry) == "published":
+        published_youtube_url = (f"https://www.youtube.com/watch?v="
+                                 f"{publish_registry.get('youtube_id')}")
     lowered = f"{entry['name']} {entry['title']}".lower()
     blocked_reason = ""
     if "dog-guilty-look" in lowered or "guilty look" in lowered:
         blocked_reason = ("Bu pilot yayın için reddedildi: kaynakları eğlence/derleme "
                           "klipleri, görünür filigran ve yerel kanıt kaydıyla uyuşmayan "
                           "anlatım içeriyor. Yayınlamayın; yeni ve onaylı bir render kullanın.")
+    elif published_youtube_url:
+        blocked_reason = ("Bu video YouTube kanalınızda zaten yayında. Aynı video tekrar "
+                          "yüklenmez; yeni bir sürüm için farklı içerik üretin.")
     elif not probe.get("ok") or probe.get("issues"):
         blocked_reason = ("Video dosyası doğrulanamadı. Dosya bozuk veya eksik olabilir; "
                           "yükleme güvenlik nedeniyle kapatıldı.")
 
     preview_col, meta_col = st.columns([3, 2])
     with preview_col:
-        st.video(str(entry["path"]), alt=f"Yayın önizlemesi: {entry['title']}")
+        st.video(str(entry["path"]), alt=f"Yayın önizlemesi: {entry['title']}",
+                 width=PREVIEW_WIDTH)
     with meta_col:
-        st.markdown(" ".join([
-            badge(entry["source"].upper(), "info"),
-            badge("İNCELEME GEREKLİ", "warn"),
-        ]), unsafe_allow_html=True)
+        status_badges = [badge(entry["source"].upper(), "info")]
+        status_badges.append(badge("YOUTUBE'DA YAYINDA", "err") if published_youtube_url
+                             else badge("İNCELEME GEREKLİ", "warn"))
+        st.markdown(" ".join(status_badges), unsafe_allow_html=True)
         st.markdown(f"**{entry['title']}**")
         resolution = (f"{probe.get('width')}×{probe.get('height')}"
                       if probe.get("width") and probe.get("height") else "—")
@@ -2312,6 +2765,8 @@ def render_production() -> None:
             st.caption(f"Sağlayıcı durumu: {entry['provider_status']}")
         if blocked_reason:
             st.error(blocked_reason)
+            if published_youtube_url:
+                st.link_button("YouTube'da aç", published_youtube_url, width="stretch")
         else:
             st.markdown(
                 '<div class="cd-publish-note">Yükleme öncesi videoyu baştan sona izleyin. '
@@ -2411,6 +2866,13 @@ def render_production() -> None:
                         updated["stage_index"] = len(PIPELINE_STAGES)
                         updated["updated_at"] = datetime.now().strftime("%d.%m.%Y %H:%M")
                 save_pipeline(fresh)
+                upload_registry = load_registry()
+                if registry_merge(upload_registry, title_value.strip(), source="upload",
+                                  youtube_id=video_id or None,
+                                  viewmade_id=str((publish_registry or {}).get("viewmade_id") or "") or None,
+                                  status="uploaded"):
+                    save_registry(upload_registry)
+                channel_videos_index.clear()
                 log_activity(f"Video YouTube'a yüklendi: {title_value.strip()} "
                              f"({privacy})", "ok")
                 st.session_state["publish_notice"] = (

@@ -6,6 +6,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/) and this 
 
 ## [Unreleased]
 ### Added
+- **Content registry and YouTube matching** (`dashboard.py`): `content_registry.json` links ViewMade jobs, local packages, and YouTube videos by title tokens and provider IDs. All 6 published ViewMade productions now match their YouTube video IDs, and duplicates are blocked at suggestion, project creation, paid render, and upload.
+- **ViewMade ↔ YouTube matching panel** (`dashboard.py`): Table of every ViewMade production with local-copy status and the matching YouTube link, so published productions are never re-rendered or re-uploaded.
+- **Ideal preview sizes** (`dashboard.py`): Vertical video previews render at 320 px (featured) and 220 px (gallery) instead of full column width.
 - **Dashboard ViewMade bridge** (`dashboard.py`): OAuth/MCP connection card with token expiry, scope, 3/3 tool binding, live MCP test, provider video list, on-demand free preview download, 1080x1920 normalization, and sidecar metadata.
 - **Per-project render gate** (`dashboard.py`, `scripts/dashboard_viewmade_render.py`): English narration check, 30–60 s duration, typed `RENDER` confirmation, background worker with `CDDOCS_LIVE_CONFIRM=YES`, stale-state protection, and automatic preview on completion.
 - **Yayın Merkezi** (`dashboard.py`): Local `renders/` + `outputs/` gallery, editable title/description/tags, privacy selection, target-channel display, quota display, human-review checkbox, typed `YAYINLA` confirmation, duplicate guard, and rejected-pilot block for `dog-guilty-look`.
@@ -13,7 +16,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/) and this 
 
 ### Changed
 - **ViewMade provider availability** (`dashboard.py`): The legacy API-key check is overridden by real OAuth + binding status.
-- **Runtime state ignores** (`.gitignore`): Added `upload_history.json` and `state/dashboard-render-*` so local publish/render state is never committed.
+- **Runtime state ignores** (`.gitignore`): Added `upload_history.json`, `content_registry.json`, and `state/dashboard-render-*` so local publish/render/registry state is never committed.
 
 ## [0.2.0] - 2026-10-29
 ### Added
