@@ -100,7 +100,15 @@ class AnalyticsReporter:
 
             channel_id = channel_response["items"][0]["id"]
             content_details = channel_response["items"][0].get("contentDetails", {})
-            uploads_playlist_id = content_details.get("uploadsPlaylistId")
+            uploads_playlist_id = (
+                content_details.get("relatedPlaylists", {}).get("uploads")
+                or content_details.get("uploadsPlaylistId")
+            )
+
+            if not uploads_playlist_id:
+                # YouTube uploads playlist kimliği: "UU" + kanal kimliğinin kuyruğu
+                if channel_id.startswith("UC"):
+                    uploads_playlist_id = "UU" + channel_id[2:]
 
             if not uploads_playlist_id:
                 logger.warning("No uploadsPlaylistId found for channel %s", channel_id)

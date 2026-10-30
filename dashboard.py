@@ -671,6 +671,11 @@ with st.sidebar:
 
     # Bağlantı & Yetkilendirme — her koşulda görünür
     manager = get_token_manager()
+    try:
+        if not manager.is_valid():
+            manager.ensure_valid()
+    except Exception:
+        pass
     token_ok = manager.is_valid()
     with st.expander("🔗 Bağlantı", expanded=not token_ok):
         if token_ok:

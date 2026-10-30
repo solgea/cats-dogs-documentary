@@ -5,7 +5,7 @@ from __future__ import annotations
 import json
 import os
 import stat
-from datetime import datetime
+from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Optional
 
@@ -28,7 +28,10 @@ class TokenManager:
         config: Optional[YouTubeConfig] = None,
     ):
         self.config = config or YouTubeConfig()
-        self.storage_path = Path(storage_path or self.config.token_storage_path)
+        raw_path = Path(storage_path or self.config.token_storage_path)
+        if not raw_path.is_absolute():
+            raw_path = Path(__file__).resolve().parent / raw_path
+        self.storage_path = raw_path
         self.credentials: Optional[Credentials] = None
         # Selected channel ID (None means use default "mine" channel)
         self.selected_channel_id: Optional[str] = None
@@ -48,9 +51,10 @@ class TokenManager:
             self.credentials = Credentials(
                 token=data.get("token"),
                 refresh_token=data.get("refresh_token"),
+                token_uri=data.get("token_uri") or self.config.token_uri,
                 client_id=self.config.client_id,
                 client_secret=self.config.client_secret,
-                scopes=self.config.scopes,
+                scopes=data.get("scopes") or self.config.scopes,
                 expiry=datetime.fromisoformat(data.get("expiry", "")) if data.get("expiry") else None,
             )
 
@@ -105,6 +109,8 @@ class TokenManager:
         """
         if self.credentials is None:
             return False
+        if self.credentials.expiry is None:
+            return False
         return not self.credentials.expired
 
     def refresh_if_needed(self) -> bool:
@@ -116,15 +122,29 @@ class TokenManager:
         if self.credentials is None:
             return False
 
-        if not self.credentials.expired:
+        if self.credentials.expiry is not None and not self.credentials.expired:
             return True
 
         try:
+            if not self.credentials.token_uri:
+                self.credentials.token_uri = self.config.token_uri
             request = Request()
             self.credentials.refresh(request)
             self.save_credentials()
             return True
         except Exception as e:
+            # Kapsam uyuşmazlığı: token'ın gerçek onay kapsamlarıyla bir kez daha dene
+            if "invalid_scope" in str(e).lower():
+                try:
+                    granted_scopes = self.credentials.scopes
+                    self.credentials.scopes = None
+                    request = Request()
+                    self.credentials.refresh(request)
+                    self.credentials.scopes = granted_scopes or self.config.scopes
+                    self.save_credentials()
+                    return True
+                except Exception as retry_error:
+                    print(f"Token yenileme hatası (kapsamsız deneme): {retry_error}")
             print(f"Token yenileme hatası: {e}")
             return False
 
@@ -161,6 +181,7 @@ class TokenManager:
                 client_secret=self.config.client_secret,
                 scopes=self.config.scopes,
             )
+            self.credentials.expiry = datetime.utcnow() + timedelta(minutes=55)
             return self.save_credentials()
         except Exception as e:
             print(f"OAuth token kaydetme hatası: {e}")
@@ -174,7 +195,7 @@ class TokenManager:
         """
         if self.credentials is None:
             return False
-        if self.credentials.expired:
+        if self.credentials.expiry is None or self.credentials.expired:
             return self.refresh_if_needed()
         return True
 

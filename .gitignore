@@ -41,3 +41,10 @@ Thumbs.db
 # Keep committed history export and placeholder files
 !state/history.json
 !state/.gitkeep
+# Runtime state (local only)
+youtube_token.json
+*.bak-*
+panel_settings.json
+activity_log.json
+production_pipeline.json
+video_production_history.json
