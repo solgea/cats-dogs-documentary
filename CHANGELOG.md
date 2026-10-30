@@ -4,6 +4,17 @@ All notable changes to the Cats & Dogs Documentary project will be documented in
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/) and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+### Added
+- **Dashboard ViewMade bridge** (`dashboard.py`): OAuth/MCP connection card with token expiry, scope, 3/3 tool binding, live MCP test, provider video list, on-demand free preview download, 1080x1920 normalization, and sidecar metadata.
+- **Per-project render gate** (`dashboard.py`, `scripts/dashboard_viewmade_render.py`): English narration check, 30–60 s duration, typed `RENDER` confirmation, background worker with `CDDOCS_LIVE_CONFIRM=YES`, stale-state protection, and automatic preview on completion.
+- **Yayın Merkezi** (`dashboard.py`): Local `renders/` + `outputs/` gallery, editable title/description/tags, privacy selection, target-channel display, quota display, human-review checkbox, typed `YAYINLA` confirmation, duplicate guard, and rejected-pilot block for `dog-guilty-look`.
+- **Preview verification**: Downloaded `viewmade-2fd8c784-e45a-4dfb-89a9-402922d4e758.mp4` (26.3 MB, 1080x1920, 46.0 s, AAC audio) without submitting a paid render.
+
+### Changed
+- **ViewMade provider availability** (`dashboard.py`): The legacy API-key check is overridden by real OAuth + binding status.
+- **Runtime state ignores** (`.gitignore`): Added `upload_history.json` and `state/dashboard-render-*` so local publish/render state is never committed.
+
 ## [0.2.0] - 2026-10-29
 ### Added
 - **Real-footage montage policy and attribution gates** (`3f9cd62`): Replaced AI-assisted disclosure with the real-footage channel standard. Every provider source URL is now credited. Render attribution and editorial-review QA checks added.

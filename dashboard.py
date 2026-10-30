@@ -14,7 +14,10 @@ Tema sistemi: Standart (Kontrol Odası), Aydınlık Stüdyo, Okyanus, Orman.
 from __future__ import annotations
 
 import json
+import hashlib
 import os
+import re
+import subprocess
 import sys
 import time
 from datetime import datetime, timedelta
@@ -22,7 +25,9 @@ from html import escape
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
-sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "src", "cddocs"))
+BASE_DIR = Path(__file__).resolve().parent
+sys.path.insert(0, str(BASE_DIR / "src" / "cddocs"))
+sys.path.insert(0, str(BASE_DIR / "src"))
 
 import streamlit as st
 import pandas as pd
@@ -49,7 +54,7 @@ except ImportError:
 # ============================================================================
 # Kalıcı Ayarlar
 # ============================================================================
-ROOT = Path(__file__).parent
+ROOT = BASE_DIR
 SETTINGS_FILE = ROOT / "panel_settings.json"
 PIPELINE_FILE = ROOT / "production_pipeline.json"
 ACTIVITY_FILE = ROOT / "activity_log.json"
@@ -410,6 +415,47 @@ div[data-testid="stDataFrame"] { border-radius: 11px !important; }
 }
 .cd-meta-value { font-size: .82rem; color: var(--t2); line-height: 1.45; }
 
+/* ViewMade bağlantı ve önizleme kartları */
+.cd-conn {
+  background: linear-gradient(135deg, var(--ok-soft) 0%, transparent 55%), var(--card);
+  border: 1px solid var(--line2); border-radius: 14px; padding: 18px 20px;
+}
+.cd-conn.is-warn { background: linear-gradient(135deg, var(--warn-soft) 0%, transparent 55%), var(--card); }
+.cd-conn-head { display: flex; align-items: center; gap: 12px; }
+.cd-conn-icon {
+  width: 42px; height: 42px; border-radius: 11px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center; font-size: 1.25rem;
+  background: var(--ok-soft); border: 1px solid var(--ok);
+}
+.cd-conn.is-warn .cd-conn-icon { background: var(--warn-soft); border-color: var(--warn); }
+.cd-conn-name { font-weight: 800; font-size: 1rem; color: var(--text); }
+.cd-conn-sub { font-family: var(--mono); font-size: .67rem; color: var(--muted); letter-spacing: .08em; }
+.cd-conn-stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; margin-top: 14px; }
+.cd-conn-stat { background: var(--s1); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; }
+.cd-conn-label {
+  font-family: var(--mono); font-size: .62rem; letter-spacing: .09em;
+  text-transform: uppercase; color: var(--muted); margin-bottom: 4px;
+}
+.cd-conn-value { font-size: .84rem; font-weight: 600; color: var(--text); }
+.cd-video-card {
+  background: var(--card); border: 1px solid var(--line); border-radius: 13px;
+  padding: 16px 18px;
+}
+.cd-video-title { font-weight: 700; font-size: .94rem; color: var(--text); line-height: 1.35; }
+.cd-video-sub {
+  font-family: var(--mono); font-size: .68rem; color: var(--muted);
+  margin-top: 5px; letter-spacing: .03em;
+}
+.cd-publish-note {
+  background: var(--s1); border: 1px solid var(--line2); border-left: 3px solid var(--warn);
+  border-radius: 0 10px 10px 0; padding: 12px 14px; color: var(--t2);
+  font-size: .84rem; line-height: 1.55;
+}
+@media (max-width: 900px) {
+  .cd-conn-stats { grid-template-columns: 1fr 1fr; }
+  .cd-meta-grid { grid-template-columns: 1fr; }
+}
+
 .cd-stage {
   display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 12px 8px;
   border: 1px solid var(--line); border-radius: 11px; background: var(--s1);
@@ -668,6 +714,507 @@ def active_channel() -> Optional[Dict[str, Any]]:
         if channel.get("channel_id") == selected:
             return channel
     return channels[0]
+
+
+# ============================================================================
+# ViewMade köprüsü — resmî OAuth + MCP hattı
+# ============================================================================
+def _read_json_file(path: Path) -> Dict[str, Any]:
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return {}
+    return payload if isinstance(payload, dict) else {}
+
+
+def get_viewmade_adapter():
+    """Resmî ViewMade adapter'ını proje köküne bağlı olarak döndürür."""
+    try:
+        from cddocs.config import Project
+        from cddocs.viewmade.adapter import ViewMadeAdapter
+        return ViewMadeAdapter(Project.open(ROOT))
+    except Exception:
+        return None
+
+
+def viewmade_token_info() -> Dict[str, Any]:
+    record = _read_json_file(ROOT / "state" / "viewmade-token.json")
+    expires_at = record.get("expires_at")
+    expiry = None
+    days_left = None
+    if expires_at:
+        try:
+            expiry = datetime.fromtimestamp(float(expires_at))
+            days_left = max(0, (expiry - datetime.now()).days)
+        except (TypeError, ValueError, OSError):
+            expiry = None
+    return {
+        "expires_at": expiry,
+        "days_left": days_left,
+        "refreshable": bool(record.get("refresh_token")),
+        "scope": record.get("scope") or "",
+    }
+
+
+def viewmade_status() -> Dict[str, Any]:
+    adapter = get_viewmade_adapter()
+    if adapter is None:
+        return {"available": False, "authenticated": False, "bound": False,
+                "error": "ViewMade modülü yüklenemedi."}
+    try:
+        status = adapter.status()
+    except Exception as exc:
+        return {"available": False, "authenticated": False, "bound": False,
+                "error": str(exc)[:300]}
+    status.update(viewmade_token_info())
+    status["available"] = bool(status.get("authenticated") and status.get("bound"))
+    return status
+
+
+@st.cache_data(ttl=180, show_spinner=False)
+def list_viewmade_videos() -> Dict[str, Any]:
+    """ViewMade hesabındaki üretimleri salt-okuma ile listeler."""
+    adapter = get_viewmade_adapter()
+    if adapter is None:
+        return {"ok": False, "error": "ViewMade adapter yüklenemedi.", "items": []}
+    try:
+        from cddocs.viewmade.adapter import _tool_payload
+        payload = _tool_payload(adapter._call_bound("list_videos", {}))
+        items = payload.get("items") if isinstance(payload, dict) else None
+        if not isinstance(items, list):
+            return {"ok": False, "error": "ViewMade video listesi okunamadı.", "items": []}
+        clean = [item for item in items if isinstance(item, dict)]
+        clean.sort(key=lambda item: str(item.get("created_at") or ""), reverse=True)
+        return {"ok": True, "items": clean, "error": ""}
+    except Exception as exc:
+        return {"ok": False, "error": str(exc)[:400], "items": []}
+
+
+def find_local_viewmade_video(video_id: str) -> Optional[Path]:
+    candidate = ROOT / "renders" / f"viewmade-{video_id}.mp4"
+    if candidate.is_file() and candidate.stat().st_size > 100_000:
+        return candidate
+    packages = ROOT / "content" / "packages"
+    if packages.is_dir():
+        for request_path in packages.glob("*/viewmade-request.json"):
+            request = _read_json_file(request_path)
+            if str(request.get("job_id") or "") != video_id:
+                continue
+            render_path = request.get("render_path")
+            if not render_path:
+                continue
+            local = ROOT / str(render_path)
+            if local.is_file():
+                return local
+    return None
+
+
+def download_viewmade_preview(video_id: str) -> Dict[str, Any]:
+    """ViewMade hazır videosunu indirir, 1080x1920'ye normalize eder ve önizler."""
+    adapter = get_viewmade_adapter()
+    if adapter is None:
+        raise RuntimeError("ViewMade adapter yüklenemedi.")
+    from cddocs.viewmade.adapter import _tool_payload
+
+    payload = _tool_payload(adapter._call_bound("download", {"job_id": video_id}))
+    if not isinstance(payload, dict):
+        raise RuntimeError("ViewMade indirme yanıtı okunamadı.")
+
+    target = ROOT / "renders" / f"viewmade-{video_id}.mp4"
+    target.parent.mkdir(parents=True, exist_ok=True)
+    normalized = False
+    if not (target.is_file() and target.stat().st_size > 100_000):
+        url = payload.get("video_url") or payload.get("download_url") or payload.get("url")
+        file_path = payload.get("path") or payload.get("file") or payload.get("file_path")
+        if url:
+            adapter._download_url(str(url), target)
+        elif file_path and Path(str(file_path)).is_file():
+            import shutil
+            shutil.copyfile(str(file_path), str(target))
+        else:
+            raise RuntimeError("ViewMade indirme aracı geçerli bir video adresi döndürmedi.")
+        try:
+            normalized = bool(adapter._normalize_render(target))
+        except Exception:
+            normalized = False
+
+    from cddocs.media_probe import validate_file
+    info, issues = validate_file(str(target), expect_format="mp4", min_bytes=100_000)
+    meta = {
+        key: payload.get(key)
+        for key in ("id", "title", "description", "tags", "duration", "resolution",
+                    "aspect", "scene_count", "sources", "attributions", "view_url",
+                    "credits_charged", "net_credits", "created_at", "status",
+                    "subject_note")
+    }
+    meta["job_id"] = payload.get("id") or video_id
+    meta.update({
+        "local_path": str(target.relative_to(ROOT)).replace("\\", "/"),
+        "downloaded_at": datetime.now().isoformat(timespec="seconds"),
+        "normalized": normalized,
+        "media": info.to_dict() if info else None,
+        "issues": issues,
+    })
+    target.with_suffix(".json").write_text(
+        json.dumps(meta, indent=2, ensure_ascii=False), encoding="utf-8")
+    return {"path": target, "metadata": meta, "issues": issues, "normalized": normalized}
+
+
+@st.cache_data(ttl=3600, show_spinner=False)
+def probe_video(path_text: str, modified: float) -> Dict[str, Any]:
+    try:
+        from cddocs.media_probe import validate_file
+        info, issues = validate_file(path_text, expect_format="mp4", min_bytes=100_000)
+        payload = info.to_dict() if info else {}
+        payload["issues"] = issues
+        return payload
+    except Exception:
+        return {}
+
+
+def extract_script_field(script: str, label: str) -> str:
+    match = re.search(rf"^{re.escape(label)}\s*:\s*(.+)$", script or "",
+                      flags=re.IGNORECASE | re.MULTILINE)
+    return match.group(1).strip() if match else ""
+
+
+def default_viewmade_narration(project: Dict[str, Any]) -> str:
+    script = str(project.get("script") or "")
+    lines: List[str] = []
+    for raw_line in script.splitlines():
+        line = raw_line.strip()
+        match = re.match(r"^\[[^\]]+\]\s*(.+)$", line)
+        if not match:
+            continue
+        text = match.group(1).strip()
+        text = re.sub(
+            r"^(Kanca|Bilim|Detay|Şaşırtıcı gerçek|Kapanış)\s*:\s*", "", text,
+            flags=re.IGNORECASE)
+        if text:
+            lines.append(text)
+    if not lines:
+        lines = [str(project.get("topic") or project.get("title") or "").strip()]
+    return " ".join(part for part in lines if part).strip()
+
+
+def narration_looks_turkish(text: str) -> bool:
+    lowered = str(text or "").lower()
+    if re.search(r"[çğıöşü]", lowered):
+        return True
+    words = set(re.findall(r"[a-z]+", lowered))
+    return len(words & {"kedi", "köpek", "neden", "için", "bir", "ve", "bu", "ile"}) >= 2
+
+
+def _split_narration(narration: str, parts: int = 5) -> List[str]:
+    words = str(narration or "").split()
+    if not words:
+        return [""] * parts
+    size = max(1, (len(words) + parts - 1) // parts)
+    chunks = [" ".join(words[index:index + size]) for index in range(0, len(words), size)]
+    while len(chunks) < parts:
+        chunks.append(chunks[-1] if chunks else "")
+    return chunks[:parts]
+
+
+def prepare_viewmade_package(project: Dict[str, Any], narration: str,
+                             duration_s: int = 45) -> Dict[str, Any]:
+    """Panel projesinden dürüst bir ViewMade istek paketi üretir (render göndermez)."""
+    narration = " ".join(str(narration or "").split())
+    if not narration:
+        raise ValueError("ViewMade anlatım metni boş olamaz.")
+    script = str(project.get("script") or "")
+    title = extract_script_field(script, "Video başlığı (EN)") or str(
+        project.get("title") or "Untitled documentary short")
+    tags_text = extract_script_field(script, "Etiketler")
+    tags = [part.strip() for part in tags_text.split(",") if part.strip()] or \
+        ["cats", "dogs", "documentary"]
+    duration_s = max(30, min(60, int(duration_s or 45)))
+
+    digest = hashlib.sha256(f"{title}|{narration}|{duration_s}".encode("utf-8")).hexdigest()[:8]
+    project_key = re.sub(r"[^a-z0-9]+", "-", str(project.get("id") or "project").lower()).strip("-")
+    slug = f"panel-{project_key}-{digest}"
+
+    folder = ROOT / "content" / "packages" / slug
+    folder.mkdir(parents=True, exist_ok=True)
+    request_path = folder / "viewmade-request.json"
+    existing = _read_json_file(request_path)
+    if existing.get("status") in {"SUBMITTED", "RENDERING", "COMPLETE", "STALE"}:
+        return {"slug": slug, "path": request_path, "request": existing, "reused": True}
+
+    disclosure = "Real-footage montage using third-party clips for illustration; not documentary footage or scientific evidence."
+    config = _read_json_file(ROOT / "config" / "viewmade.json")
+    disclosure = str((config.get("render") or {}).get("disclosure") or disclosure)
+
+    chunks = _split_narration(narration, 5)
+    scene_duration = round(duration_s / 5, 2)
+    scenes = []
+    cursor = 0.0
+    for index, chunk in enumerate(chunks):
+        scenes.append({
+            "id": f"s{index + 1}",
+            "start_s": round(cursor, 2),
+            "duration_s": scene_duration,
+            "narration": chunk,
+            "visual": {
+                "description": "Observational real pet footage illustrating the narration; natural light; calm behavior.",
+                "shot_type": "real footage montage",
+                "subject": "cats and dogs matching the narration",
+                "motion": "gentle documentary pacing",
+                "framing": "vertical 9:16, subject centered",
+                "continuity": "species-correct animals; no staged distress",
+                "avoid": ["text overlays", "watermarks", "distorted animals"],
+            },
+            "transition": "cut",
+        })
+        cursor += scene_duration
+
+    now = datetime.now().isoformat(timespec="seconds")
+    request_payload = {
+        "schema_version": 1,
+        "package_id": slug,
+        "provider": "viewmade",
+        "provider_endpoint": "https://mcp.viewmade.com/mcp",
+        "status": "NOT_SUBMITTED",
+        "submission_allowed": True,
+        "blocked_reason": None,
+        "panel_project_id": project.get("id"),
+        "panel_project_title": project.get("title"),
+        "created_at": now,
+        "updated_at": now,
+        "preflight": {
+            "tool_bindings_complete": True,
+            "authentication": "checked_at_render_time",
+            "live_authorisation": "required_at_render_time",
+        },
+        "request": {
+            "title": title,
+            "provider_topic": title,
+            "format": "youtube_shorts",
+            "duration_s": duration_s,
+            "aspect_ratio": "9:16",
+            "resolution": "1080x1920",
+            "language": "en",
+            "narration": narration,
+            "scenes": scenes,
+            "captions": {"language": "en", "burned_in": True},
+            "disclosure": disclosure,
+            "tags": tags,
+        },
+    }
+    request_path.write_text(json.dumps(request_payload, indent=2, ensure_ascii=False),
+                            encoding="utf-8")
+    (folder / "script.md").write_text(
+        f"# {title}\n\n{narration}\n", encoding="utf-8")
+    return {"slug": slug, "path": request_path, "request": request_payload, "reused": False}
+
+
+def start_viewmade_render(slug: str) -> int:
+    """Ücretli ViewMade render işini arka planda başlatır."""
+    request_path = ROOT / "content" / "packages" / slug / "viewmade-request.json"
+    request = _read_json_file(request_path)
+    if not request:
+        raise ValueError("ViewMade istek dosyası bulunamadı.")
+    if request.get("status") in {"SUBMITTED", "RENDERING", "COMPLETE", "STALE"}:
+        raise ValueError("Bu paket için zaten aktif veya tamamlanmış bir render var.")
+
+    log_path = ROOT / "state" / f"dashboard-render-{slug}.log"
+    state_path = ROOT / "state" / f"dashboard-render-{slug}.json"
+    log_path.parent.mkdir(parents=True, exist_ok=True)
+    state_path.write_text(json.dumps({
+        "package_id": slug, "phase": "starting", "started_at": datetime.now().isoformat(timespec="seconds")
+    }, indent=2), encoding="utf-8")
+
+    env = os.environ.copy()
+    env["PYTHONPATH"] = str(ROOT / "src") + os.pathsep + env.get("PYTHONPATH", "")
+    env["CDDOCS_LIVE_CONFIRM"] = "YES"
+    creationflags = 0
+    if os.name == "nt":
+        creationflags = 0x00000008 | 0x00000200  # DETACHED_PROCESS | CREATE_NEW_PROCESS_GROUP
+    try:
+        with open(log_path, "ab") as log_handle:
+            process = subprocess.Popen(
+                [sys.executable, str(ROOT / "scripts" / "dashboard_viewmade_render.py"),
+                 slug, "--poll-interval", "10", "--timeout", "3600"],
+                cwd=str(ROOT), env=env, stdout=log_handle, stderr=subprocess.STDOUT,
+                creationflags=creationflags,
+            )
+    except OSError as exc:
+        state_path.write_text(json.dumps({
+            "package_id": slug,
+            "phase": "failed",
+            "started_at": datetime.now().isoformat(timespec="seconds"),
+            "finished_at": datetime.now().isoformat(timespec="seconds"),
+            "error": f"Arka plan işlemi başlatılamadı: {exc}",
+        }, ensure_ascii=False, indent=2), encoding="utf-8")
+        raise
+    time.sleep(1.0)
+    if process.poll() is not None:
+        tail = ""
+        try:
+            tail = log_path.read_text(encoding="utf-8", errors="replace")[-600:].strip()
+        except OSError:
+            pass
+        message = (f"Arka plan işlemi erken sonlandı (kod {process.returncode}). "
+                   f"{tail}".strip())
+        state_path.write_text(json.dumps({
+            "package_id": slug,
+            "phase": "failed",
+            "started_at": datetime.now().isoformat(timespec="seconds"),
+            "finished_at": datetime.now().isoformat(timespec="seconds"),
+            "error": message,
+        }, ensure_ascii=False, indent=2), encoding="utf-8")
+        raise RuntimeError(message)
+    return int(process.pid)
+
+
+def viewmade_render_state(slug: str) -> Dict[str, Any]:
+    dashboard_state = _read_json_file(ROOT / "state" / f"dashboard-render-{slug}.json")
+    request = _read_json_file(ROOT / "content" / "packages" / slug / "viewmade-request.json")
+    job = _read_json_file(ROOT / "state" / "viewmade-jobs" / f"{slug}.json")
+    return {
+        "phase": dashboard_state.get("phase") or "",
+        "pid": dashboard_state.get("pid"),
+        "started_at": dashboard_state.get("started_at") or request.get("created_at"),
+        "finished_at": dashboard_state.get("finished_at"),
+        "request_status": request.get("status") or "NOT_SUBMITTED",
+        "provider_state": request.get("provider_state") or job.get("provider_state"),
+        "job_id": request.get("job_id") or job.get("job_id"),
+        "render_path": request.get("render_path") or job.get("render_path"),
+        "error": dashboard_state.get("error") or request.get("error") or job.get("error"),
+        "media": job.get("media"),
+    }
+
+
+def sync_viewmade_projects(items: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    """Tamamlanan ViewMade çıktısını projeye otomatik bağlar."""
+    changed = False
+    for item in items:
+        slug = item.get("viewmade_package")
+        if not slug:
+            continue
+        state = viewmade_render_state(str(slug))
+        if state["request_status"] == "COMPLETE" and state.get("render_path"):
+            local = ROOT / str(state["render_path"])
+            if local.is_file():
+                target = str(local.resolve())
+                if item.get("output_path") != target or int(item.get("stage_index", 0)) < 3:
+                    item["output_path"] = target
+                    item["stage_index"] = max(3, int(item.get("stage_index", 0)))
+                    item["video_id"] = state.get("job_id") or item.get("video_id", "")
+                    item["viewmade_status"] = "COMPLETE"
+                    item["updated_at"] = datetime.now().strftime("%d.%m.%Y %H:%M")
+                    changed = True
+        elif state["request_status"] in {"SUBMITTED", "RENDERING", "FAILED", "STALE"}:
+            if item.get("viewmade_status") != state["request_status"]:
+                item["viewmade_status"] = state["request_status"]
+                changed = True
+    if changed:
+        save_pipeline(items)
+    return items
+
+
+def _provider_meta_for_path(path: Path) -> Dict[str, Any]:
+    sidecar = path.with_suffix(".json")
+    if sidecar.is_file():
+        return _read_json_file(sidecar)
+    packages = ROOT / "content" / "packages"
+    if packages.is_dir():
+        for request_path in packages.glob("*/viewmade-request.json"):
+            request = _read_json_file(request_path)
+            render_path = str(request.get("render_path") or "")
+            if not render_path:
+                continue
+            if (ROOT / render_path).resolve() == path.resolve() or \
+                    Path(render_path).stem == path.stem or \
+                    str(request.get("package_id") or "") == path.stem:
+                provider = dict(request.get("provider_package") or {})
+                provider.setdefault("status", request.get("status"))
+                provider.setdefault("job_id", request.get("job_id"))
+                return provider
+    return {}
+
+
+def local_video_entries() -> List[Dict[str, Any]]:
+    pipeline = load_pipeline()
+    entries: List[Dict[str, Any]] = []
+    seen = set()
+    for folder, source in ((ROOT / "renders", "ViewMade"), (ROOT / "outputs", "Panel")):
+        if not folder.is_dir():
+            continue
+        for path in folder.glob("*.mp4"):
+            if any(marker in path.name for marker in (".invalid.", ".raw.", ".normalized.")):
+                continue
+            resolved = str(path.resolve())
+            if resolved in seen:
+                continue
+            seen.add(resolved)
+            provider = _provider_meta_for_path(path)
+            project = next(
+                (item for item in pipeline
+                 if item.get("output_path") and
+                 Path(str(item["output_path"])).resolve() == path.resolve()),
+                None,
+            )
+            project_script = str((project or {}).get("script") or "")
+            title = (provider.get("title") or
+                     extract_script_field(project_script, "Video başlığı (EN)") or
+                     (project or {}).get("title") or path.stem.replace("-", " ").title())
+            description = provider.get("description") or str(
+                (project or {}).get("topic") or "").strip() or title
+            tags = provider.get("tags") or []
+            if isinstance(tags, str):
+                tags = [part.strip() for part in tags.split(",") if part.strip()]
+            if not tags:
+                tags_text = extract_script_field(project_script, "Etiketler")
+                tags = [part.strip() for part in tags_text.split(",") if part.strip()]
+            probe = probe_video(str(path), path.stat().st_mtime)
+            entries.append({
+                "path": path,
+                "name": path.name,
+                "source": source,
+                "title": title,
+                "description": description,
+                "tags": list(tags)[:15],
+                "sources": provider.get("sources") or [],
+                "attributions": provider.get("attributions") or [],
+                "subject_note": provider.get("subject_note") or "",
+                "provider_status": provider.get("status") or "",
+                "view_url": provider.get("view_url") or "",
+                "project": project,
+                "size_mb": path.stat().st_size / 1_048_576,
+                "modified": path.stat().st_mtime,
+                "probe": probe,
+            })
+    entries.sort(key=lambda entry: entry["modified"], reverse=True)
+    return entries
+
+
+def publish_description(entry: Dict[str, Any]) -> str:
+    parts = [str(entry.get("description") or "").strip()]
+    attributions = entry.get("attributions") or []
+    if attributions:
+        parts.append("Kaynaklar / Atıf:\n" + "\n".join(f"• {line}" for line in attributions))
+    if entry.get("source") == "ViewMade":
+        config = _read_json_file(ROOT / "config" / "viewmade.json")
+        disclosure = str((config.get("render") or {}).get("disclosure") or "").strip()
+        if disclosure:
+            parts.append(disclosure)
+    return "\n\n".join(part for part in parts if part)[:5000]
+
+
+def get_upload_manager() -> UploadManager:
+    return UploadManager(get_token_manager(), config=get_config(),
+                         history_file=str(ROOT / "upload_history.json"))
+
+
+def upload_history_entries(limit: int = 5) -> List[Dict[str, Any]]:
+    history = _read_json_file(ROOT / "upload_history.json")
+    rows = []
+    for record in history.values():
+        if isinstance(record, dict) and record.get("video_id"):
+            rows.append(record)
+    rows.sort(key=lambda row: str(row.get("uploaded_at") or ""), reverse=True)
+    return rows[:limit]
 
 
 # ============================================================================
@@ -1071,6 +1618,140 @@ def available_providers() -> List[Dict[str, Any]]:
              "Yerel görsellerden slayt videosu. Ücretsiz.", "available": True, "cost": "Ücretsiz"}]
 
 
+def render_project_viewmade(item: Dict[str, Any], vm_status: Dict[str, Any]) -> None:
+    """Proje detayında ücretli ViewMade render kapısı ve çıktı önizlemesi."""
+    st.markdown("<div style='height:6px'></div>", unsafe_allow_html=True)
+    st.markdown("**ViewMade üretimi**")
+
+    if not vm_status.get("available"):
+        st.markdown(badge("VIEWMADE BAĞLI DEĞİL", "warn"), unsafe_allow_html=True)
+        st.caption("OAuth oturumu veya araç eşlemesi hazır değil. "
+                   "Bağlantıyı yukarıdaki ViewMade panelinden doğrulayın.")
+        return
+
+    slug = str(item.get("viewmade_package") or "")
+    state = viewmade_render_state(slug) if slug else {}
+    request_status = str(state.get("request_status") or "")
+    phase = str(state.get("phase") or "")
+    render_path = str(state.get("render_path") or "")
+    local_path = ROOT / render_path if render_path else None
+
+    if slug and (request_status in {"SUBMITTED", "RENDERING"} or phase in {"starting", "submitted"}):
+        st.markdown(badge("RENDER SÜRÜYOR", "info"), unsafe_allow_html=True)
+        started = str(state.get("started_at") or "")[:19].replace("T", " ")
+        st.caption(f"ViewMade işi arka planda çalışıyor. Başlangıç: {started or '—'} · "
+                   f"Sağlayıcı durumu: {state.get('provider_state') or 'sırada'}")
+        st.progress(0.45 if request_status == "SUBMITTED" else 0.75)
+        if st.button("🔄 Durumu kontrol et", key=f"vm_poll_{item['id']}", width="stretch"):
+            st.rerun()
+        st.caption("Render tamamlandığında video otomatik indirilir ve bu kartta önizlenir. "
+                   "Sayfayı yenilemeniz yeterli.")
+        return
+
+    if slug and request_status == "COMPLETE" and local_path and local_path.is_file():
+        st.markdown(" ".join([
+            badge("VIEWMADE HAZIR", "ok"),
+            badge("İNCELEME GEREKLİ", "warn"),
+        ]), unsafe_allow_html=True)
+        st.video(str(local_path), alt=f"ViewMade çıktısı: {item.get('title', '')}")
+        probe = probe_video(str(local_path), local_path.stat().st_mtime)
+        duration = probe.get("duration_s")
+        resolution = (f"{probe.get('width')}×{probe.get('height')}"
+                      if probe.get("width") and probe.get("height") else "—")
+        details = f"{local_path.stat().st_size / 1_048_576:.1f} MB · {resolution}"
+        if duration:
+            details += f" · {duration:.1f} sn"
+        st.caption(details)
+        st.caption("Bu çıktı editöryal onaydan geçmedi. Görüntü, ses, kaynak atıfları ve "
+                   "telif kontrolü yapılmadan YouTube'a yüklemeyin.")
+        action_col, info_col = st.columns([1, 1])
+        with action_col:
+            if st.button("➡️ Yayın Merkezi'nde aç", key=f"vm_pub_{item['id']}",
+                         type="primary", width="stretch"):
+                st.session_state["publish_video_path"] = str(local_path)
+                st.session_state["viewmade_notice"] = (
+                    "Video Yayın Merkezi'ne taşındı; aşağıdaki kontrolden inceleyip yükleyin.")
+                st.rerun()
+        with info_col:
+            view_url = f"https://viewmade.com/v/{state.get('job_id')}" if state.get("job_id") else ""
+            if view_url:
+                st.link_button("ViewMade'de aç", view_url, width="stretch")
+        return
+
+    if slug and request_status in {"FAILED", "STALE"}:
+        st.markdown(badge("RENDER TAMAMLANMADI", "err"), unsafe_allow_html=True)
+        error_text = str(state.get("error") or "").strip()
+        if error_text:
+            st.caption(error_text[:500])
+        st.caption("Çift ücretlendirmeyi önlemek için panel yeni bir render göndermez. "
+                   "Mevcut işi ViewMade panelinden veya kurtarma betiğiyle çözün.")
+        if state.get("job_id"):
+            st.link_button("ViewMade'de aç", f"https://viewmade.com/v/{state.get('job_id')}",
+                           width="stretch")
+        return
+
+    # Yeni ücretli render formu
+    if phase == "failed" and state.get("error"):
+        st.warning(f"Önceki render denemesi başarısız: {str(state.get('error'))[:300]}")
+    narration_key = f"vm_narration_{item['id']}"
+    if narration_key not in st.session_state:
+        st.session_state[narration_key] = default_viewmade_narration(item)
+    narration = st.text_area(
+        "Anlatım metni (İngilizce)",
+        key=narration_key,
+        height=150,
+        help="ViewMade İngilizce seslendirme yapar. Metni İngilizceye çevirip düzenleyin; "
+             "senaryo notları Türkçe kalabilir.",
+    )
+    if st.button("↺ Anlatımı senaryodan yenile", key=f"vm_reset_narr_{item['id']}"):
+        st.session_state[narration_key] = default_viewmade_narration(item)
+        st.rerun()
+
+    duration_s = st.slider("Video süresi (sn)", min_value=30, max_value=60, value=45,
+                           step=5, key=f"vm_duration_{item['id']}")
+    turkish_detected = narration_looks_turkish(narration)
+    if turkish_detected:
+        st.warning("Anlatım metni Türkçe görünüyor. ViewMade İngilizce seslendirme yapar; "
+                   "render başlatmadan önce metni İngilizceye çevirin.")
+    english_confirmed = st.checkbox(
+        "Anlatım metni İngilizce ve seslendirmeye uygun.",
+        value=not turkish_detected,
+        key=f"vm_english_{item['id']}",
+    )
+    st.markdown(
+        '<div class="cd-publish-note" style="margin:8px 0 10px">'
+        '<b>Ücretli işlem.</b> ViewMade render başına yaklaşık 20 kredi harcar ve '
+        'geri alınamaz. Yeni render yalnızca aşağıdaki açık onayla başlar; '
+        'video otomatik olarak YouTube\'a yüklenmez.</div>',
+        unsafe_allow_html=True,
+    )
+    confirm = st.text_input("Onay için RENDER yazın", key=f"vm_confirm_{item['id']}",
+                            placeholder="RENDER")
+    can_start = (confirm.strip().upper() == "RENDER"
+                 and bool(narration.strip())
+                 and english_confirmed)
+    if st.button("🎬 ViewMade render başlat", key=f"vm_start_{item['id']}",
+                 type="primary", width="stretch", disabled=not can_start):
+        try:
+            prepared = prepare_viewmade_package(item, narration, int(duration_s))
+            fresh = load_pipeline()
+            for updated in fresh:
+                if updated["id"] == item["id"]:
+                    updated["viewmade_package"] = prepared["slug"]
+                    updated["provider"] = "viewmade"
+                    updated["viewmade_status"] = "NOT_SUBMITTED"
+                    updated["updated_at"] = datetime.now().strftime("%d.%m.%Y %H:%M")
+            save_pipeline(fresh)
+            pid = start_viewmade_render(prepared["slug"])
+            log_activity(f"ViewMade render başlatıldı: {item['title']} (PID {pid})", "info")
+            st.session_state["viewmade_notice"] = (
+                "Ücretli ViewMade render arka planda başladı. Durumu bu karttan izleyin.")
+            st.rerun()
+        except Exception as exc:
+            st.error(f"Render başlatılamadı: {exc}")
+    st.caption("Onay kutusu yalnızca RENDER yazıldığında etkinleşir.")
+
+
 def render_production() -> None:
     st.markdown(
         """
@@ -1083,13 +1764,32 @@ def render_production() -> None:
         unsafe_allow_html=True,
     )
 
+    vm_status = viewmade_status()
     providers = available_providers()
+    if not any(provider["id"] == "viewmade" for provider in providers):
+        providers.insert(1, {"id": "viewmade", "name": "ViewMade",
+                             "description": "ViewMade OAuth/MCP hattı ile gerçek video üretimi.",
+                             "available": False, "cost": "Kredi"})
+    for provider in providers:
+        if provider["id"] == "viewmade":
+            provider["available"] = bool(vm_status.get("available"))
+            provider["description"] = "ViewMade OAuth/MCP hattı ile gerçek video üretimi."
+            provider["cost"] = "Kredi · render başına ~20"
     provider_names = {provider["id"]: provider["name"] for provider in providers}
     provider_avail = {provider["id"]: provider.get("available", False) for provider in providers}
 
     agent_notice = st.session_state.pop("agent_notice", "")
     if agent_notice:
         st.success(agent_notice)
+    vm_notice = st.session_state.pop("viewmade_notice", "")
+    if vm_notice:
+        st.success(vm_notice)
+    publish_notice = st.session_state.pop("publish_notice", "")
+    if publish_notice:
+        st.success(publish_notice)
+        publish_url = st.session_state.pop("publish_result_url", "")
+        if publish_url:
+            st.link_button("YouTube'da aç", publish_url)
 
     # İçerik Ajanı — niş odaklı proje önerisi
     panel_open("İÇERİK AJANI · NİŞ ÖNERİSİ")
@@ -1196,6 +1896,165 @@ def render_production() -> None:
 
     st.markdown("<div style='height:18px'></div>", unsafe_allow_html=True)
 
+    # ------------------------------------------------------------------
+    # ViewMade bağlantısı ve üretim önizlemesi
+    # ------------------------------------------------------------------
+    panel_open("VIEWMADE BAĞLANTISI · MCP")
+    vm_ok = bool(vm_status.get("available"))
+    vm_error = st.session_state.pop("viewmade_error", "")
+    if vm_error:
+        st.error(f"ViewMade bağlantı hatası: {vm_error}")
+    conn_class = "" if vm_ok else " is-warn"
+    conn_badges = []
+    conn_badges.append(badge("BAĞLI" if vm_status.get("authenticated") else "BAĞLI DEĞİL",
+                             "ok" if vm_status.get("authenticated") else "err"))
+    conn_badges.append(badge("3/3 ARAÇ" if vm_status.get("bound") else "EŞLEME EKSİK",
+                             "ok" if vm_status.get("bound") else "warn"))
+    conn_badges.append(badge(f"{vm_status.get('tool_count', 0)} MCP ARACI", "info"))
+    expires_at = vm_status.get("expires_at")
+    expiry_text = expires_at.strftime("%d.%m.%Y %H:%M") if expires_at else "—"
+    days_text = f"{vm_status.get('days_left')} gün" if vm_status.get("days_left") is not None else "—"
+    scope_text = (vm_status.get("scope") or "").replace(" ", " · ")
+    st.markdown(
+        f"""
+        <div class="cd-conn{conn_class}">
+          <div class="cd-conn-head">
+            <div class="cd-conn-icon">🔗</div>
+            <div style="flex:1">
+              <div class="cd-conn-name">ViewMade MCP</div>
+              <div class="cd-conn-sub">OAuth 2.0 · {escape(str(vm_status.get('endpoint') or 'https://mcp.viewmade.com/mcp'))}</div>
+            </div>
+            <div style="display:flex; gap:6px; flex-wrap:wrap">{''.join(conn_badges)}</div>
+          </div>
+          <div class="cd-conn-stats">
+            <div class="cd-conn-stat">
+              <div class="cd-conn-label">Token geçerliliği</div>
+              <div class="cd-conn-value">{expiry_text} · {days_text}</div>
+            </div>
+            <div class="cd-conn-stat">
+              <div class="cd-conn-label">Render / durum / indirme</div>
+              <div class="cd-conn-value">{'Hazır' if vm_status.get('bound') else 'Eksik'}</div>
+            </div>
+            <div class="cd-conn-stat">
+              <div class="cd-conn-label">Kapsam</div>
+              <div class="cd-conn-value" style="font-size:.76rem">{escape(scope_text) or '—'}</div>
+            </div>
+            <div class="cd-conn-stat">
+              <div class="cd-conn-label">Yenileme</div>
+              <div class="cd-conn-value">{'Destekli' if vm_status.get('refreshable') else 'Yeniden giriş'}</div>
+            </div>
+          </div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    vm_action_1, vm_action_2, vm_action_3 = st.columns([2, 2, 2])
+    with vm_action_1:
+        if st.button("🔌 Canlı bağlantıyı test et", width="stretch", key="vm_live_test"):
+            list_viewmade_videos.clear()
+            with st.spinner("ViewMade MCP sorgulanıyor…"):
+                probe = list_viewmade_videos()
+            if probe.get("ok"):
+                st.session_state["viewmade_notice"] = (
+                    f"MCP bağlantısı doğrulandı — {len(probe.get('items', []))} üretim listelendi.")
+            else:
+                st.session_state["viewmade_error"] = probe.get("error") or "bilinmeyen hata"
+            st.rerun()
+    with vm_action_2:
+        if st.button("🔄 Videoları yenile", width="stretch", key="vm_refresh"):
+            list_viewmade_videos.clear()
+            st.session_state["viewmade_notice"] = "ViewMade video listesi yenilendi."
+            st.rerun()
+    with vm_action_3:
+        st.link_button("ViewMade panelini aç", vm_status.get("connect_url") or
+                       "https://viewmade.com/dashboard/connect", width="stretch")
+
+    if not vm_ok:
+        st.markdown(
+            '<div class="cd-publish-note" style="margin-top:12px">ViewMade bağlantısı hazır değil. '
+            'OAuth oturumunu yenileyin ve araç eşlemesinin 3/3 olduğunu doğrulayın.</div>',
+            unsafe_allow_html=True,
+        )
+
+    vm_list = list_viewmade_videos() if vm_ok else {"ok": False, "items": [], "error": ""}
+    if vm_ok and not vm_list.get("ok"):
+        st.error(f"ViewMade video listesi alınamadı: {vm_list.get('error')}")
+    elif vm_ok:
+        vm_items = [item for item in vm_list.get("items", []) if item.get("status") == "ready"]
+        if not vm_items:
+            st.info("ViewMade hesabında hazır video bulunmuyor.", icon="🎬")
+        else:
+            def _vm_label(item: Dict[str, Any]) -> str:
+                created = str(item.get("created_at") or "")[:10]
+                return f"{item.get('title') or 'Başlıksız'} · {created}"
+
+            selected_vm_id = st.selectbox(
+                "ViewMade üretimi",
+                options=[str(item["id"]) for item in vm_items],
+                format_func=lambda value: _vm_label(
+                    next(item for item in vm_items if str(item["id"]) == value)),
+                key="vm_video_select",
+            )
+            selected_vm = next(item for item in vm_items if str(item["id"]) == selected_vm_id)
+            local_vm = find_local_viewmade_video(selected_vm_id)
+            vm_preview_col, vm_meta_col = st.columns([3, 2])
+            with vm_preview_col:
+                if local_vm:
+                    st.video(str(local_vm), alt=f"ViewMade önizlemesi: {selected_vm.get('title')}")
+                else:
+                    st.markdown(
+                        f"""
+                        <div class="cd-video-card" style="margin-bottom:10px">
+                          <div class="cd-video-title">{escape(str(selected_vm.get('title') or 'ViewMade videosu'))}</div>
+                          <div class="cd-video-sub">VIEWMADE'DE HAZIR · YEREL KOPYA YOK</div>
+                          <div style="color:var(--t2); font-size:.86rem; line-height:1.55; margin-top:10px">
+                            Video ViewMade hesabında tamamlandı. Önizlemek için indirin; indirme ücretsizdir,
+                            yeni render başlatmaz.
+                          </div>
+                        </div>
+                        """,
+                        unsafe_allow_html=True,
+                    )
+            with vm_meta_col:
+                status_badges = [
+                    badge("VIEWMADE HAZIR", "ok"),
+                    badge("İNCELEME GEREKLİ", "warn"),
+                ]
+                st.markdown(" ".join(status_badges), unsafe_allow_html=True)
+                if local_vm:
+                    probe = probe_video(str(local_vm), local_vm.stat().st_mtime)
+                    duration = probe.get("duration_s")
+                    resolution = (f"{probe.get('width')}×{probe.get('height')}"
+                                  if probe.get("width") and probe.get("height") else "—")
+                    st.caption(f"Yerel kopya · {local_vm.stat().st_size / 1_048_576:.1f} MB · "
+                               f"{resolution} · {duration:.1f} sn" if duration else
+                               f"Yerel kopya · {local_vm.stat().st_size / 1_048_576:.1f} MB")
+                    if st.button("➡️ Yayın Merkezi'nde aç", width="stretch", key="vm_to_publish"):
+                        st.session_state["publish_video_path"] = str(local_vm)
+                        st.session_state["viewmade_notice"] = (
+                            "Video Yayın Merkezi'ne taşındı. Aşağıdaki yayın kontrolünden inceleyip yükleyin.")
+                        st.rerun()
+                else:
+                    if st.button("⬇️ Önizlemeyi getir", type="primary", width="stretch",
+                                 key="vm_download_preview"):
+                        try:
+                            with st.spinner("ViewMade videosu indiriliyor ve önizlemeye hazırlanıyor…"):
+                                download_viewmade_preview(selected_vm_id)
+                            st.session_state["viewmade_notice"] = "Video indirildi ve önizlemeye hazır."
+                            st.rerun()
+                        except Exception as exc:
+                            st.error(f"Video indirilemedi: {exc}")
+                st.link_button("ViewMade'de aç",
+                               f"https://viewmade.com/v/{selected_vm_id}", width="stretch")
+                with st.expander("Video bilgisi"):
+                    st.write(f"**Başlık:** {selected_vm.get('title') or '—'}")
+                    st.write(f"**Durum:** {selected_vm.get('status') or '—'}")
+                    st.write(f"**Oluşturma:** {str(selected_vm.get('created_at') or '—')[:19]}")
+                    st.caption("ViewMade çıktıları yayın öncesi insan incelemesi ve atıf kontrolü gerektirir.")
+
+    st.markdown("<div style='height:18px'></div>", unsafe_allow_html=True)
+
     # Aşama şeridi
     cols = st.columns(len(PIPELINE_STAGES))
     for position, stage in enumerate(PIPELINE_STAGES):
@@ -1281,7 +2140,7 @@ def render_production() -> None:
 
     # Proje kartları
     panel_open("PROJELER")
-    pipeline_items = load_pipeline()
+    pipeline_items = sync_viewmade_projects(load_pipeline())
     if not pipeline_items:
         st.markdown('<div class="cd-panel" style="color:var(--muted)">Henüz proje yok. '
                     'Yukarıdaki formla ilk projeyi başlatın.</div>', unsafe_allow_html=True)
@@ -1372,20 +2231,204 @@ def render_production() -> None:
                                 updated["updated_at"] = datetime.now().strftime("%d.%m.%Y %H:%M")
                         save_pipeline(items)
                         st.success("Kaydedildi.")
+                    render_project_viewmade(item, vm_status)
 
     st.markdown("<div style='height:20px'></div>", unsafe_allow_html=True)
 
-    # Üretilmiş videolar galerisi
-    outputs_dir = ROOT / "outputs"
-    if outputs_dir.exists():
-        videos = sorted(outputs_dir.glob("*.mp4"), key=lambda p: p.stat().st_mtime, reverse=True)
-        if videos:
-            panel_open("ÜRETİLEN VİDEOLAR")
-            grid = st.columns(3)
-            for index, video_path in enumerate(videos[:9]):
-                with grid[index % 3]:
-                    st.video(str(video_path))
-                    st.caption(f"{video_path.name} · {video_path.stat().st_size / 1_048_576:.1f} MB")
+    # Yerel video önizlemeleri — renders/ + outputs/
+    entries = local_video_entries()
+    panel_open("VİDEO ÖNİZLEMELERİ")
+    if not entries:
+        st.info("Henüz yerel video çıktısı yok. Bir projede ViewMade render tamamlandığında "
+                "veya yerel üretim bittiğinde video burada görünür.", icon="🎬")
+    else:
+        st.caption("Hazır çıktılar. ViewMade videoları yayın öncesi editöryal inceleme gerektirir.")
+        grid = st.columns(3)
+        for index, entry in enumerate(entries[:6]):
+            with grid[index % 3]:
+                st.video(str(entry["path"]), alt=f"Önizleme: {entry['title']}")
+                st.markdown(f"**{entry['title']}**")
+                meta_bits = [entry["source"], f"{entry['size_mb']:.1f} MB"]
+                duration = (entry.get("probe") or {}).get("duration_s")
+                if duration:
+                    meta_bits.append(f"{duration:.1f} sn")
+                st.caption(" · ".join(meta_bits))
+                if st.button("Yayın Merkezi'ne taşı", key=f"gal_pub_{index}", width="stretch"):
+                    st.session_state["publish_video_path"] = str(entry["path"])
+                    st.session_state["viewmade_notice"] = (
+                        "Video Yayın Merkezi'ne taşındı; aşağıdaki kontrolden inceleyip yükleyin.")
+                    st.rerun()
+
+    st.markdown("<div style='height:18px'></div>", unsafe_allow_html=True)
+
+    # Yayın Merkezi — insan incelemesi + yazılı onay + kontrollü YouTube yüklemesi
+    panel_open("YAYIN MERKEZİ")
+    if not entries:
+        st.caption("Yayın Merkezi için hazır video gerekir.")
+        return
+
+    paths = [str(entry["path"]) for entry in entries]
+    if st.session_state.get("publish_select") not in paths:
+        st.session_state.pop("publish_select", None)
+    wanted = st.session_state.pop("publish_video_path", "")
+    if wanted in paths:
+        st.session_state["publish_select"] = wanted
+
+    selected_path = st.selectbox(
+        "Yayınlanacak video",
+        options=paths,
+        format_func=lambda value: next(
+            f"{entry['title']} · {entry['source']}" for entry in entries
+            if str(entry["path"]) == value),
+        key="publish_select",
+    )
+    entry = next(item for item in entries if str(item["path"]) == selected_path)
+    probe = entry.get("probe") or {}
+    lowered = f"{entry['name']} {entry['title']}".lower()
+    blocked_reason = ""
+    if "dog-guilty-look" in lowered or "guilty look" in lowered:
+        blocked_reason = ("Bu pilot yayın için reddedildi: kaynakları eğlence/derleme "
+                          "klipleri, görünür filigran ve yerel kanıt kaydıyla uyuşmayan "
+                          "anlatım içeriyor. Yayınlamayın; yeni ve onaylı bir render kullanın.")
+    elif not probe.get("ok") or probe.get("issues"):
+        blocked_reason = ("Video dosyası doğrulanamadı. Dosya bozuk veya eksik olabilir; "
+                          "yükleme güvenlik nedeniyle kapatıldı.")
+
+    preview_col, meta_col = st.columns([3, 2])
+    with preview_col:
+        st.video(str(entry["path"]), alt=f"Yayın önizlemesi: {entry['title']}")
+    with meta_col:
+        st.markdown(" ".join([
+            badge(entry["source"].upper(), "info"),
+            badge("İNCELEME GEREKLİ", "warn"),
+        ]), unsafe_allow_html=True)
+        st.markdown(f"**{entry['title']}**")
+        resolution = (f"{probe.get('width')}×{probe.get('height')}"
+                      if probe.get("width") and probe.get("height") else "—")
+        duration = probe.get("duration_s")
+        st.caption(f"{entry['size_mb']:.1f} MB · {resolution}" +
+                   (f" · {duration:.1f} sn" if duration else ""))
+        if entry.get("provider_status"):
+            st.caption(f"Sağlayıcı durumu: {entry['provider_status']}")
+        if blocked_reason:
+            st.error(blocked_reason)
+        else:
+            st.markdown(
+                '<div class="cd-publish-note">Yükleme öncesi videoyu baştan sona izleyin. '
+                'ViewMade çıktıları otomatik olarak onaylı sayılmaz; kaynak atıflarını ve '
+                'görüntü kalitesini kontrol edin.</div>',
+                unsafe_allow_html=True,
+            )
+        if entry.get("subject_note"):
+            with st.expander("Editöryal not"):
+                st.write(entry["subject_note"])
+        if entry.get("attributions"):
+            with st.expander("Kaynak atıfları"):
+                for line in entry["attributions"][:15]:
+                    st.markdown(f"- {line}")
+
+    safe_key = (re.sub(r"[^a-zA-Z0-9_-]", "_", entry["name"]) + "_" +
+                hashlib.sha256(str(entry["path"]).encode("utf-8")).hexdigest()[:8])
+    title_default = str(entry["title"])[:100]
+    description_default = publish_description(entry)
+    tags_default = ", ".join(str(tag) for tag in entry["tags"])
+
+    title_value = st.text_input("Başlık", value=title_default, max_chars=100,
+                                key=f"pub_title_{safe_key}")
+    description_value = st.text_area("Açıklama", value=description_default, height=180,
+                                     max_chars=5000, key=f"pub_desc_{safe_key}")
+    tags_value = st.text_input("Etiketler (virgülle ayırın)", value=tags_default,
+                               key=f"pub_tags_{safe_key}")
+
+    privacy_labels = {
+        "Gizli — yalnızca kanal yöneticileri": "private",
+        "Liste dışı — bağlantıyla erişilir": "unlisted",
+        "Herkese açık — herkes görebilir": "public",
+    }
+    default_privacy = SETTINGS.get("default_privacy", "unlisted")
+    privacy_index = next((index for index, value in enumerate(privacy_labels.values())
+                          if value == default_privacy), 1)
+    privacy_label = st.selectbox("Gizlilik", options=list(privacy_labels), index=privacy_index,
+                                 key=f"pub_privacy_{safe_key}")
+    privacy = privacy_labels[privacy_label]
+
+    reviewed = st.checkbox(
+        "Videoyu baştan sona izledim; görüntü, ses, kaynak atıfları ve telif açısından "
+        "yayına uygun buldum.",
+        key=f"pub_review_{safe_key}",
+    )
+    confirm_text = st.text_input("Yükleme onayı için YAYINLA yazın",
+                                 key=f"pub_confirm_{safe_key}", placeholder="YAYINLA")
+
+    quota_used = get_quota_used()
+    try:
+        quota_limit = int(getattr(get_config(), "daily_quota_limit", 10000) or 10000)
+    except Exception:
+        quota_limit = 10000
+    try:
+        target_channel = active_channel()
+        channel_text = (f"{target_channel.get('title')} · {target_channel.get('channel_id')}"
+                        if target_channel else "Kanal seçilmedi")
+    except Exception:
+        target_channel = None
+        channel_text = "Kanal bilgisi alınamadı"
+    st.caption(f"Hedef kanal: {channel_text} · Bugünkü YouTube API kotası: "
+               f"{quota_used} / {quota_limit} · Seçili gizlilik: {privacy}")
+
+    upload_allowed = (
+        not blocked_reason
+        and target_channel is not None
+        and reviewed
+        and confirm_text.strip().upper() == "YAYINLA"
+        and bool(title_value.strip())
+    )
+    if st.button("🚀 YouTube'a yükle", type="primary", width="stretch",
+                 disabled=not upload_allowed, key=f"pub_upload_{safe_key}"):
+        if len(title_value) > 100:
+            st.error("Başlık 100 karakteri aşamaz.")
+        else:
+            tags = [part.strip() for part in re.split(r"[,\n]", tags_value) if part.strip()]
+            try:
+                with st.spinner("YouTube'a yükleniyor… Bu işlem birkaç dakika sürebilir."):
+                    manager = get_upload_manager()
+                    result = manager.upload_short(
+                        str(entry["path"]),
+                        title_value.strip(),
+                        description_value.strip(),
+                        tags,
+                        privacy_status=privacy,
+                        category_id=str(SETTINGS.get("category_id", "15")),
+                        confirm_public=(privacy == "public"),
+                    )
+                video_id = result.get("video_id") or ""
+                video_url = result.get("video_url") or (
+                    f"https://www.youtube.com/watch?v={video_id}" if video_id else "")
+                fresh = load_pipeline()
+                for updated in fresh:
+                    if (updated.get("output_path") and
+                            Path(str(updated["output_path"])).resolve() == entry["path"].resolve()):
+                        updated["video_id"] = video_id
+                        updated["stage_index"] = len(PIPELINE_STAGES)
+                        updated["updated_at"] = datetime.now().strftime("%d.%m.%Y %H:%M")
+                save_pipeline(fresh)
+                log_activity(f"Video YouTube'a yüklendi: {title_value.strip()} "
+                             f"({privacy})", "ok")
+                st.session_state["publish_notice"] = (
+                    f"Video YouTube'a yüklendi · {privacy} · Video kimliği: {video_id}")
+                st.session_state["publish_result_url"] = video_url
+                st.rerun()
+            except Exception as exc:
+                st.error(f"Yükleme başarısız: {exc}")
+
+    history = upload_history_entries(5)
+    if history:
+        with st.expander("Son yüklemeler"):
+            for row in history:
+                st.markdown(
+                    f"- **{row.get('file_name') or '—'}** · {row.get('privacy_status') or '—'} "
+                    f"· {str(row.get('uploaded_at') or '')[:19]} · "
+                    f"[YouTube]({row.get('video_url') or '#'})"
+                )
 
 
 # ============================================================================
