@@ -415,6 +415,27 @@ st.set_page_config(
 )
 st.markdown(theme_css(), unsafe_allow_html=True)
 
+# ============================================================================
+# OAuth dönüşü — Google ?code= ile panele geri dönerse otomatik tamamlama
+# ============================================================================
+_qp = st.query_params
+_ghx_code = _qp.get("code")
+if _ghx_code:
+    if isinstance(_ghx_code, list):
+        _ghx_code = _ghx_code[0] if _ghx_code else None
+    _ghx_ok = False
+    try:
+        _ghx_tokens = OAuthFlowManager(get_config()).exchange_code(_ghx_code or "")
+        if _ghx_tokens and get_token_manager().set_credentials_from_oauth(_ghx_tokens[0], _ghx_tokens[1]):
+            _ghx_ok = True
+            log_activity("OAuth yetkilendirmesi tamamlandı (otomatik)", "ok")
+            st.cache_data.clear()
+    except Exception:
+        _ghx_ok = False
+    _qp.clear()
+    if _ghx_ok:
+        st.rerun()
+
 
 # ============================================================================
 # UI yardımcıları
@@ -648,25 +669,44 @@ with st.sidebar:
 
     st.markdown("<div style='height:6px'></div>", unsafe_allow_html=True)
 
-    # Sistem durumu
+    # Bağlantı & Yetkilendirme — her koşulda görünür
     manager = get_token_manager()
     token_ok = manager.is_valid()
-    if token_ok:
-        st.markdown(badge("Sistem Çevrimiçi", "ok"), unsafe_allow_html=True)
-    else:
-        st.markdown(badge("Bağlantı Gerekli", "err"), unsafe_allow_html=True)
-        if st.button("🔑 Yetkilendir (OAuth)", use_container_width=True, type="primary"):
-            try:
-                oauth = OAuthFlowManager(get_config())
-                result = oauth.run_local_server(port=8503)
-                if result:
-                    access_token, refresh_token = result
-                    if manager.set_credentials_from_oauth(access_token, refresh_token):
-                        log_activity("OAuth yetkilendirmesi tamamlandı", "ok")
+    with st.expander("🔗 Bağlantı", expanded=not token_ok):
+        if token_ok:
+            st.markdown(badge("Sistem Çevrimiçi", "ok"), unsafe_allow_html=True)
+        else:
+            st.markdown(badge("Bağlantı Gerekli", "err"), unsafe_allow_html=True)
+        st.caption("Butona basın → Google sayfasında izin verin → panel kendiliğinden tamamlar. "
+                   "Otomatik dönüş olmazsa yönlendirme adresindeki kodu aşağıya yapıştırıp "
+                   "'Kodla Tamamla'ya basın.")
+        try:
+            oauth_manager = OAuthFlowManager(get_config())
+            auth_url = oauth_manager.get_authorization_url()
+        except Exception as exc:
+            oauth_manager = None
+            auth_url = ""
+            st.error(f"Bağlantı oluşturulamadı: {str(exc)[:140]}")
+        if auth_url:
+            st.link_button("🔑 Google'da Yetkilendir", auth_url,
+                           use_container_width=True, type="primary")
+        pasted = st.text_input("Geri dönen kod / adres", key="oauth_paste",
+                               placeholder="örn: http://localhost:8502/?code=4/0A…")
+        if st.button("✅ Kodla Tamamla", use_container_width=True):
+            if oauth_manager is None:
+                st.error("Önce bağlantı hatasını çözün.")
+            elif not pasted.strip():
+                st.warning("Kodu/adresi önce yapıştırın.")
+            else:
+                try:
+                    tokens = oauth_manager.exchange_code(pasted)
+                    if tokens and manager.set_credentials_from_oauth(tokens[0], tokens[1]):
+                        log_activity("OAuth yetkilendirmesi tamamlandı (manuel)", "ok")
                         st.cache_data.clear()
                         st.rerun()
-            except Exception as exc:
-                st.error(f"Yetkilendirme hatası: {str(exc)[:160]}")
+                    st.error("Token kaydedilemedi.")
+                except Exception as exc:
+                    st.error(f"Tamamlanamadı: {str(exc)[:160]}")
 
     # Kanal seçimi
     channels = load_channels()
