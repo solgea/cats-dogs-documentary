@@ -207,6 +207,21 @@ _CSS_TEMPLATE = """
 
 .stApp { background: var(--bg); color: var(--text); font-family: var(--sans); }
 #MainMenu, footer, [data-testid="stToolbar"], [data-testid="stDecoration"], [data-testid="stStatusWidget"] { visibility: hidden !important; }
+
+/* Kenar çubuğu aç/kapa kontrolleri — her durumda görünür */
+[data-testid="stExpandSidebarButton"] {
+  visibility: visible !important; display: flex !important; opacity: 1 !important;
+  z-index: 100100 !important;
+  background: var(--s2) !important; border: 1px solid var(--line2) !important;
+  border-radius: 9px !important; color: var(--t2) !important;
+  box-shadow: 0 6px 18px rgba(0,0,0,.25) !important;
+}
+[data-testid="stExpandSidebarButton"]:hover { border-color: var(--accent) !important; color: var(--accent) !important; }
+[data-testid="stExpandSidebarButton"] svg { stroke: currentColor !important; fill: currentColor !important; }
+[data-testid="stSidebarCollapseButton"] {
+  visibility: visible !important; opacity: 1 !important; color: var(--t2) !important;
+}
+[data-testid="stSidebarCollapseButton"]:hover { color: var(--accent) !important; }
 .block-container { padding: 2.4rem 2.6rem 4rem !important; max-width: 1480px; }
 
 h1, h2, h3, h4 { color: var(--text) !important; font-family: var(--sans) !important; letter-spacing: -0.02em; }
