@@ -57,6 +57,9 @@ class OAuthFlowManager:
 
     def get_authorization_url(self) -> str:
         """Yetkilendirme URL'sini oluşturur (manuel akış için)."""
+        if not self.config.redirect_uris:
+            raise ValueError("YOUTUBE_REDIRECT_URIS ortam değişkeni gereklidir")
+        redirect_uri = self.config.redirect_uris[0]
         flow = InstalledAppFlow.from_client_config(
             {
                 "installed": {
@@ -69,11 +72,13 @@ class OAuthFlowManager:
             },
             scopes=self.config.scopes,
         )
-        auth_url, _ = flow.authorization_url(
+        flow.redirect_uri = redirect_uri
+        auth_url, state = flow.authorization_url(
             access_type="offline",
             include_granted_scopes="true",
             prompt="consent",
         )
+        self._last_redirect_uri = redirect_uri
         return auth_url
 
     def exchange_code(self, code_or_url: str) -> Optional[Tuple[str, str]]:
