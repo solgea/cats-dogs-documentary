@@ -18,6 +18,7 @@ import os
 import sys
 import time
 from datetime import datetime, timedelta
+from html import escape
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
@@ -353,6 +354,62 @@ div[data-testid="stDataFrame"] { border-radius: 11px !important; }
 .cd-agent .cd-agent-role { font-family: var(--mono); font-size: .7rem; color: var(--muted); letter-spacing: .06em; }
 .cd-agent .cd-agent-desc { font-size: .82rem; color: var(--t2); line-height: 1.45; }
 
+/* İçerik ajanı paneli */
+.cd-agent-panel {
+  background: linear-gradient(135deg, var(--soft) 0%, transparent 48%), var(--card);
+  border: 1px solid var(--line2); border-radius: 14px; padding: 18px 20px;
+}
+.cd-agent-panel-head { display: flex; align-items: center; gap: 12px; }
+.cd-agent-panel-icon {
+  width: 42px; height: 42px; border-radius: 11px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center; font-size: 1.3rem;
+  background: var(--soft); border: 1px solid var(--line2);
+}
+.cd-agent-panel-name { font-weight: 800; font-size: 1.02rem; color: var(--text); }
+.cd-agent-panel-role {
+  font-family: var(--mono); font-size: .66rem; color: var(--muted);
+  letter-spacing: .1em; text-transform: uppercase;
+}
+.cd-agent-panel-desc { color: var(--t2); font-size: .87rem; line-height: 1.6; margin-top: 11px; }
+
+/* Ajan öneri kartı */
+.cd-proposal {
+  background: var(--card); border: 1px solid var(--line2); border-radius: 14px;
+  padding: 22px 24px; position: relative; overflow: hidden;
+}
+.cd-proposal::before {
+  content: ""; position: absolute; inset: 0 auto 0 0; width: 3px;
+  background: linear-gradient(var(--accent), var(--purple));
+}
+.cd-proposal-kicker {
+  font-family: var(--mono); font-size: .68rem; font-weight: 600; letter-spacing: .12em;
+  text-transform: uppercase; color: var(--accent); margin-bottom: 7px;
+}
+.cd-proposal-name { font-size: 1.2rem; font-weight: 800; color: var(--text); letter-spacing: -.01em; }
+.cd-proposal-title { font-family: var(--mono); font-size: .8rem; color: var(--info); margin-top: 5px; }
+.cd-hook {
+  margin-top: 15px; padding: 12px 15px; border-radius: 10px;
+  background: var(--s1); border: 1px solid var(--line);
+  color: var(--t2); font-size: .9rem; line-height: 1.6; font-style: italic;
+}
+.cd-scenes { margin-top: 14px; }
+.cd-scene {
+  display: flex; gap: 14px; padding: 9px 0; border-bottom: 1px dashed var(--line);
+  font-size: .86rem; color: var(--t2); line-height: 1.5;
+}
+.cd-scene:last-child { border-bottom: none; padding-bottom: 0; }
+.cd-scene-time {
+  font-family: var(--mono); font-size: .68rem; font-weight: 600;
+  color: var(--accent); min-width: 58px; padding-top: 2px;
+}
+.cd-meta-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 15px; }
+.cd-meta { background: var(--s1); border: 1px solid var(--line); border-radius: 10px; padding: 11px 13px; }
+.cd-meta-label {
+  font-family: var(--mono); font-size: .63rem; letter-spacing: .1em;
+  text-transform: uppercase; color: var(--muted); margin-bottom: 5px;
+}
+.cd-meta-value { font-size: .82rem; color: var(--t2); line-height: 1.45; }
+
 .cd-stage {
   display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 12px 8px;
   border: 1px solid var(--line); border-radius: 11px; background: var(--s1);
@@ -518,14 +575,14 @@ def stage_label(state: str) -> str:
     return {"done": "Tamamlandı", "active": "Sürüyor", "pending": "Bekliyor"}.get(state, state)
 
 
-def add_project(title: str, topic: str, provider: str) -> Dict[str, Any]:
+def add_project(title: str, topic: str, provider: str, script: str = "") -> Dict[str, Any]:
     project = {
         "id": f"PRJ-{int(time.time())}",
         "title": title,
         "topic": topic,
         "provider": provider,
         "stage_index": 0,
-        "script": "",
+        "script": script,
         "output_path": "",
         "video_id": "",
         "notes": "",
@@ -875,6 +932,132 @@ def render_overview() -> None:
 
 
 # ============================================================================
+# İçerik Ajanı — niş odaklı proje önerileri (kedi–köpek belgeselciği)
+# ============================================================================
+NICHE_IDEAS: List[Dict[str, str]] = [
+    {"s": "Kedilerin gece görüşü", "t": "Why Cats Glow in the Dark (It's Not Magic)",
+     "h": "Karanlıkta kedinizin gözleri neden ışık saçar? Cevap büyü değil, özel bir doku.",
+     "f": "Kedilerin gözünün arkasındaki tapetum lucidum tabakası, gelen ışığı ağtabakaya geri yansıtır; bu sayede ışığı yaklaşık 6 kat daha verimli kullanırlar.",
+     "b1": "Bu tabaka mavi-yeşil parlıyor görünür; yansıyan ışığın dalga boyu göz yapısına bağlıdır.",
+     "b2": "Kediler tam karanlıkta değil, düşük ışıkta üstündür; insanın algıladığından çok daha az ışıkla yön bulabilirler.",
+     "tags": "kedi gece görüşü, tapetum lucidum, kedi gözleri neden parlar",
+     "th": "Siyah zeminde parlayan kedi gözü, tek nokta mavi ışık."},
+    {"s": "Köpeklerin koku dünyası", "t": "A Dog's Nose Knows More Than You Think",
+     "h": "İnsan burnu milyonlarca koku alıcısı taşır; köpeğinki kat kat fazlası. Peki bu ne demek?",
+     "f": "Köpeklerin koku alma epiteli insanınkinden çok daha geniştir; burun yapısı soluk alırken ayrı, verirken ayrı hava yolu kullanır.",
+     "b1": "Köpekler iki burun deliğini bağımsız kullanır; bu, kokunun yönünü belirlemesini sağlar.",
+     "b2": "Eğitimli köpekler bazı hastalıkları kokudan ayırt edebilir; bu alandaki çalışmalar hâlâ sürüyor.",
+     "tags": "köpek koku alma, köpek burnu, koku duyusu",
+     "th": "Köpek burnu yakın plan, arka planda bulanık orman."},
+    {"s": "Kediler neden kutuya girer", "t": "Why Cats Can't Resist a Box",
+     "h": "Kutu, kedi için oyuncak değil; güvenlik, sıcaklık ve keşif dengesi.",
+     "f": "Kapalı alanlar kedilere saklanma ve gözlem noktası sağlar; kutulu ortamda stres davranışlarının azaldığını gösteren çalışmalar var.",
+     "b1": "Kutular aynı zamanda ısı yalıtımı sağlar; kedilerin konfor sıcaklığı insandan yüksektir.",
+     "b2": "Yeni ortama alışan kedilerde kutu, uyum süresini kısaltabilir.",
+     "tags": "kedi kutu, kedi davranışı, kedi psikolojisi",
+     "th": "Karton kutudan bakan kedi, yumuşak ışık."},
+    {"s": "Köpeklerin suçluluk bakışı", "t": "That Guilty Look Is a Myth",
+     "h": "Köpeğiniz sizi 'suçlu' bakışla karşılıyor — ama o bakış gerçekten suçluluk mu?",
+     "f": "Yapılan çalışmalar, sahiplerin suçlu bulduğu ifadenin köpeğin gerçekten bir şey yapıp yapmadığını değil, sahibinin tepkisini yansıttığını gösterdi.",
+     "b1": "Köpekler insan yüz ifadelerini ve ses tonunu çok iyi okur; 'suçlu bakış' bir uyum davranışı olabilir.",
+     "b2": "Disiplin yerine yönlendirme, istenmeyen davranışlarda daha etkili sonuç verir.",
+     "tags": "köpek suçluluk bakışı, köpek davranışı, köpek eğitimi",
+     "th": "Kanepe kenarında köpek ve sahibi, sıcak-soğuk ton karşıtlığı."},
+    {"s": "Kedilerin mırlaması", "t": "The Secret Frequency of a Purr",
+     "h": "Mırlama sadece mutluluk değil; düşük frekanslı bir iletişim aracı.",
+     "f": "Kediler mırlamayı hem rahatlarken hem de stres veya ağrı anlarında kullanır; düşük frekanslı titreşimlerin etkisi araştırılmaya devam ediyor.",
+     "b1": "Yavru kediler annelerine yakınlık kurmak için mırlar; bu davranış yetişkinlikte de kalır.",
+     "b2": "Bazı mırlamalar 'talep' tonu taşır; insan bebeği ağlamasına benzeyen frekanslar içerebilir.",
+     "tags": "kedi mırlaması, kedi sesleri, mırlama frekansı",
+     "th": "Yakın plan kedi, göğsünde hafif ışık titreşimi."},
+    {"s": "Köpeklerin kuyruk dili", "t": "Your Dog's Tail Is Talking",
+     "h": "Kuyruk sallama her zaman mutluluk değil — yönü bile anlam taşıyor.",
+     "f": "Araştırmalar köpeklerin sağa sallamayı olumlu, sola sallamayı daha temkinli durumlarla ilişkilendirdiğini gösteriyor.",
+     "b1": "Kuyruk yüksekliği duygu durumunu ele verir: dik kuyruk uyarılmışlık, düşük kuyruk çekingenlik.",
+     "b2": "Sert ve kısa hareketler oyun değil, gerginlik işareti olabilir.",
+     "tags": "köpek kuyruk dili, köpek davranışı, kuyruk sallama",
+     "th": "Köpek silüeti, kuyruk hareketi izi, koyu arka plan."},
+    {"s": "Dokuz can miti", "t": "Do Cats Really Have Nine Lives?",
+     "h": "Kedilerin dokuz canı olduğu söylenir; gerçek ise çok daha ilginç.",
+     "f": "Kedilerin düşerken vücutlarını düzeltme refleksi güçlüdür, ancak bu onları her düşüşten korumaz; yükseklik ve zemin kritiktir.",
+     "b1": "Refleks yaklaşık 3-4 haftalıkken gelişir; bu yüzden yavru kediler daha kırılgandır.",
+     "b2": "Veterinerler yüksekten düşmelerde benzer yaralanmaları sık görür — mit, güvenlik riskini gizleyebilir.",
+     "tags": "kedi dokuz can, kedi düşme refleksi, kedi mitleri",
+     "th": "Yüksek kenarda dengede kedi, aşağıda yumuşak gölge."},
+    {"s": "Köpeğin evrimi", "t": "From Wolf to Woof: 15,000 Years",
+     "h": "Köpek, kurt değil; ama hâlâ kurdun genlerini taşıyor.",
+     "f": "Köpeklerin evcilleşmesi en az 15 bin yıl öncesine uzanır; genom çalışmaları evcilleşmenin tek bir bölgede mi yoksa birden çok yerde mi olduğunu tartışıyor.",
+     "b1": "Evcilleşmeyle sindirim enzimi genlerinde değişimler görüldü; köpekler nişastalı beslenmeye daha uyumlu hale geldi.",
+     "b2": "Modern ırkların çoğu son 200 yılda seçilimle şekillendi — köpek tarihi ırk listesinden çok daha eski.",
+     "tags": "köpek evrimi, kurt köpek, köpek tarihi",
+     "th": "Kurt silüetinden köpek silüetine geçiş, zaman çizgisi."},
+    {"s": "Kediler kendini evcilleştirdi", "t": "Cats Domesticated Themselves",
+     "h": "Kediyi biz evcilleştirmedik; o bizi seçmiş olabilir.",
+     "f": "Tarım yerleşimlerinde tahıl depolarına gelen kemiriciler kedileri çekti; bu karşılıklı yarar, kedilerin insan yaşamına yaklaşmasını sağladı.",
+     "b1": "Kedi genomunda evcilleşme izleri köpeğe göre daha hafif; kedi davranışları yabani atalarına daha yakın.",
+     "b2": "Antik Mısır'dan gemi yolculuklarına kadar kediler ticaret rotalarıyla dünyaya yayıldı.",
+     "tags": "kedi evcilleşmesi, kedi tarihi, kedi genomu",
+     "th": "Tahıl ambarı önünde oturan kedi, sıcak toprak tonları."},
+    {"s": "Hayvanlar rüya görür mü", "t": "Do Dogs Dream of Electric Sheep?",
+     "h": "Köpeğiniz uykuda koşuyorsa, muhtemelen rüya görüyor.",
+     "f": "Kedi ve köpeklerde REM uykusu gözlemlenir; bu evre insanlarda rüyayla ilişkilidir ve hayvanlarda da benzer beyin aktivitesi görülür.",
+     "b1": "Yavru köpekler ve yavru kediler yetişkinlere göre daha fazla REM uykusu uyur.",
+     "b2": "Uykuda seğirme ve ses çıkarma normaldir; sık uyanma veya huzursuzluk veteriner kontrolü gerektirebilir.",
+     "tags": "köpek rüyası, kedi rüyası, REM uykusu hayvanlar",
+     "th": "Uyuyan köpek, başında rüya bulutu, gece mavisi."},
+    {"s": "Köpeklerin zaman algısı", "t": "How Dogs Tell Time Without a Clock",
+     "h": "Köpeğiniz eve dönüş saatinizi nasıl biliyor?",
+     "f": "Köpekler zamanı kokudaki değişim ve günlük rutinlerin ritmiyle takip ediyor olabilir; mutlak saat yerine olay sırasına duyarlıdırlar.",
+     "b1": "Sahibinin kokusunun evde zayıflaması, dönüş yaklaştıkça artması köpeğe ipucu verir.",
+     "b2": "Rutin beslenme ve yürüyüş saatleri köpeklerde güçlü bir iç saat oluşturur.",
+     "tags": "köpek zaman algısı, köpek rutini, köpek davranışı",
+     "th": "Kapı önünde bekleyen köpek, arkada saat gölgesi."},
+    {"s": "Kedilerin sessiz dili", "t": "The Silent Language of Cats",
+     "h": "Kediniz ses çıkarmadan da konuşuyor — kuyruk, kulak ve bıyık dili.",
+     "f": "Kedi vücut dili; kuyruk pozisyonu, kulak açısı ve bıyık yönüyle okunur. Yavaş göz kırpma, güven işareti olarak yorumlanır.",
+     "b1": "Kulaklar yana yatıyorsa stres veya rahatsızlık; dik ve öne dönükse merak işareti olabilir.",
+     "b2": "Yavaş göz kırpmaya karşılık vermek, kediyle bağ kurmanın en basit yollarından biri.",
+     "tags": "kedi vücut dili, kedi işaretleri, yavaş göz kırpma",
+     "th": "Kedi yüzü yakın plan, gözler yarı kapalı, sıcak ışık."},
+    {"s": "Köpekler renk görür mü", "t": "Dogs Are Colorblind (Sort of)",
+     "h": "Köpeğiniz dünyayı siyah-beyaz görmüyor; ama sizin gördüğünüz renkleri de görmüyor.",
+     "f": "Köpekler dichromat görüşe sahiptir: mavi ve sarı tonlarını ayırt eder, kırmızı-yeşil ayrımında insandan zayıftır.",
+     "b1": "Köpekler için kırmızı oyuncak, çimende düşük kontrast oluşturabilir; mavi-sarı oyuncaklar daha görünür.",
+     "b2": "Hareket algısı ve koku, köpeğin dünyayı okuma biçiminde renkten daha baskın.",
+     "tags": "köpek renk görüşü, köpek görme, dichromat",
+     "th": "Yarısı mavi-sarı, yarısı kırmızı-yeşil bölünmüş köpek portresi."},
+    {"s": "Kedilerin yüz sesi", "t": "Cats Have 100 Words for You",
+     "h": "Miyav, mırlama, cıvıldama… Kedilerin insana özel bir ses repertuvarı var.",
+     "f": "Kediler yetişkinler arasında nadiren miyavlar; miyav çoğunlukla insana yönelik bir iletişim aracıdır ve kediye özgü bir 'insan dili' olarak gelişmiştir.",
+     "b1": "Kediler farklı ihtiyaçlar için farklı miyav tonları kullanır; sahipleri zamanla bunları ayırt eder.",
+     "b2": "Bazı kediler açlık, susuzluk ve ilgi talebini neredeyse aynı sesle ifade eder — bağlam belirleyicidir.",
+     "tags": "kedi sesleri, kedi miyav, kedi iletişimi",
+     "th": "Ses dalgası grafiği üzerinde kedi silüeti, neon vurgu."},
+]
+
+
+def build_proposal(cursor: int) -> Dict[str, Any]:
+    idea = NICHE_IDEAS[cursor % len(NICHE_IDEAS)]
+    scenes = [
+        ("0-5 sn", f"Kanca: {idea['h']}"),
+        ("5-20 sn", f"Bilim: {idea['f']}"),
+        ("20-35 sn", f"Detay: {idea['b1']}"),
+        ("35-50 sn", f"Şaşırtıcı gerçek: {idea['b2']}"),
+        ("50-60 sn", "Kapanış: İzleyiciye soru sor, beğeni/abone çağrısı yap."),
+    ]
+    return {
+        "project_name": f"{idea['s']} — Belgesel",
+        "video_title": idea["t"],
+        "hook": idea["h"],
+        "scenes": scenes,
+        "tags": idea["tags"],
+        "thumbnail": idea["th"],
+        "index": (cursor % len(NICHE_IDEAS)) + 1,
+        "total": len(NICHE_IDEAS),
+    }
+
+
+# ============================================================================
 # Video Üretim
 # ============================================================================
 def available_providers() -> List[Dict[str, Any]]:
@@ -900,6 +1083,119 @@ def render_production() -> None:
         unsafe_allow_html=True,
     )
 
+    providers = available_providers()
+    provider_names = {provider["id"]: provider["name"] for provider in providers}
+    provider_avail = {provider["id"]: provider.get("available", False) for provider in providers}
+
+    agent_notice = st.session_state.pop("agent_notice", "")
+    if agent_notice:
+        st.success(agent_notice)
+
+    # İçerik Ajanı — niş odaklı proje önerisi
+    panel_open("İÇERİK AJANI · NİŞ ÖNERİSİ")
+    st.markdown(
+        f"""
+        <div class="cd-agent-panel">
+          <div class="cd-agent-panel-head">
+            <div class="cd-agent-panel-icon">🧭</div>
+            <div style="flex:1">
+              <div class="cd-agent-panel-name">İçerik Ajanı</div>
+              <div class="cd-agent-panel-role">Kedi &amp; Köpek Belgeseli · Proje Öneri Motoru</div>
+            </div>
+            {badge(f"{len(NICHE_IDEAS)} konu havuzu", "info")}
+          </div>
+          <div class="cd-agent-panel-desc">
+            Kanalın nişine göre proje adı, İngilizce video başlığı, kanca, beş sahnelik senaryo taslağı,
+            etiketler ve kapak konsepti üretir. Beğendiğiniz öneriyi tek tıkla üretim hattına ekleyin.
+          </div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    has_proposal = bool(st.session_state.get("agent_proposal"))
+
+    def _new_proposal() -> None:
+        cursor = int(st.session_state.get("proposal_cursor", 0))
+        st.session_state["agent_proposal"] = build_proposal(cursor)
+        st.session_state["proposal_cursor"] = cursor + 1
+
+    suggest_col, next_col, close_col = st.columns([2, 2, 2])
+    with suggest_col:
+        if st.button("🧭 Bana Proje Öner", type="primary", use_container_width=True,
+                     key="agent_suggest"):
+            _new_proposal()
+            st.rerun()
+    with next_col:
+        if st.button("🔁 Başka Öner", use_container_width=True,
+                     key="agent_next", disabled=not has_proposal):
+            _new_proposal()
+            st.rerun()
+    with close_col:
+        if has_proposal:
+            if st.button("✕ Öneriyi Kapat", use_container_width=True, key="agent_close"):
+                st.session_state.pop("agent_proposal", None)
+                st.rerun()
+
+    proposal = st.session_state.get("agent_proposal")
+    if proposal:
+        scene_rows = "".join(
+            f'<div class="cd-scene"><span class="cd-scene-time">{escape(str(label))}</span>'
+            f'<span>{escape(str(text))}</span></div>'
+            for label, text in proposal["scenes"]
+        )
+        st.markdown(
+            f"""
+            <div class="cd-proposal">
+              <div class="cd-proposal-kicker">Öneri {proposal['index']} / {proposal['total']} · Belgesel</div>
+              <div class="cd-proposal-name">{escape(proposal['project_name'])}</div>
+              <div class="cd-proposal-title">{escape(proposal['video_title'])}</div>
+              <div class="cd-hook">“{escape(proposal['hook'])}”</div>
+              <div class="cd-scenes">{scene_rows}</div>
+              <div class="cd-meta-grid">
+                <div class="cd-meta">
+                  <div class="cd-meta-label">Etiketler</div>
+                  <div class="cd-meta-value">{escape(proposal['tags'])}</div>
+                </div>
+                <div class="cd-meta">
+                  <div class="cd-meta-label">Kapak Konsepti</div>
+                  <div class="cd-meta-value">{escape(proposal['thumbnail'])}</div>
+                </div>
+              </div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+        add_col, hint_col = st.columns([2, 4])
+        with add_col:
+            if st.button("✅ Projeyi Hatta Ekle", type="primary", use_container_width=True,
+                         key="agent_add"):
+                chosen_provider = SETTINGS.get("default_provider", "slideshow")
+                if chosen_provider not in provider_names or chosen_provider not in provider_avail:
+                    chosen_provider = "slideshow"
+                if not provider_avail.get(chosen_provider, False) and "slideshow" in provider_names:
+                    chosen_provider = "slideshow"
+                outline = "\n".join(f"[{label}] {text}" for label, text in proposal["scenes"])
+                outline += (f"\n\nVideo başlığı (EN): {proposal['video_title']}"
+                            f"\nEtiketler: {proposal['tags']}"
+                            f"\nKapak: {proposal['thumbnail']}")
+                add_project(proposal["project_name"], proposal["hook"], chosen_provider, script=outline)
+                st.session_state["pending_project_meta"] = {
+                    "duration": int(SETTINGS.get("video_duration", 60)),
+                    "aspect": SETTINGS.get("aspect_ratio", "16:9"),
+                }
+                st.session_state["agent_notice"] = (
+                    f"Proje hatta eklendi: {proposal['project_name']} — Planlama aşamasında."
+                )
+                log_activity(f"İçerik ajanı proje önerdi: {proposal['project_name']}", "ok")
+                st.session_state.pop("agent_proposal", None)
+                st.rerun()
+        with hint_col:
+            st.caption("Eklenen proje Planlama aşamasından başlar; video başlığı, kanca, senaryo, "
+                       "etiketler ve kapak konsepti proje detayına kaydedilir.")
+
+    st.markdown("<div style='height:18px'></div>", unsafe_allow_html=True)
+
     # Aşama şeridi
     cols = st.columns(len(PIPELINE_STAGES))
     for position, stage in enumerate(PIPELINE_STAGES):
@@ -914,10 +1210,6 @@ def render_production() -> None:
             )
 
     st.markdown("<div style='height:16px'></div>", unsafe_allow_html=True)
-
-    providers = available_providers()
-    provider_names = {provider["id"]: provider["name"] for provider in providers}
-    provider_avail = {provider["id"]: provider.get("available", False) for provider in providers}
 
     # Sağlayıcı durumları
     panel_open("VİDEO SAĞLAYICILARI")
