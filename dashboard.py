@@ -436,6 +436,11 @@ def fmt_int(value: Any) -> str:
         return str(value)
 
 
+def goto(page: str) -> None:
+    """on_click geri çağrısı — widget'a bağlı olmayan düz nav anahtarını günceller."""
+    st.session_state["nav"] = page
+
+
 # ============================================================================
 # Ajan Kaydı — youtube-automation-agent mimarisinden
 # ============================================================================
@@ -593,19 +598,18 @@ with st.sidebar:
         unsafe_allow_html=True,
     )
 
-    nav = st.radio(
-        "Menü",
-        options=[
-            "🎛️ Genel Bakış",
-            "🎬 Video Üretim",
-            "🤖 Ajanlar",
-            "📈 İstatistikler",
-            "⚙️ Otomasyon",
-            "🔧 Ayarlar",
-        ],
-        label_visibility="collapsed",
-        key="nav",
-    )
+    nav_pages = ["🎛️ Genel Bakış", "🎬 Video Üretim", "🤖 Ajanlar",
+                 "📈 İstatistikler", "⚙️ Otomasyon", "🔧 Ayarlar"]
+    current_page = st.session_state.get("nav", nav_pages[0])
+    for nav_index, nav_page in enumerate(nav_pages):
+        st.button(
+            nav_page,
+            key=f"nav_{nav_index}",
+            use_container_width=True,
+            type="primary" if nav_page == current_page else "secondary",
+            on_click=goto,
+            args=(nav_page,),
+        )
 
     st.markdown("<div style='height:10px'></div>", unsafe_allow_html=True)
 
