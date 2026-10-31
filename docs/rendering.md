@@ -1,5 +1,22 @@
 # Rendering
 
+## Production info screen
+
+The dashboard reads each finished production with the free, read-only
+`viewmade_get_video` tool and presents the same information the ViewMade
+dashboard shows:
+
+- title, description and tags;
+- status, duration, resolution, scene count, credits and creation time;
+- every source footage link;
+- every attribution line that must accompany publication;
+- the provider's editorial `subject_note`.
+
+The ViewMade workspace uses a master-detail layout: a 320 px preview on the
+left and the production card plus actions on the right. Source and attribution
+lists are shown in two columns beneath the card. The same card is available for
+completed project renders under "Üretim künyesi".
+
 ## Dashboard production rules
 
 The dashboard submits `viewmade_create_short` only after a free local preflight

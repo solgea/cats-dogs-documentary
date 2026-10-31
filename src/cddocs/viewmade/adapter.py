@@ -555,6 +555,26 @@ class ViewMadeAdapter:
         client.initialize()
         return client.call_tool(str(entry["name"]), arguments)
 
+    def get_video(self, video_id: str) -> dict:
+        """Read one production's full info screen. Free and read-only."""
+        identifier = str(video_id or "").strip()
+        if not identifier:
+            raise ValueError("ViewMade video id is required")
+        token = oauth.get_access_token(self.project, self.settings)
+        client = MCPClient(
+            self.config["mcp_url"],
+            token,
+            protocol_version=self.config.get("protocol_version", "2025-06-18"),
+            connect_url=self.config["connect_url"],
+        )
+        client.initialize()
+        payload = _tool_payload(
+            client.call_tool("viewmade_get_video", {"video_id": identifier})
+        )
+        if not isinstance(payload, dict):
+            raise MCPError("ViewMade get_video returned an unexpected payload")
+        return payload
+
     def render(
         self,
         request_payload: dict,

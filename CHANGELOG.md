@@ -5,6 +5,10 @@ All notable changes to the Cats & Dogs Documentary project will be documented in
 The format is based on [Keep a Changelog](https://keepachangelog.com/) and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
+### Changed
+- **Video Üretim çalışma alanı** (`dashboard.py`): The page is now a four-part workspace (Üretimler, İçerik Ajanı, Projeler, Yayın Merkezi) with a KPI strip, a compact ViewMade status bar, and a collapsible connection panel. Decorative global stage/provider blocks were removed and the local preview gallery was consolidated into the publishing center.
+- **ViewMade production info screen** (`dashboard.py`, `src/cddocs/viewmade/adapter.py`): The selected production now shows the full ViewMade info card — title, description, tags, status, duration, resolution, scene count, credits, creation time, source footage links, attribution lines, and the editorial subject note. Completed project renders expose the same card, and publishing from either place opens Yayın Merkezi directly.
+
 ### Fixed
 - **ViewMade `invalid_input` rejection** (`src/cddocs/viewmade/adapter.py`, `dashboard.py`): The provider requires a 7-12 line English script for `language: en`. `_script_lines` now preserves explicit narration lines and splits long ones to reach the minimum, `validate_arguments_against_schema`/`validate_render_arguments` run a free local preflight against the bound tool schema before any paid call, and the dashboard blocks Turkish narration, shows per-field validation errors, and offers a "ViewMade yazsın" mode that omits the script so the provider writes the English narration from the topic.
 - **Retry after rejected submission** (`dashboard.py`): A `FAILED` request without a provider job id no longer locks the project; the panel shows that no credits were charged and re-opens the render form after the input is fixed.
