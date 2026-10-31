@@ -6,7 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/) and this 
 
 ## [Unreleased]
 ### Changed
-- **Video Üretim çalışma alanı** (`dashboard.py`): The page is now a four-part workspace (Üretimler, İçerik Ajanı, Projeler, Yayın Merkezi) with a KPI strip, a compact ViewMade status bar, and a collapsible connection panel. Decorative global stage/provider blocks were removed and the local preview gallery was consolidated into the publishing center.
+- **Control-room UI v2.3** (`dashboard.py`): Added a shared page-header and status vocabulary, an action queue on Genel Bakış, a five-stage lifecycle board with bottleneck highlighting, count badges on the Video Üretim segmented control, a compact ViewMade status chip (details moved into Üretimler), a visible publish-gate checklist and three-step publish wizard, an agent stage map, and theme preview cards in Ayarlar. The large Video Üretim KPI strip and redundant ViewMade status bar were removed so content appears above the fold.
+- **Video Üretim çalışma alanı** (`dashboard.py`): The page is now a four-part workspace (Üretimler, İçerik Ajanı, Projeler, Yayın Merkezi) with a compact header, count badges, and a collapsible connection panel. Decorative global stage/provider blocks were removed and the local preview gallery was consolidated into the publishing center.
 - **ViewMade production info screen** (`dashboard.py`, `src/cddocs/viewmade/adapter.py`): The selected production now shows the full ViewMade info card — title, description, tags, status, duration, resolution, scene count, credits, creation time, source footage links, attribution lines, and the editorial subject note. Completed project renders expose the same card, and publishing from either place opens Yayın Merkezi directly.
 
 ### Fixed
@@ -16,7 +17,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/) and this 
 ### Added
 - **Content registry and YouTube matching** (`dashboard.py`): `content_registry.json` links ViewMade jobs, local packages, and YouTube videos by title tokens and provider IDs. All 6 published ViewMade productions now match their YouTube video IDs, and duplicates are blocked at suggestion, project creation, paid render, and upload.
 - **ViewMade ↔ YouTube matching panel** (`dashboard.py`): Table of every ViewMade production with local-copy status and the matching YouTube link, so published productions are never re-rendered or re-uploaded.
-- **Ideal preview sizes** (`dashboard.py`): Vertical video previews render at 320 px (featured) and 220 px (gallery) instead of full column width.
+- **Ideal preview sizes** (`dashboard.py`): All vertical video previews render at 320 px (`PREVIEW_WIDTH` and `GALLERY_PREVIEW_WIDTH`) instead of full column width.
 - **Dashboard ViewMade bridge** (`dashboard.py`): OAuth/MCP connection card with token expiry, scope, 3/3 tool binding, live MCP test, provider video list, on-demand free preview download, 1080x1920 normalization, and sidecar metadata.
 - **Per-project render gate** (`dashboard.py`, `scripts/dashboard_viewmade_render.py`): English narration check, 30–60 s duration, typed `RENDER` confirmation, background worker with `CDDOCS_LIVE_CONFIRM=YES`, stale-state protection, and automatic preview on completion.
 - **Yayın Merkezi** (`dashboard.py`): Local `renders/` + `outputs/` gallery, editable title/description/tags, privacy selection, target-channel display, quota display, human-review checkbox, typed `YAYINLA` confirmation, duplicate guard, and rejected-pilot block for `dog-guilty-look`.

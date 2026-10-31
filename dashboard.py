@@ -61,7 +61,7 @@ ACTIVITY_FILE = ROOT / "activity_log.json"
 
 # Dikey (9:16) önizlemeler için ideal genişlikler — piksel cinsinden.
 PREVIEW_WIDTH = 320
-GALLERY_PREVIEW_WIDTH = 220
+GALLERY_PREVIEW_WIDTH = 320
 
 DEFAULT_SETTINGS: Dict[str, Any] = {
     "theme": "standart",
@@ -456,28 +456,7 @@ div[data-testid="stDataFrame"] { border-radius: 11px !important; }
   font-size: .84rem; line-height: 1.55;
 }
 
-/* Üretim masası — durum şeridi ve görünüm seçici */
-.cd-statusbar {
-  display: flex; align-items: center; justify-content: space-between; gap: 16px;
-  flex-wrap: wrap; padding: 12px 16px; margin: 4px 0 14px;
-  background: linear-gradient(90deg, var(--ok-soft) 0%, transparent 42%), var(--card);
-  border: 1px solid var(--line); border-radius: 12px;
-}
-.cd-statusbar.is-warn {
-  background: linear-gradient(90deg, var(--warn-soft) 0%, transparent 42%), var(--card);
-}
-.cd-statusbar-main { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
-.cd-statusbar-title { font-weight: 800; font-size: .9rem; color: var(--text); }
-.cd-statusbar-item { font-size: .8rem; color: var(--t2); }
-.cd-statusbar-sep { color: var(--line2); }
-.cd-statusbar-meta {
-  font-family: var(--mono); font-size: .68rem; letter-spacing: .04em; color: var(--muted);
-}
-.cd-statuslight {
-  width: 8px; height: 8px; border-radius: 50%; background: var(--ok);
-  box-shadow: 0 0 0 4px var(--ok-soft);
-}
-.cd-statusbar.is-warn .cd-statuslight { background: var(--warn); box-shadow: 0 0 0 4px var(--warn-soft); }
+/* Üretim masası — görünüm seçici */
 div[data-testid="stSegmentedControl"] { margin: 2px 0 18px; }
 div[data-testid="stSegmentedControl"] button {
   font-family: var(--mono); font-size: .74rem; letter-spacing: .03em;
@@ -596,6 +575,149 @@ div[data-testid="stSegmentedControl"] button {
 }
 .cd-hero h1 { margin: 0 0 6px 0 !important; }
 .cd-hero p { margin: 0; color: var(--t2); font-size: .92rem; }
+.cd-hero.cd-hero-compact { padding: 20px 24px; margin-bottom: 16px; }
+.cd-page-kicker {
+  font-family: var(--mono); font-size: .66rem; font-weight: 700; letter-spacing: .13em;
+  text-transform: uppercase; color: var(--accent); margin-bottom: 7px;
+}
+.cd-hero .cd-chip-row { margin-top: 12px; }
+
+/* Odak kartları — "şimdi ne yapmalıyım" kuyruğu */
+.cd-focus {
+  background: var(--card); border: 1px solid var(--line); border-radius: 13px;
+  padding: 16px 18px; min-height: 128px; position: relative; overflow: hidden;
+}
+.cd-focus::before {
+  content: ""; position: absolute; inset: 0 auto 0 0; width: 3px;
+  background: var(--fc, var(--accent));
+}
+.cd-focus.focus-warn { --fc: var(--warn); }
+.cd-focus.focus-ok { --fc: var(--ok); }
+.cd-focus.focus-info { --fc: var(--info); }
+.cd-focus.focus-muted { --fc: var(--muted); }
+.cd-focus.is-idle { opacity: .66; }
+.cd-focus-kicker {
+  font-family: var(--mono); font-size: .62rem; font-weight: 700; letter-spacing: .11em;
+  text-transform: uppercase; color: var(--muted); margin-bottom: 7px;
+}
+.cd-focus-title { font-size: .98rem; font-weight: 750; color: var(--text); line-height: 1.35; }
+.cd-focus-meta { font-size: .78rem; color: var(--muted); line-height: 1.5; margin-top: 6px; }
+
+/* Beş aşamalı yaşam döngüsü */
+.cd-lifecycle { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px; }
+.cd-lc {
+  background: var(--s1); border: 1px solid var(--line); border-radius: 11px; padding: 13px 14px;
+}
+.cd-lc.is-bottleneck { border-color: var(--warn); background: var(--warn-soft); }
+.cd-lc.is-zero { opacity: .55; }
+.cd-lc-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.cd-lc-icon { font-size: 1rem; }
+.cd-lc-count { font-family: var(--mono); font-size: 1.12rem; font-weight: 700; color: var(--text); }
+.cd-lc-label { font-weight: 650; font-size: .8rem; color: var(--text); margin-top: 6px; }
+.cd-lc-meta {
+  font-family: var(--mono); font-size: .61rem; color: var(--muted);
+  letter-spacing: .05em; margin-top: 2px;
+}
+
+/* Adım şeridi — yayın sihirbazı ve otomasyon döngüsü */
+.cd-stepbar {
+  display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0;
+  border: 1px solid var(--line); border-radius: 12px; overflow: hidden;
+  margin-bottom: 14px; background: var(--card);
+}
+.cd-stepbar.cd-stepbar-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.cd-step {
+  display: flex; align-items: center; gap: 10px; padding: 12px 14px;
+  border-right: 1px solid var(--line);
+}
+.cd-step:last-child { border-right: none; }
+.cd-step-num {
+  width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center;
+  justify-content: center; font-family: var(--mono); font-size: .7rem; font-weight: 700;
+  border: 1px solid var(--line2); color: var(--muted); background: var(--s1); flex-shrink: 0;
+}
+.cd-step.is-done .cd-step-num { background: var(--ok-soft); border-color: var(--ok); color: var(--ok); }
+.cd-step.is-active .cd-step-num { background: var(--accent); border-color: var(--accent); color: #fff; }
+.cd-step-label { font-size: .81rem; font-weight: 650; color: var(--text); }
+.cd-step-meta { font-family: var(--mono); font-size: .61rem; color: var(--muted); letter-spacing: .04em; }
+
+/* Yayın kapıları */
+.cd-gates { border: 1px solid var(--line); border-radius: 12px; overflow: hidden; margin: 12px 0; }
+.cd-gate {
+  display: flex; align-items: flex-start; gap: 10px; padding: 9px 14px;
+  border-bottom: 1px solid var(--line); background: var(--card);
+}
+.cd-gate:last-child { border-bottom: none; }
+.cd-gate-icon { font-family: var(--mono); font-size: .72rem; font-weight: 700; width: 18px; text-align: center; }
+.cd-gate.is-ok .cd-gate-icon { color: var(--ok); }
+.cd-gate.is-no .cd-gate-icon { color: var(--warn); }
+.cd-gate-label { font-size: .81rem; font-weight: 650; color: var(--text); }
+.cd-gate-detail { font-size: .73rem; color: var(--muted); margin-top: 1px; }
+
+/* Boş durum */
+.cd-empty { background: var(--s1); border: 1px dashed var(--line2); border-radius: 12px; padding: 18px 20px; }
+.cd-empty-title { font-weight: 700; color: var(--text); font-size: .9rem; }
+.cd-empty-body { color: var(--t2); font-size: .82rem; line-height: 1.6; margin-top: 4px; }
+
+/* Sistem mini paneli (kenar çubuğu) */
+.cd-sys { border: 1px solid var(--line); border-radius: 11px; background: var(--s1); padding: 10px 12px; margin: 4px 0 12px; }
+.cd-sys-row {
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  padding: 4px 0; font-size: .76rem;
+}
+.cd-sys-label {
+  color: var(--muted); font-family: var(--mono); font-size: .63rem;
+  letter-spacing: .06em; text-transform: uppercase;
+}
+.cd-sys-value { color: var(--text); font-weight: 600; }
+.cd-sys-dot { width: 6px; height: 6px; border-radius: 50%; display: inline-block; margin-right: 5px; background: var(--ok); }
+.cd-sys-dot.is-warn { background: var(--warn); }
+.cd-sys-dot.is-off { background: var(--muted); }
+
+/* Ajan aşama haritası */
+.cd-agentmap { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; margin-bottom: 14px; }
+.cd-agentmap .cd-stage {
+  align-items: flex-start; padding: 10px 12px;
+  background: var(--s1); border-color: var(--line);
+}
+.cd-agentmap .cd-stage.is-off { opacity: .55; }
+.cd-agentmap .cd-stage-name { font-size: .74rem; }
+.cd-agentmap .cd-stage-state { font-size: .64rem; text-align: left; line-height: 1.45; }
+
+/* Tema önizleme kartları */
+.cd-theme { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 13px 14px; }
+.cd-theme.is-active { border-color: var(--accent); background: var(--soft); }
+.cd-theme-sw { display: flex; gap: 5px; margin-bottom: 9px; }
+.cd-theme-sw span {
+  width: 18px; height: 18px; border-radius: 5px;
+  border: 1px solid rgba(127,127,127,.25);
+}
+.cd-theme-name { font-weight: 700; font-size: .82rem; color: var(--text); }
+.cd-theme-state {
+  font-family: var(--mono); font-size: .6rem; letter-spacing: .09em;
+  color: var(--muted); margin-top: 3px;
+}
+
+/* Yayındaki içerik satırları */
+.cd-pub-row {
+  display: flex; align-items: baseline; justify-content: space-between; gap: 12px;
+  padding: 8px 0; border-bottom: 1px dashed var(--line); font-size: .82rem;
+}
+.cd-pub-row:last-child { border-bottom: none; padding-bottom: 0; }
+.cd-pub-row a { color: var(--t2); text-decoration: none; }
+.cd-pub-row a:hover { color: var(--text); text-decoration: underline; }
+.cd-pub-date { font-family: var(--mono); font-size: .63rem; color: var(--muted); white-space: nowrap; }
+
+@media (max-width: 1100px) {
+  .cd-lifecycle { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .cd-agentmap { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .cd-stepbar, .cd-stepbar.cd-stepbar-4 { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 760px) {
+  .cd-lifecycle, .cd-agentmap { grid-template-columns: 1fr 1fr; }
+  .cd-stepbar, .cd-stepbar.cd-stepbar-4 { grid-template-columns: 1fr; }
+  .cd-step { border-right: none; border-bottom: 1px solid var(--line); }
+}
 </style>
 """
 
@@ -675,6 +797,71 @@ def panel_open(title: str) -> None:
     st.markdown(f'<div class="cd-panel-title">{title}</div>', unsafe_allow_html=True)
 
 
+def page_header(title: str, subtitle: str, chips: Optional[List[str]] = None,
+                kicker: str = "", compact: bool = False) -> None:
+    """Her sayfada aynı başlık dili: amaç, durum çipleri ve tek odak."""
+    chip_html = ('<div class="cd-chip-row">' + "".join(chips) + "</div>") if chips else ""
+    kicker_html = f'<div class="cd-page-kicker">{escape(kicker)}</div>' if kicker else ""
+    compact_class = " cd-hero-compact" if compact else ""
+    st.markdown(
+        f'<div class="cd-hero{compact_class}">{kicker_html}'
+        f"<h1>{escape(title)}</h1><p>{escape(subtitle)}</p>{chip_html}</div>",
+        unsafe_allow_html=True,
+    )
+
+
+def focus_card(kicker: str, title: str, meta: str, tone: str = "accent",
+               idle: bool = False) -> str:
+    return (
+        f'<div class="cd-focus focus-{tone}{" is-idle" if idle else ""}">'
+        f'<div class="cd-focus-kicker">{escape(kicker)}</div>'
+        f'<div class="cd-focus-title">{escape(title)}</div>'
+        f'<div class="cd-focus-meta">{escape(meta)}</div></div>'
+    )
+
+
+def gate_row(label: str, ok: bool, detail: str = "") -> str:
+    return (
+        f'<div class="cd-gate {"is-ok" if ok else "is-no"}">'
+        f'<div class="cd-gate-icon">{"✓" if ok else "✕"}</div>'
+        f'<div><div class="cd-gate-label">{escape(label)}</div>'
+        f'<div class="cd-gate-detail">{escape(detail)}</div></div></div>'
+    )
+
+
+def empty_state(title: str, body: str) -> None:
+    st.markdown(
+        f'<div class="cd-empty"><div class="cd-empty-title">{escape(title)}</div>'
+        f'<div class="cd-empty-body">{escape(body)}</div></div>',
+        unsafe_allow_html=True,
+    )
+
+
+def publish_block_reason(entry: Dict[str, Any],
+                         registry_entries: List[Dict[str, Any]]) -> str:
+    """Yayın kapısı: reddedilen pilot, tekrar yayın ve bozuk dosya kontrolü."""
+    lowered = f"{entry.get('name', '')} {entry.get('title', '')}".lower()
+    if "dog-guilty-look" in lowered or "guilty look" in lowered:
+        return ("Bu pilot yayın için reddedildi: kaynakları eğlence/derleme "
+                "klipleri, görünür filigran ve yerel kanıt kaydıyla uyuşmayan "
+                "anlatım içeriyor. Yayınlamayın; yeni ve onaylı bir render kullanın.")
+    registry_entry = registry_find(registry_entries, str(entry.get("title") or ""))
+    if registry_state(registry_entry) == "published":
+        return ("Bu video YouTube kanalınızda zaten yayında. Aynı video tekrar "
+                "yüklenmez; yeni bir sürüm için farklı içerik üretin.")
+    probe = entry.get("probe") or {}
+    if not probe.get("ok") or probe.get("issues"):
+        return ("Video dosyası doğrulanamadı. Dosya bozuk veya eksik olabilir; "
+                "yükleme güvenlik nedeniyle kapatıldı.")
+    return ""
+
+
+def publishable_entries(entries: List[Dict[str, Any]],
+                        registry_entries: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    return [entry for entry in entries
+            if not publish_block_reason(entry, registry_entries)]
+
+
 def fmt_int(value: Any) -> str:
     try:
         return f"{int(value):,}".replace(",", ".")
@@ -714,6 +901,12 @@ PIPELINE_STAGES: List[Dict[str, str]] = [
     {"id": "inceleme", "name": "İnceleme", "icon": "🔬"},
     {"id": "yayin", "name": "Yayın", "icon": "📤"},
 ]
+
+# Her ajanın üretim hattındaki ana aşaması — Ajanlar sayfasındaki harita için.
+AGENT_STAGE_INDEX: Dict[str, int] = {
+    "strategy": 0, "script": 1, "thumbnail": 2, "production": 2,
+    "seo": 4, "publishing": 4, "analytics": 4,
+}
 
 
 def stage_state(stage_index: int, position: int) -> str:
@@ -1806,7 +1999,43 @@ with st.sidebar:
         </div>
     """, unsafe_allow_html=True)
 
-    st.caption(f"v2.2 · {datetime.now().strftime('%d.%m.%Y')}")
+    # Sistem mini paneli — her sayfada aynı yerde, tekrar etmeyen durum özeti
+    try:
+        sidebar_vm = viewmade_status()
+    except Exception:
+        sidebar_vm = {"available": False, "tool_count": 0}
+    agents_on = sum(1 for agent in AGENTS
+                    if SETTINGS.get("agents_enabled", {}).get(agent["id"], True))
+    yt_dot = "" if token_ok else " is-warn"
+    vm_dot = "" if sidebar_vm.get("available") else " is-warn"
+    quota_dot = " is-warn" if pct > 80 else ""
+    st.markdown(
+        f"""
+        <div class="cd-sys">
+          <div class="cd-sys-row">
+            <span class="cd-sys-label">YouTube</span>
+            <span class="cd-sys-value"><span class="cd-sys-dot{yt_dot}"></span>
+              {'Bağlı' if token_ok else 'Bağlantı gerekli'}</span>
+          </div>
+          <div class="cd-sys-row">
+            <span class="cd-sys-label">ViewMade</span>
+            <span class="cd-sys-value"><span class="cd-sys-dot{vm_dot}"></span>
+              {'Bağlı' if sidebar_vm.get('available') else 'Kopuk'}</span>
+          </div>
+          <div class="cd-sys-row">
+            <span class="cd-sys-label">Kota</span>
+            <span class="cd-sys-value"><span class="cd-sys-dot{quota_dot}"></span>{quota_used} / {quota_limit}</span>
+          </div>
+          <div class="cd-sys-row">
+            <span class="cd-sys-label">Ajanlar</span>
+            <span class="cd-sys-value">{agents_on} / {len(AGENTS)} aktif</span>
+          </div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    st.caption(f"v2.3 · {datetime.now().strftime('%d.%m.%Y')}")
 
 
 def render_overview() -> None:
@@ -1818,106 +2047,184 @@ def render_overview() -> None:
             activity = json.loads(ACTIVITY_FILE.read_text(encoding="utf-8"))
         except (json.JSONDecodeError, OSError):
             activity = []
-    agents_on = sum(1 for agent in AGENTS if SETTINGS.get("agents_enabled", {}).get(agent["id"], True))
+    agents_on = sum(1 for agent in AGENTS
+                    if SETTINGS.get("agents_enabled", {}).get(agent["id"], True))
+    try:
+        token_ok = get_token_manager().is_valid()
+    except Exception:
+        token_ok = False
 
-    # Hero
+    registry_entries = sync_content_registry()
+    try:
+        local_entries = local_video_entries()
+    except Exception:
+        local_entries = []
+    review_entries = publishable_entries(local_entries, registry_entries)
+    failed_renders = [
+        item for item in pipeline
+        if str(item.get("viewmade_status") or "").upper() in {"FAILED", "STALE"}
+        and int(item.get("stage_index") or 0) < len(PIPELINE_STAGES)
+    ]
+    published_entries = sorted(
+        [entry for entry in registry_entries
+         if entry.get("youtube_id") and registry_state(entry) == "published"],
+        key=lambda entry: str(entry.get("updated_at") or ""),
+        reverse=True,
+    )
+    produced_count = sum(1 for entry in registry_entries
+                         if registry_state(entry) in {"published", "produced"})
+
     channel_name = channel.get("title", "Kanal") if channel else "Bağlantı Bekleniyor"
-    st.markdown(
-        f"""
-        <div class="cd-hero">
-          <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:16px">
-            <div>
-              <h1>Genel Bakış</h1>
-              <p>{channel_name} · {datetime.now().strftime('%d %B %Y, %A')}</p>
-            </div>
-            <div style="display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end">
-              {badge(f"{agents_on}/{len(AGENTS)} Ajan Aktif", "info") if agents_on else badge("0 Ajan Aktif", "warn")}
-              {badge("Sistem Çevrimiçi", "ok") if get_token_manager().is_valid() else badge("Bağlantı Gerekli", "err")}
-            </div>
-          </div>
-        </div>
-        """,
-        unsafe_allow_html=True,
+    page_header(
+        "Genel Bakış",
+        f"{channel_name} · {datetime.now().strftime('%d %B %Y, %A')}",
+        chips=[
+            badge(f"{agents_on}/{len(AGENTS)} Ajan Aktif", "info") if agents_on
+            else badge("0 Ajan Aktif", "warn"),
+            badge("Sistem Çevrimiçi", "ok") if token_ok else badge("Bağlantı Gerekli", "err"),
+            badge(f"{len(review_entries)} İnceleme", "warn") if review_entries
+            else badge("İnceleme Kuyruğu Temiz", "ok"),
+        ],
     )
 
-    # KPI satırı
-    if channel:
-        c1, c2, c3, c4 = st.columns(4)
-        with c1:
-            st.markdown(kpi_card("ABONE", fmt_int(channel.get("subscriber_count", 0)),
-                                 "Toplam abone sayısı", "accent"), unsafe_allow_html=True)
-        with c2:
-            st.markdown(kpi_card("GÖRÜNTÜLENME", fmt_int(channel.get("view_count", 0)),
-                                 "Kanal toplamı", "info"), unsafe_allow_html=True)
-        with c3:
-            st.markdown(kpi_card("VİDEO", fmt_int(channel.get("video_count", 0)),
-                                 "Yayında", "ok"), unsafe_allow_html=True)
-        with c4:
-            pending_count = sum(1 for item in pipeline if item["stage_index"] < len(PIPELINE_STAGES))
-            st.markdown(kpi_card("HATTA PROJE", str(pending_count),
-                                 f"{len(pipeline)} proje toplam", "purple"), unsafe_allow_html=True)
-    else:
-        st.markdown(
-            '<div class="cd-panel"><div class="cd-panel-title">BAĞLANTI KURULUMU</div>'
-            '<p style="color:var(--t2)">Kanal verilerini görmek için sol panelden <b>🔑 Yetkilendir (OAuth)</b> '
-            'adımını tamamlayın. Yetkilendirme sonrası bu sayfa otomatik dolar.</p></div>',
-            unsafe_allow_html=True,
-        )
+    # KPI satırı — kanal sağlığı tek bakışta
+    c1, c2, c3, c4 = st.columns(4)
+    with c1:
+        st.markdown(kpi_card("ABONE", fmt_int(channel.get("subscriber_count", 0)) if channel else "—",
+                             "Toplam abone sayısı", "accent"), unsafe_allow_html=True)
+    with c2:
+        st.markdown(kpi_card("GÖRÜNTÜLENME", fmt_int(channel.get("view_count", 0)) if channel else "—",
+                             "Kanal toplamı", "info"), unsafe_allow_html=True)
+    with c3:
+        st.markdown(kpi_card("YAYINDA VİDEO", fmt_int(channel.get("video_count", 0)) if channel else "—",
+                             f"{len(published_entries)} sicil eşleşmesi", "ok"), unsafe_allow_html=True)
+    with c4:
+        st.markdown(kpi_card("İNCELEME BEKLEYEN", str(len(review_entries)),
+                             "insan onayı bekleyen çıktı", "warn" if review_entries else "ok"),
+                    unsafe_allow_html=True)
+
+    if not channel:
+        st.markdown("<div style='height:12px'></div>", unsafe_allow_html=True)
+        empty_state("Kanal bağlantısı bekleniyor",
+                    "Sol paneldeki Bağlantı bölümünden Google yetkilendirmesini tamamlayın. "
+                    "Yetkilendirme sonrası bu sayfa kanal verileriyle otomatik dolar.")
 
     st.markdown("<div style='height:18px'></div>", unsafe_allow_html=True)
 
-    # Üretim hattı özeti
-    left, right = st.columns([2, 1])
-    with left:
-        panel_open("ÜRETİM HATTI DURUMU")
-        if pipeline:
-            stage_counts = [0] * len(PIPELINE_STAGES)
-            for item in pipeline:
-                index = min(item["stage_index"], len(PIPELINE_STAGES) - 1)
-                stage_counts[index] += 1
-            cols = st.columns(len(PIPELINE_STAGES))
-            for position, stage in enumerate(PIPELINE_STAGES):
-                with cols[position]:
-                    cls = "cd-stage cd-stage-active" if stage_counts[position] else "cd-stage"
-                    st.markdown(
-                        f"""<div class="{cls}">
-                              <div class="cd-stage-icon">{stage['icon']}</div>
-                              <div class="cd-stage-name">{stage['name']}</div>
-                              <div class="cd-stage-state">{stage_counts[position]} proje</div>
-                            </div>""",
-                        unsafe_allow_html=True,
-                    )
-            st.markdown("<div style='height:10px'></div>", unsafe_allow_html=True)
-            rows = []
-            for item in pipeline[:6]:
-                stage_name = PIPELINE_STAGES[min(item["stage_index"], len(PIPELINE_STAGES) - 1)]["name"]
-                rows.append({"Proje": item["title"], "Aşama": stage_name,
-                             "Sağlayıcı": item.get("provider", "—"), "Güncelleme": item.get("updated_at", "")})
-            st.dataframe(pd.DataFrame(rows), hide_index=True, use_container_width=True)
-        else:
-            st.markdown('<div class="cd-panel" style="color:var(--muted)">Hatta proje yok. '
-                        '<b>🎬 Video Üretim</b> sayfasından ilk projeyi oluşturun.</div>',
-                        unsafe_allow_html=True)
-    with right:
-        panel_open("HIZLI İŞLEMLER")
-        if st.button("🎬 Video Üretim'e Git", use_container_width=True, type="primary"):
+    # Aksiyon kuyruğu — sayfanın tek amacı: sıradaki işi göstermek
+    panel_open("ŞİMDİ NE YAPMALIYIM?")
+    q1, q2, q3 = st.columns(3, gap="small")
+    with q1:
+        st.markdown(focus_card(
+            "İNCELEME KUYRUĞU",
+            f"{len(review_entries)} video yayın onayı bekliyor" if review_entries
+            else "Bekleyen inceleme yok",
+            "İnsan incelemesi ve yazılı onay olmadan yükleme yapılmaz." if review_entries
+            else "Yeni bir üretim tamamlandığında burada görünür.",
+            "warn" if review_entries else "ok", idle=not review_entries,
+        ), unsafe_allow_html=True)
+        if st.button("İncelemeyi aç", key="ov_review", width="stretch",
+                     type="primary" if review_entries else "secondary"):
+            st.session_state["production_view_request"] = "Yayın Merkezi"
             st.session_state["nav"] = "🎬 Video Üretim"
             st.rerun()
-        if st.button("📈 İstatistikleri Aç", use_container_width=True):
-            st.session_state["nav"] = "📈 İstatistikler"
+    with q2:
+        st.markdown(focus_card(
+            "RENDER SAĞLIĞI",
+            f"{len(failed_renders)} render hatası" if failed_renders else "Render hatası yok",
+            "Hata alan projeleri Projeler görünümünde yeniden deneyin." if failed_renders
+            else "Tüm ViewMade işleri beklenen durumda.",
+            "warn" if failed_renders else "ok", idle=not failed_renders,
+        ), unsafe_allow_html=True)
+        if st.button("Projeleri aç", key="ov_projects", width="stretch"):
+            st.session_state["production_view_request"] = "Projeler"
+            st.session_state["nav"] = "🎬 Video Üretim"
             st.rerun()
-        if st.button("⚙️ Otomasyonu Aç", use_container_width=True):
-            st.session_state["nav"] = "⚙️ Otomasyon"
+    with q3:
+        st.markdown(focus_card(
+            "İÇERİK AJANI",
+            f"{produced_count} üretim sicilde" if produced_count else "Yeni niş önerisi hazır",
+            "Tekrar riski kontrol edilir; yayındaki konular yeniden önerilmez.",
+            "info",
+        ), unsafe_allow_html=True)
+        if st.button("Öneri al", key="ov_content", width="stretch"):
+            st.session_state["production_view_request"] = "İçerik Ajanı"
+            st.session_state["nav"] = "🎬 Video Üretim"
             st.rerun()
 
+    st.markdown("<div style='height:18px'></div>", unsafe_allow_html=True)
+
+    # Beş aşamalı yaşam döngüsü
+    panel_open("ÜRETİM HATTI · 5 AŞAMA")
+    if pipeline:
+        stage_counts = [0] * len(PIPELINE_STAGES)
+        for item in pipeline:
+            index = min(int(item.get("stage_index") or 0), len(PIPELINE_STAGES) - 1)
+            stage_counts[index] += 1
+        active_stage_counts = stage_counts[:4]
+        bottleneck = (max(range(len(active_stage_counts)),
+                           key=lambda position: active_stage_counts[position])
+                      if any(active_stage_counts) else -1)
+        lifecycle_cols = st.columns(len(PIPELINE_STAGES), gap="small")
+        for position, stage in enumerate(PIPELINE_STAGES):
+            is_bottleneck = position == bottleneck and active_stage_counts[position] > 0
+            classes = "cd-lc"
+            if is_bottleneck:
+                classes += " is-bottleneck"
+            if not stage_counts[position]:
+                classes += " is-zero"
+            with lifecycle_cols[position]:
+                st.markdown(
+                    f'<div class="{classes}">'
+                    f'<div class="cd-lc-top"><span class="cd-lc-icon">{stage["icon"]}</span>'
+                    f'<span class="cd-lc-count">{stage_counts[position]}</span></div>'
+                    f'<div class="cd-lc-label">{stage["name"]}</div>'
+                    f'<div class="cd-lc-meta">{"DARBOĞAZ" if is_bottleneck else "PROJE"}</div>'
+                    f"</div>",
+                    unsafe_allow_html=True,
+                )
+        if bottleneck >= 0:
+            st.caption(f"Darboğaz: **{PIPELINE_STAGES[bottleneck]['name']}** · "
+                       f"{active_stage_counts[bottleneck]} proje bu aşamada bekliyor.")
+        rows = []
+        for item in pipeline[:5]:
+            stage_name = PIPELINE_STAGES[min(int(item.get("stage_index") or 0),
+                                             len(PIPELINE_STAGES) - 1)]["name"]
+            rows.append({"Proje": item["title"], "Aşama": stage_name,
+                         "Sağlayıcı": item.get("provider", "—"),
+                         "Güncelleme": item.get("updated_at", "")})
+        st.dataframe(pd.DataFrame(rows), hide_index=True, use_container_width=True)
+    else:
+        empty_state("Hat boş",
+                    "Henüz proje yok. Video Üretim sayfasından ya da İçerik Ajanı'ndan "
+                    "ilk projeyi hatta ekleyin.")
+
+    st.markdown("<div style='height:18px'></div>", unsafe_allow_html=True)
+
+    left, right = st.columns([3, 2], gap="large")
+    with left:
+        panel_open("YAYINDAKİ VİDEOLAR")
+        if published_entries:
+            rows_html = "".join(
+                f'<div class="cd-pub-row">'
+                f'<a href="https://www.youtube.com/watch?v={escape(str(entry.get("youtube_id") or ""))}" '
+                f'target="_blank" rel="noopener">{escape(str(entry.get("title") or "Başlıksız"))}</a>'
+                f'<span class="cd-pub-date">{escape(str(entry.get("first_seen") or "")[:10])}</span></div>'
+                for entry in published_entries[:8]
+            )
+            st.markdown(f'<div class="cd-panel">{rows_html}</div>', unsafe_allow_html=True)
+        else:
+            empty_state("Henüz yayınlanmış video yok",
+                        "Yayın Merkezi'nden onaylanan ilk video burada listelenir.")
+    with right:
         panel_open("SON HAREKETLER")
         if activity:
             for entry in activity[:8]:
                 kind = "ok" if entry.get("kind") == "ok" else ("err" if entry.get("kind") == "hata" else "")
                 cls = f"cd-log cd-log-{kind}" if kind else "cd-log"
                 st.markdown(
-                    f'<div class="{cls}"><span class="cd-log-ts">{entry.get("ts", "")}</span>'
-                    f'{entry.get("msg", "")}</div>',
+                    f'<div class="{cls}"><span class="cd-log-ts">{escape(str(entry.get("ts", "")))}</span>'
+                    f'{escape(str(entry.get("msg", "")))}</div>',
                     unsafe_allow_html=True,
                 )
         else:
@@ -2459,42 +2766,6 @@ def render_viewmade_info(info: Dict[str, Any], fallback_title: str = "") -> None
         )
 
 
-def render_viewmade_status_bar(vm_status: Dict[str, Any], active_renders: int) -> None:
-    available = bool(vm_status.get("available"))
-    authenticated = bool(vm_status.get("authenticated"))
-    bound = bool(vm_status.get("bound"))
-    days_left = vm_status.get("days_left")
-    tool_count = int(vm_status.get("tool_count") or 0)
-    connect_url = _safe_http_url(vm_status.get("connect_url")) or "https://viewmade.com/dashboard/connect"
-    state_text = "Bağlı ve hazır" if available else "Bağlantı gerekli"
-    token_text = f"Token {days_left} gün" if days_left is not None else "Token süresi bilinmiyor"
-    meta_text = f"Aktif render: {active_renders} · MCP araçları: {tool_count}"
-    st.markdown(
-        f"""
-        <div class="cd-statusbar{'' if available else ' is-warn'}">
-          <div class="cd-statusbar-main">
-            <span class="cd-statuslight"></span>
-            <span class="cd-statusbar-title">ViewMade MCP</span>
-            <span class="cd-statusbar-item">{escape(state_text)}</span>
-            <span class="cd-statusbar-sep">·</span>
-            <span class="cd-statusbar-item">OAuth {'doğrulandı' if authenticated else 'yok'}</span>
-            <span class="cd-statusbar-sep">·</span>
-            <span class="cd-statusbar-item">{'3/3 araç eşlemesi' if bound else 'araç eşlemesi eksik'}</span>
-            <span class="cd-statusbar-sep">·</span>
-            <span class="cd-statusbar-item">{escape(token_text)}</span>
-            <span class="cd-statusbar-sep">·</span>
-            <a href="{escape(connect_url)}" target="_blank" rel="noopener"
-               style="font-family:var(--mono);font-size:.7rem;color:var(--info);text-decoration:none">
-              PANELİ AÇ ↗
-            </a>
-          </div>
-          <div class="cd-statusbar-meta">{escape(meta_text)}</div>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
-
-
 def render_viewmade_connection_details(vm_status: Dict[str, Any]) -> None:
     """OAuth/MCP ayrıntıları; varsayılan olarak kapalı tutulur."""
     vm_ok = bool(vm_status.get("available"))
@@ -2583,15 +2854,22 @@ def render_viewmade_workspace(vm_status: Dict[str, Any], registry_entries: List[
             'Bağlantı ayrıntıları bölümünden OAuth oturumunu ve araç eşlemesini doğrulayın.</div>',
             unsafe_allow_html=True,
         )
+        with st.expander("Bağlantı ayrıntıları · OAuth, araç eşlemesi ve MCP testi",
+                         expanded=True):
+            render_viewmade_connection_details(vm_status)
         return
 
     vm_list = list_viewmade_videos()
     if not vm_list.get("ok"):
         st.error(f"ViewMade video listesi alınamadı: {vm_list.get('error')}")
+        with st.expander("Bağlantı ayrıntıları · OAuth, araç eşlemesi ve MCP testi", expanded=True):
+            render_viewmade_connection_details(vm_status)
         return
     vm_items = [item for item in vm_list.get("items", []) if item.get("status") == "ready"]
     if not vm_items:
         st.info("ViewMade hesabında hazır video bulunmuyor.", icon="🎬")
+        with st.expander("Bağlantı ayrıntıları · OAuth, araç eşlemesi ve MCP testi", expanded=False):
+            render_viewmade_connection_details(vm_status)
         return
 
     def _vm_label(item: Dict[str, Any]) -> str:
@@ -2656,13 +2934,19 @@ def render_viewmade_workspace(vm_status: Dict[str, Any], registry_entries: List[
             st.link_button("▶ YouTube'da aç",
                            f"https://www.youtube.com/watch?v={selected_youtube_id}",
                            width="stretch")
-        if local_vm:
+        if local_vm and not selected_youtube_id:
             if st.button("➡️ Yayın Merkezi'nde aç", type="primary", width="stretch",
                          key="vm_to_publish"):
                 st.session_state["publish_video_path"] = str(local_vm)
                 st.session_state["production_view_request"] = "Yayın Merkezi"
                 st.session_state["viewmade_notice"] = (
                     "Video Yayın Merkezi'ne taşındı. Yükleme öncesi inceleyip onaylayın.")
+                st.rerun()
+        elif local_vm:
+            st.caption("Bu üretim zaten YouTube'da yayında; tekrar yükleme kapalı.")
+            if st.button("Yayın kaydını gör", width="stretch", key="vm_to_publish_record"):
+                st.session_state["publish_video_path"] = str(local_vm)
+                st.session_state["production_view_request"] = "Yayın Merkezi"
                 st.rerun()
         else:
             if st.button("⬇️ Önizlemeyi getir", type="primary", width="stretch",
@@ -2738,6 +3022,9 @@ def render_viewmade_workspace(vm_status: Dict[str, Any], registry_entries: List[
                 get_viewmade_video_info.clear()
                 st.session_state["viewmade_notice"] = "İçerik sicili ve YouTube eşleşmesi yenilendi."
                 st.rerun()
+
+    with st.expander("Bağlantı ayrıntıları · OAuth, araç eşlemesi ve MCP testi", expanded=False):
+        render_viewmade_connection_details(vm_status)
 
 
 def render_content_agent(registry_entries: List[Dict[str, Any]],
@@ -3054,13 +3341,16 @@ def render_projects_workspace(vm_status: Dict[str, Any],
                 render_project_viewmade(item, vm_status)
 
 
-def render_publish_center(registry_entries: List[Dict[str, Any]]) -> None:
+def render_publish_center(registry_entries: List[Dict[str, Any]],
+                          entries: Optional[List[Dict[str, Any]]] = None) -> None:
     """İnsan incelemesi, yazılı onay ve kontrollü YouTube yüklemesi."""
     panel_open("YAYIN MERKEZİ")
-    entries = local_video_entries()
+    if entries is None:
+        entries = local_video_entries()
     if not entries:
-        st.info("Henüz yerel video çıktısı yok. Bir projede ViewMade render tamamlandığında "
-                "veya yerel üretim bittiğinde video burada görünür.", icon="🎬")
+        empty_state("Yayına hazır çıktı yok",
+                    "Bir projede ViewMade render tamamlandığında veya yerel üretim "
+                    "bittiğinde video burada görünür.")
         return
 
     try:
@@ -3075,9 +3365,11 @@ def render_publish_center(registry_entries: List[Dict[str, Any]]) -> None:
         quota_limit = int(getattr(get_config(), "daily_quota_limit", 10000) or 10000)
     except Exception:
         quota_limit = 10000
+    publishable_count = len(publishable_entries(entries, registry_entries))
     st.markdown(
         f'<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px">'
-        f'{badge(f"{len(entries)} HAZIR ÇIKTI", "info")}'
+        f'{badge(f"{len(entries)} YEREL ÇIKTI", "info")}'
+        f'{badge(f"{publishable_count} YAYINA UYGUN", "ok" if publishable_count else "muted")}'
         f'{badge(channel_text, "muted", dot=False)}'
         f'{badge(f"KOTA {quota_used} / {quota_limit}", "muted", dot=False)}</div>',
         unsafe_allow_html=True,
@@ -3089,6 +3381,10 @@ def render_publish_center(registry_entries: List[Dict[str, Any]]) -> None:
     wanted = st.session_state.pop("publish_video_path", "")
     if wanted in paths:
         st.session_state["publish_select"] = wanted
+    if st.session_state.get("publish_select") not in paths:
+        preferred = next((item for item in entries
+                          if not publish_block_reason(item, registry_entries)), entries[0])
+        st.session_state["publish_select"] = str(preferred["path"])
 
     selected_path = st.selectbox(
         "Yayınlanacak video",
@@ -3105,18 +3401,25 @@ def render_publish_center(registry_entries: List[Dict[str, Any]]) -> None:
     if registry_state(publish_registry) == "published":
         published_youtube_url = (f"https://www.youtube.com/watch?v="
                                  f"{publish_registry.get('youtube_id')}")
-    lowered = f"{entry['name']} {entry['title']}".lower()
-    blocked_reason = ""
-    if "dog-guilty-look" in lowered or "guilty look" in lowered:
-        blocked_reason = ("Bu pilot yayın için reddedildi: kaynakları eğlence/derleme "
-                          "klipleri, görünür filigran ve yerel kanıt kaydıyla uyuşmayan "
-                          "anlatım içeriyor. Yayınlamayın; yeni ve onaylı bir render kullanın.")
-    elif published_youtube_url:
-        blocked_reason = ("Bu video YouTube kanalınızda zaten yayında. Aynı video tekrar "
-                          "yüklenmez; yeni bir sürüm için farklı içerik üretin.")
-    elif not probe.get("ok") or probe.get("issues"):
-        blocked_reason = ("Video dosyası doğrulanamadı. Dosya bozuk veya eksik olabilir; "
-                          "yükleme güvenlik nedeniyle kapatıldı.")
+    blocked_reason = publish_block_reason(entry, registry_entries)
+
+    step2_class = "is-done" if blocked_reason else "is-active"
+    step3_class = "is-active" if not blocked_reason else ""
+    step3_meta = "YAYIN KAPALI" if blocked_reason else "KONTROLLÜ YAYIN"
+    st.markdown(
+        '<div class="cd-stepbar">'
+        '<div class="cd-step is-done"><div class="cd-step-num">1</div>'
+        '<div><div class="cd-step-label">Videoyu seç</div>'
+        '<div class="cd-step-meta">YEREL ÇIKTI</div></div></div>'
+        f'<div class="cd-step {step2_class}"><div class="cd-step-num">2</div>'
+        '<div><div class="cd-step-label">İncele ve onayla</div>'
+        '<div class="cd-step-meta">İNSAN KONTROLÜ</div></div></div>'
+        f'<div class="cd-step {step3_class}"><div class="cd-step-num">3</div>'
+        "<div><div class=\"cd-step-label\">YouTube'a yükle</div>"
+        f'<div class="cd-step-meta">{step3_meta}</div></div></div>'
+        '</div>',
+        unsafe_allow_html=True,
+    )
 
     preview_col, meta_col = st.columns([2, 3], gap="large")
     with preview_col:
@@ -3179,6 +3482,31 @@ def render_publish_center(registry_entries: List[Dict[str, Any]]) -> None:
                 for line in entry["attributions"][:15]:
                     st.markdown(f"- {line}")
 
+    if blocked_reason:
+        lowered_block = f"{entry['name']} {entry['title']}".lower()
+        rejected_block = "dog-guilty-look" in lowered_block or "guilty look" in lowered_block
+        probe_block_ok = bool(probe.get("ok")) and not probe.get("issues")
+        st.markdown(
+            '<div class="cd-gates">' + "".join([
+                gate_row("Kanal bağlantısı", target_channel is not None, channel_text),
+                gate_row("Tekrar kontrolü", not published_youtube_url,
+                         "Video kanalda yayında; aynı dosya tekrar yüklenmez."
+                         if published_youtube_url else "Tekrar eşleşmesi bulunamadı."),
+                gate_row("Dosya doğrulaması", probe_block_ok,
+                         "MP4 yapısı doğrulandı." if probe_block_ok
+                         else "Dosya doğrulanamadı; yükleme kapalı."),
+                gate_row("Editoryal uygunluk", not rejected_block,
+                         "Reddedilen pilot yayınlanamaz." if rejected_block
+                         else "Editoryal kontrol bekleniyor."),
+            ]) + "</div>",
+            unsafe_allow_html=True,
+        )
+        if published_youtube_url:
+            st.link_button("▶ YouTube'da aç", published_youtube_url, width="stretch")
+        st.caption("Bu çıktı yayınlanamaz. Yeni bir sürüm için İçerik Ajanı'ndan farklı bir "
+                   "konu seçin; aynı video tekrar üretilmez.")
+        return
+
     safe_key = (re.sub(r"[^a-zA-Z0-9_-]", "_", entry["name"]) + "_" +
                 hashlib.sha256(str(entry["path"]).encode("utf-8")).hexdigest()[:8])
     title_default = str(entry["title"])[:100]
@@ -3211,6 +3539,31 @@ def render_publish_center(registry_entries: List[Dict[str, Any]]) -> None:
     )
     confirm_text = st.text_input("Yükleme onayı için YAYINLA yazın",
                                  key=f"pub_confirm_{safe_key}", placeholder="YAYINLA")
+
+    lowered = f"{entry['name']} {entry['title']}".lower()
+    rejected_pilot = "dog-guilty-look" in lowered or "guilty look" in lowered
+    probe_ok = bool(probe.get("ok")) and not probe.get("issues")
+    st.markdown(
+        '<div class="cd-gates">' + "".join([
+            gate_row("Kanal bağlantısı", target_channel is not None, channel_text),
+            gate_row("Tekrar kontrolü", not published_youtube_url,
+                     "Video kanalda yayında; aynı dosya tekrar yüklenmez."
+                     if published_youtube_url else "Başlık ve ViewMade kimliği sicilde eşleşmedi."),
+            gate_row("Dosya doğrulaması", probe_ok,
+                     "MP4 yapısı doğrulandı." if probe_ok else "Dosya doğrulanamadı; yükleme kapalı."),
+            gate_row("Editoryal uygunluk", not rejected_pilot,
+                     "Reddedilen pilot yayınlanamaz." if rejected_pilot
+                     else "Reddedilen pilot listesinde değil; yine de izleyerek onaylayın."),
+            gate_row("İnsan incelemesi", reviewed,
+                     "Video baştan sona izlendi." if reviewed else "İzleme onayı bekleniyor."),
+            gate_row("Yazılı onay", confirm_text.strip().upper() == "YAYINLA",
+                     "YAYINLA yazıldı." if confirm_text.strip().upper() == "YAYINLA"
+                     else "Onay metni bekleniyor."),
+            gate_row("API kotası", quota_used < quota_limit,
+                     f"{quota_used} / {quota_limit} kullanıldı."),
+        ]) + "</div>",
+        unsafe_allow_html=True,
+    )
 
     st.caption(f"Hedef kanal: {channel_text} · Bugünkü YouTube API kotası: "
                f"{quota_used} / {quota_limit} · Seçili gizlilik: {privacy}")
@@ -3279,17 +3632,6 @@ def render_publish_center(registry_entries: List[Dict[str, Any]]) -> None:
 
 
 def render_production() -> None:
-    st.markdown(
-        """
-        <div class="cd-hero">
-          <h1>Video Üretim</h1>
-          <p>Planlamadan yayına kontrollü üretim masası. ViewMade künyeleri, kaynak atıfları
-          ve yayın kapısı tek çalışma alanında.</p>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
-
     vm_status = viewmade_status()
     providers = available_providers()
     if not any(provider["id"] == "viewmade" for provider in providers):
@@ -3329,42 +3671,53 @@ def render_production() -> None:
     active_renders = sum(1 for item in pipeline_items
                          if str(item.get("viewmade_status") or "") in {"SUBMITTED", "RENDERING"})
     try:
-        channel = active_channel()
+        local_entries = local_video_entries()
     except Exception:
-        channel = None
-    channel_title = str((channel or {}).get("title") or "Kanal bağlı değil")
-    channel_sub = str((channel or {}).get("channel_id") or "YouTube OAuth bekleniyor")
-    vm_value = "Bağlı" if vm_status.get("available") else "Kopuk"
-    vm_sub = (f"{vm_status.get('tool_count', 0)} MCP aracı · "
-              f"{'3/3 eşleme' if vm_status.get('bound') else 'eşleme eksik'}")
+        local_entries = []
+    review_entries = publishable_entries(local_entries, registry_entries)
+    review_count = len(review_entries)
 
-    kpi_cols = st.columns(4, gap="small")
-    kpi_values = [
-        kpi_card("KANAL", escape(channel_title), escape(channel_sub), "info"),
-        kpi_card("YOUTUBE'DA YAYINDA", published_count,
-                 "içerik sicilinde eşleşen video", "ok"),
-        kpi_card("ÜRETİM HATTI", len(pipeline_items),
-                 f"{active_renders} aktif render · {produced_count} sicil kaydı", "accent"),
-        kpi_card("VIEWMADE MCP", vm_value, vm_sub, "ok" if vm_status.get("available") else "warn"),
-    ]
-    for column, value in zip(kpi_cols, kpi_values):
-        with column:
-            st.markdown(value, unsafe_allow_html=True)
-
-    render_viewmade_status_bar(vm_status, active_renders)
-    with st.expander("Bağlantı ayrıntıları · OAuth, araç eşlemesi ve MCP testi", expanded=False):
-        render_viewmade_connection_details(vm_status)
+    page_header(
+        "Video Üretim",
+        "Planlamadan yayına kontrollü üretim masası. Beş aşama, yedi ajan ve tek içerik sicili.",
+        chips=[
+            badge(f"{len(pipeline_items)} Proje", "muted", dot=False),
+            badge(f"{produced_count} Üretim", "info") if produced_count else badge("Henüz Üretim Yok", "muted"),
+            badge(f"{review_count} İnceleme", "warn") if review_count else badge("İnceleme Temiz", "ok"),
+            badge(f"{active_renders} Render", "info") if active_renders else badge("Render Boşta", "muted"),
+            badge("ViewMade Bağlı", "ok") if vm_status.get("available")
+            else badge("ViewMade Kopuk", "warn"),
+        ],
+        compact=True,
+    )
+    st.caption(
+        f"Son eşitleme {datetime.now().strftime('%H:%M')} · "
+        f"{len(registry_entries)} sicil kaydı · {published_count} YouTube eşleşmesi · "
+        f"{vm_status.get('tool_count', 0)} MCP aracı"
+    )
 
     requested_view = st.session_state.pop("production_view_request", "")
     if requested_view in PRODUCTION_VIEWS:
         st.session_state["production_view"] = requested_view
     if "production_view" not in st.session_state:
         st.session_state["production_view"] = PRODUCTION_VIEWS[0]
+    view_counts = {
+        "Üretimler": produced_count,
+        "İçerik Ajanı": 0,
+        "Projeler": len(pipeline_items),
+        "Yayın Merkezi": review_count,
+    }
+
+    def _production_view_label(view: str) -> str:
+        count = view_counts.get(view, 0)
+        return f"{view} · {count}" if count else view
+
     active_view = st.segmented_control(
         "Video Üretim görünümü",
         PRODUCTION_VIEWS,
         key="production_view",
         label_visibility="collapsed",
+        format_func=_production_view_label,
     )
     if not active_view:
         active_view = PRODUCTION_VIEWS[0]
@@ -3377,36 +3730,55 @@ def render_production() -> None:
         render_projects_workspace(vm_status, providers, provider_names, provider_avail,
                                   registry_entries, pipeline_items)
     else:
-        render_publish_center(registry_entries)
+        render_publish_center(registry_entries, entries=local_entries)
 
 
 # ============================================================================
 # Ajanlar
 # ============================================================================
 def render_agents() -> None:
-    st.markdown(
-        """
-        <div class="cd-hero">
-          <h1>Ajanlar</h1>
-          <p>Yedi uzman otomasyon ajanı. Her ajan üretim hattının ilgili aşamasında çalışır;
-          açıp kapatabilir, her birine özel hızlı işlemler çalıştırabilirsiniz.</p>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
-
     enabled = SETTINGS.setdefault("agents_enabled", dict(DEFAULT_SETTINGS["agents_enabled"]))
     active_count = sum(1 for agent in AGENTS if enabled.get(agent["id"], True))
-    left_b, right_b = st.columns(2)
-    with left_b:
-        st.markdown(badge(f"{active_count}/{len(AGENTS)} ajan aktif", "info"), unsafe_allow_html=True)
-    with right_b:
-        if st.button("🔄 Varsayılana Döndür", use_container_width=True):
+    page_header(
+        "Ajanlar",
+        "Yedi uzman otomasyon ajanı. Her ajan üretim hattının bir aşamasında çalışır; "
+        "açıp kapatabilir, karttan hızlı işlem başlatabilirsiniz.",
+        chips=[
+            badge(f"{active_count}/{len(AGENTS)} Ajan Aktif", "ok" if active_count else "warn"),
+            badge("5 Aşama · 7 Rol", "info", dot=False),
+            badge("İnsan Onayı Zorunlu", "muted", dot=False),
+        ],
+        compact=True,
+    )
+
+    map_head, map_reset = st.columns([5, 1])
+    with map_head:
+        panel_open("AJAN HARİTASI · HANGİ AŞAMADA KİM ÇALIŞIR")
+    with map_reset:
+        if st.button("↺ Varsayılana Döndür", use_container_width=True):
             enabled.update(DEFAULT_SETTINGS["agents_enabled"])
             save_settings(SETTINGS)
             st.rerun()
+    map_cols = st.columns(len(PIPELINE_STAGES), gap="small")
+    for position, stage in enumerate(PIPELINE_STAGES):
+        stage_agents = [agent for agent in AGENTS
+                        if AGENT_STAGE_INDEX.get(agent["id"]) == position]
+        any_on = any(enabled.get(agent["id"], True) for agent in stage_agents)
+        classes = "cd-stage" + (" is-off" if stage_agents and not any_on else "")
+        names = (" · ".join(f"{agent['icon']} {agent['name']}" for agent in stage_agents)
+                 or "👤 İnsan editör · onay kapısı")
+        with map_cols[position]:
+            st.markdown(
+                f'<div class="{classes}">'
+                f'<div class="cd-stage-name">{stage["name"]}</div>'
+                f'<div class="cd-stage-state">{escape(names)}</div></div>',
+                unsafe_allow_html=True,
+            )
 
-    st.markdown("<div style='height:14px'></div>", unsafe_allow_html=True)
+    st.caption("Kartlardaki anahtar ajanı anında duraklatır; üretim hattı durmaz, "
+               "yalnızca ilgili otomasyon adımı atlanır.")
+
+    st.markdown("<div style='height:8px'></div>", unsafe_allow_html=True)
 
     # Ajan kartları ızgarası
     grid = st.columns(2)
@@ -3414,6 +3786,8 @@ def render_agents() -> None:
         with grid[index % 2]:
             is_on = enabled.get(agent["id"], True)
             status = badge("AKTİF", "ok") if is_on else badge("PASİF", "muted", dot=False)
+            agent_stage = PIPELINE_STAGES[
+                AGENT_STAGE_INDEX.get(agent["id"], 0)]["name"].upper()
             st.markdown(
                 f"""
                 <div class="cd-agent">
@@ -3421,7 +3795,7 @@ def render_agents() -> None:
                     <div class="cd-agent-icon">{agent['icon']}</div>
                     <div>
                       <div class="cd-agent-name">{agent['name']}</div>
-                      <div class="cd-agent-role">{agent['role']}</div>
+                      <div class="cd-agent-role">{agent['role']} · {agent_stage}</div>
                     </div>
                     <div style="margin-left:auto">{status}</div>
                   </div>
@@ -3574,25 +3948,26 @@ def style_figure(fig: "go.Figure") -> "go.Figure":
 def render_stats() -> None:
     channel = active_channel()
     if not channel:
-        st.markdown(
-            """
-            <div class="cd-hero">
-              <h1>İstatistikler</h1>
-              <p>Kanal verilerini göstermek için bağlantı gerekli. Sol panelden yetkilendirin.</p>
-            </div>
-            """,
-            unsafe_allow_html=True,
+        page_header(
+            "İstatistikler",
+            "Kanal verilerini göstermek için bağlantı gerekli. Sol panelden yetkilendirin.",
+            chips=[badge("Analytics Bekleniyor", "warn")],
+            compact=True,
         )
+        empty_state("Kanal bağlantısı yok",
+                    "Sol paneldeki Bağlantı bölümünden OAuth yetkilendirmesini tamamlayın. "
+                    "Yetkilendirme sonrası abone, görüntülenme ve video performansı burada dolar.")
         return
 
-    st.markdown(
-        f"""
-        <div class="cd-hero">
-          <h1>İstatistikler</h1>
-          <p>{channel.get('title', 'Kanal')} performans panosu · veriler YouTube Analytics'ten alınır</p>
-        </div>
-        """,
-        unsafe_allow_html=True,
+    page_header(
+        "İstatistikler",
+        f"{channel.get('title', 'Kanal')} performans panosu · veriler YouTube Analytics'ten alınır",
+        chips=[
+            badge("Analytics Bağlı", "ok"),
+            badge(f"Son eşitleme {datetime.now().strftime('%H:%M')}", "muted", dot=False),
+            badge("Gecikme 24–72 Saat", "info", dot=False),
+        ],
+        compact=True,
     )
 
     # KPI satırı
@@ -3628,26 +4003,43 @@ def render_stats() -> None:
         try:
             reporter = get_reporter()
             daily = reporter.get_daily_views(start_date=start_date, end_date=end_date)
-            if daily:
-                df = pd.DataFrame(daily)
+            df = pd.DataFrame(daily) if daily else pd.DataFrame()
+            if not df.empty:
+                df["date"] = pd.to_datetime(df["date"], errors="coerce")
+                df["views"] = pd.to_numeric(df["views"], errors="coerce").fillna(0).astype(int)
+                df = df.dropna(subset=["date"]).sort_values("date")
+            if not df.empty:
                 fig = go.Figure()
                 fig.add_trace(go.Scatter(
-                    x=df["date"], y=df["views"], mode="lines+markers",
+                    x=df["date"], y=df["views"],
+                    mode="lines+markers" if len(df) > 1 else "markers",
                     line=dict(color=THEME["accent"], width=2.5),
                     fill="tozeroy", fillcolor=THEME["soft"],
-                    marker=dict(size=5),
+                    marker=dict(size=6),
                     name="Görüntülenme",
                 ))
                 fig.update_layout(title=None, height=300)
+                fig.update_xaxes(type="date", tickformat="%d %b", ticklabelmode="period")
+                if len(df) == 1:
+                    single_day = df["date"].iloc[0]
+                    fig.update_xaxes(range=[single_day - timedelta(days=2),
+                                            single_day + timedelta(days=2)])
                 st.plotly_chart(style_figure(fig), use_container_width=True)
                 total = int(df["views"].sum())
                 best = df.loc[df["views"].idxmax()]
+                best_day = best["date"].strftime("%d %b %Y")
                 st.caption(f"Toplam: **{fmt_int(total)}** · En iyi gün: "
-                           f"**{best['date']}** ({fmt_int(best['views'])})")
+                           f"**{best_day}** ({fmt_int(best['views'])}) · "
+                           f"{len(df)} günlük veri")
             else:
-                st.info("Seçilen aralıkta görüntülenme verisi yok.")
+                empty_state("Bu aralıkta veri yok",
+                            "YouTube Analytics yeni kanallarda 24–72 saat gecikir. "
+                            "Veri geldiğinde grafik otomatik dolar; bu bir hata değildir.")
         except Exception as exc:
             st.warning(f"Veri alınamadı: {str(exc)[:140]}")
+            if st.button("↻ Analitiği yeniden dene", key="stats_retry"):
+                st.cache_data.clear()
+                st.rerun()
 
     with side_col:
         panel_open("KOTA & DURUM")
@@ -3731,7 +4123,9 @@ def render_stats() -> None:
                 st.markdown(kpi_card("TOPLAM YORUM", fmt_int(total_comments), "son 12 video", "purple"),
                             unsafe_allow_html=True)
         else:
-            st.info("Henüz video verisi yok.")
+            empty_state("Henüz video performansı yok",
+                        "Kanalda yayınlanan videolar oluştukça bu tablo ve en iyi video "
+                        "grafiği otomatik dolar.")
     except Exception as exc:
         st.warning(f"Video listesi alınamadı: {str(exc)[:140]}")
 
@@ -3740,21 +4134,40 @@ def render_stats() -> None:
 # Otomasyon
 # ============================================================================
 def render_automation() -> None:
-    st.markdown(
-        """
-        <div class="cd-hero">
-          <h1>Otomasyon</h1>
-          <p>Planla → Uygula → İzle → Geliştir döngüsü. Ayarları belirleyin, hattı ilerletin,
-          kayıtları izleyin ve önerilere göre yayınınızı geliştirin.</p>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
-
     enabled = SETTINGS.get("agents_enabled", {})
     pipeline_items = load_pipeline()
     active_count = sum(1 for agent in AGENTS if enabled.get(agent["id"], True))
     pending_count = sum(1 for item in pipeline_items if item["stage_index"] < len(PIPELINE_STAGES))
+
+    page_header(
+        "Otomasyon",
+        "Planla → Uygula → İzle → Geliştir döngüsü. Ayarları belirleyin, hattı ilerletin, "
+        "kayıtları izleyin ve önerilere göre yayınınızı geliştirin.",
+        chips=[
+            badge(f"{active_count}/{len(AGENTS)} Ajan Aktif", "ok", dot=True),
+            badge(f"{pending_count} Proje Hatta", "info", dot=False),
+            badge(SETTINGS.get("posting_frequency", "Haftada 3"), "muted", dot=False),
+        ],
+        compact=True,
+    )
+
+    st.markdown(
+        '<div class="cd-stepbar cd-stepbar-4">'
+        '<div class="cd-step is-done"><div class="cd-step-num">1</div>'
+        '<div><div class="cd-step-label">Planla</div>'
+        '<div class="cd-step-meta">YAYIN RİTMİ</div></div></div>'
+        '<div class="cd-step is-active"><div class="cd-step-num">2</div>'
+        '<div><div class="cd-step-label">Uygula</div>'
+        '<div class="cd-step-meta">ÜRETİM HATTI</div></div></div>'
+        '<div class="cd-step"><div class="cd-step-num">3</div>'
+        '<div><div class="cd-step-label">İzle</div>'
+        '<div class="cd-step-meta">ETKİNLİK KAYDI</div></div></div>'
+        '<div class="cd-step"><div class="cd-step-num">4</div>'
+        '<div><div class="cd-step-label">Geliştir</div>'
+        '<div class="cd-step-meta">ÖNERİLER</div></div></div>'
+        '</div>',
+        unsafe_allow_html=True,
+    )
 
     d1, d2, d3, d4 = st.columns(4)
     with d1:
@@ -3898,29 +4311,46 @@ def render_automation() -> None:
 # Ayarlar
 # ============================================================================
 def render_settings() -> None:
-    st.markdown(
-        """
-        <div class="cd-hero">
-          <h1>Ayarlar</h1>
-          <p>Sadece düzenlenebilir ayarlar görüntülenir — kod görünmez, hiçbir şey kırılmaz.</p>
-        </div>
-        """,
-        unsafe_allow_html=True,
+    page_header(
+        "Ayarlar",
+        "Sadece düzenlenebilir ayarlar görüntülenir — kod görünmez, hiçbir şey kırılmaz.",
+        chips=[
+            badge(f"Tema: {THEMES.get(SETTINGS.get('theme', 'standart'), THEMES['standart'])['label']}",
+                  "info", dot=False),
+            badge(f"Varsayılan Gizlilik: {SETTINGS.get('default_privacy', 'unlisted')}",
+                  "muted", dot=False),
+        ],
+        compact=True,
     )
 
     # Görünüm
-    panel_open("GÖRÜNÜM")
+    panel_open("GÖRÜNÜM · TEMA")
     theme_keys = list(THEMES.keys())
-    theme_labels = [THEMES[key]["label"] for key in theme_keys]
-    chosen = st.selectbox("Tema", options=theme_keys,
-                          index=theme_keys.index(SETTINGS.get("theme", "standart"))
-                          if SETTINGS.get("theme") in theme_keys else 0,
-                          format_func=lambda key: THEMES[key]["label"])
-    if chosen != SETTINGS.get("theme"):
-        SETTINGS["theme"] = chosen
-        save_settings(SETTINGS)
-        st.rerun()
-    st.caption("Standart tema: 🎛️ Kontrol Odası — koyu, editoryal, tek vurgu rengi.")
+    current_theme = SETTINGS.get("theme", "standart")
+    theme_cols = st.columns(len(theme_keys), gap="small")
+    for index, key in enumerate(theme_keys):
+        spec = THEMES[key]
+        is_active = key == current_theme
+        with theme_cols[index]:
+            st.markdown(
+                f'<div class="cd-theme{" is-active" if is_active else ""}">'
+                f'<div class="cd-theme-sw">'
+                f'<span style="background:{spec["bg"]}"></span>'
+                f'<span style="background:{spec["s2"]}"></span>'
+                f'<span style="background:{spec["text"]}"></span>'
+                f'<span style="background:{spec["accent"]}"></span>'
+                f'</div>'
+                f'<div class="cd-theme-name">{escape(spec["label"])}</div>'
+                f'<div class="cd-theme-state">{"AKTİF TEMA" if is_active else "SEÇİLEBİLİR"}</div>'
+                f'</div>',
+                unsafe_allow_html=True,
+            )
+            if st.button("Bu temayı kullan", key=f"theme_card_{key}", width="stretch",
+                         disabled=is_active):
+                SETTINGS["theme"] = key
+                save_settings(SETTINGS)
+                st.rerun()
+    st.caption("Tema anında uygulanır ve panel ayarlarında kalıcı olarak saklanır.")
 
     st.markdown("<div style='height:18px'></div>", unsafe_allow_html=True)
 
@@ -3990,17 +4420,22 @@ def render_settings() -> None:
     # API anahtar durumları (değerler ASLA gösterilmez)
     panel_open("API ANAHTAR DURUMU")
     key_status = [
-        ("Viewmade", "VIEWMADE_API_KEY"),
         ("NVIDIA / MiniMax", "NVIDIA_API_KEY"),
         ("Kling AI", "KLING_ACCESS_KEY"),
         ("OpenAI", "OPENAI_API_KEY"),
         ("Gemini", "GEMINI_API_KEY"),
     ]
-    chips = " ".join(
+    try:
+        viewmade_auth_ok = bool(viewmade_status().get("authenticated"))
+    except Exception:
+        viewmade_auth_ok = False
+    chips = [badge("ViewMade · OAuth", "ok" if viewmade_auth_ok else "muted",
+                   dot=viewmade_auth_ok)]
+    chips += [
         badge(name, "ok" if os.environ.get(env_key) else "muted", dot=os.environ.get(env_key))
         for name, env_key in key_status
-    )
-    st.markdown(chips, unsafe_allow_html=True)
+    ]
+    st.markdown(" ".join(chips), unsafe_allow_html=True)
     st.caption("🟢 Yeşil: anahtar yapılandırılmış · ⚫ Gri: anahtar yok. Anahtarlar .env dosyasından okunur ve panelde "
                "asla gösterilmez. Anahtar eklemek için destek dokümanınızdaki talimatı kullanın.")
 
@@ -4021,12 +4456,14 @@ def render_settings() -> None:
                     pass
         else:
             st.markdown(badge("Token yok — sol panelden yetkilendirin", "err"), unsafe_allow_html=True)
-        outputs_dir = ROOT / "outputs"
-        size_mb = 0.0
-        if outputs_dir.exists():
-            size_mb = sum(f.stat().st_size for f in outputs_dir.glob("*.mp4")) / 1_048_576
-        st.caption(f"Üretilmiş videolar: {len(list(outputs_dir.glob('*.mp4'))) if outputs_dir.exists() else 0} adet "
-                   f"· {size_mb:.1f} MB")
+        video_files: List[Path] = []
+        for folder_name in ("outputs", "renders"):
+            folder = ROOT / folder_name
+            if folder.exists():
+                video_files += list(folder.glob("*.mp4"))
+        size_mb = sum(f.stat().st_size for f in video_files) / 1_048_576
+        st.caption(f"Yerel video arşivi: {len(video_files)} dosya · {size_mb:.1f} MB "
+                   f"(outputs + renders)")
     with danger_col:
         st.markdown(badge("Dikkatli kullanın", "warn"), unsafe_allow_html=True)
         clear_col_1, clear_col_2 = st.columns(2)
@@ -4069,7 +4506,7 @@ st.markdown(
     <div style="border-top:1px solid var(--line); padding-top:16px; display:flex;
                 justify-content:space-between; font-family:var(--mono); font-size:.7rem;
                 color:var(--muted); letter-spacing:.06em">
-      <span>YOUTUBE OTOMASYON STÜDYOSU · v2.2</span>
+      <span>YOUTUBE OTOMASYON STÜDYOSU · v2.3</span>
       <span>OAUTH 2.0 · YOUTUBE DATA & ANALYTICS API</span>
     </div>
     """,
