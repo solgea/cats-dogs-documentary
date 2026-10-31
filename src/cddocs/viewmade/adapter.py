@@ -194,20 +194,111 @@ def _tool_payload(result: Any) -> Any:
     return result
 
 
-def _script_lines(narration: str, max_lines: int = 12) -> str:
-    """Turn narration into the 7-12 semantic lines the provider expects."""
-    text = " ".join(str(narration).split())
-    sentences = [part.strip() for part in re.split(r"(?<=[.!?])\s+", text) if part.strip()]
-    if not sentences:
-        return ""
-    groups = [[sentence] for sentence in sentences]
+_WEAK_SPLIT_RE = re.compile(r"(?<=[;,:])\s+|\s+[—–]\s+")
+
+
+def _merge_groups(groups: list[list[str]], max_lines: int) -> list[list[str]]:
     while len(groups) > max_lines:
         index = min(
             range(len(groups) - 1),
             key=lambda i: len(" ".join(groups[i] + groups[i + 1])),
         )
         groups[index : index + 2] = [groups[index] + groups[index + 1]]
+    return groups
+
+
+def _split_groups(groups: list[list[str]], min_lines: int) -> list[list[str]]:
+    """Split long lines at weak punctuation until the provider's minimum is met."""
+    while len(groups) < min_lines:
+        best: tuple[int, int, list[str]] | None = None
+        for index, group in enumerate(groups):
+            text = " ".join(group)
+            parts = [part.strip(" ,;:—–") for part in _WEAK_SPLIT_RE.split(text)
+                     if part.strip(" ,;:—–")]
+            if len(parts) < 2 or any(len(part.split()) < 3 for part in parts):
+                continue
+            if best is None or len(text) > best[0]:
+                best = (len(text), index, parts)
+        if best is None:
+            break
+        _, index, parts = best
+        groups[index : index + 1] = [[part] for part in parts]
+    return groups
+
+
+def _script_lines(narration: str, min_lines: int = 7, max_lines: int = 12) -> str:
+    """Turn narration into the 7-12 semantic lines the provider expects.
+
+    Explicit line breaks in the supplied narration are treated as semantic beats;
+    otherwise sentences are split on terminal punctuation.
+    """
+    text = str(narration or "")
+    explicit = [line.strip() for line in text.splitlines() if line.strip()]
+    if len(explicit) > 1:
+        sentences = explicit
+    else:
+        sentences = [part.strip() for part in re.split(r"(?<=[.!?])\s+", " ".join(text.split()))
+                     if part.strip()]
+    if not sentences:
+        return ""
+    groups = [[sentence] for sentence in sentences]
+    groups = _merge_groups(groups, max_lines)
+    groups = _split_groups(groups, min_lines)
+    groups = _merge_groups(groups, max_lines)
     return "\n".join(" ".join(group) for group in groups)
+
+
+def _script_line_count(script: str) -> int:
+    return len([line for line in str(script or "").splitlines() if line.strip()])
+
+
+def validate_arguments_against_schema(arguments: dict, schema: dict | None) -> list[str]:
+    """Minimal JSON-Schema check so invalid provider input never costs credits."""
+    problems: list[str] = []
+    if not isinstance(schema, dict) or not isinstance(arguments, dict):
+        return problems
+    properties = schema.get("properties") or {}
+    for key in schema.get("required") or []:
+        if key not in arguments:
+            problems.append(f"'{key}' alanı zorunlu.")
+    if schema.get("additionalProperties") is False:
+        for key in arguments:
+            if key not in properties:
+                problems.append(f"'{key}' alanı bu araç tarafından kabul edilmiyor.")
+    for key, value in arguments.items():
+        spec = properties.get(key)
+        if not isinstance(spec, dict):
+            continue
+        if spec.get("type") == "string" and not isinstance(value, str):
+            problems.append(f"'{key}' metin olmalı.")
+            continue
+        if not isinstance(value, str):
+            continue
+        enum = spec.get("enum")
+        if isinstance(enum, list) and value not in enum:
+            problems.append(f"'{key}' değeri geçersiz: {value!r}.")
+        min_length = spec.get("minLength")
+        if isinstance(min_length, int) and len(value) < min_length:
+            problems.append(f"'{key}' en az {min_length} karakter olmalı.")
+        max_length = spec.get("maxLength")
+        if isinstance(max_length, int) and len(value) > max_length:
+            problems.append(f"'{key}' en fazla {max_length} karakter olabilir (şu an {len(value)}).")
+        pattern = spec.get("pattern")
+        if isinstance(pattern, str):
+            try:
+                if not re.fullmatch(pattern, value):
+                    problems.append(f"'{key}' beklenen biçime uymuyor.")
+            except re.error:
+                pass
+    script = arguments.get("script")
+    if isinstance(script, str) and script.strip() and "script" in properties:
+        lines = _script_line_count(script)
+        if not 7 <= lines <= 12:
+            problems.append(
+                f"Senaryo 7-12 satır olmalı (şu an {lines} satır). "
+                "Her satıra tam bir anlatım cümlesi koyun."
+            )
+    return problems
 
 
 def _canonical_sha256(payload: Any) -> str:
@@ -277,6 +368,27 @@ class ViewMadeAdapter:
             and bool(tools[key]["name"])
             for key in BINDING_KEYS
         )
+
+    def render_tool_schema(self) -> dict | None:
+        """Advertised input schema of the bound render tool, when discovered."""
+        binding = self.binding() or {}
+        render_entry = (binding.get("tools") or {}).get("render") or {}
+        name = render_entry.get("name")
+        if not name:
+            return None
+        try:
+            discovery = self.list_discovered_tools()
+        except ViewMadeBlocked:
+            return None
+        for tool in discovery.get("tools", []):
+            if tool.get("name") == name:
+                schema = tool.get("inputSchema")
+                return schema if isinstance(schema, dict) else None
+        return None
+
+    def validate_render_arguments(self, arguments: dict) -> list[str]:
+        """Local preflight for a paid render. Never contacts the provider."""
+        return validate_arguments_against_schema(arguments, self.render_tool_schema())
 
     def status(self) -> dict:
         auth = oauth.status(self.project, self.settings)
@@ -508,6 +620,19 @@ class ViewMadeAdapter:
         render_context = self._context(request_payload)
         binding = self.binding() or {}
         render_entry, render_arguments = self._bound_arguments("render", render_context)
+        if isinstance(render_arguments, dict) and not str(render_arguments.get("script") or "").strip():
+            # No script means: let the ViewMade writer produce the narration from the topic.
+            render_arguments.pop("script", None)
+        problems = self.validate_render_arguments(render_arguments)
+        if problems:
+            message = "ViewMade isteği doğrulanamadı: " + " | ".join(problems)
+            self._update_request(package_id, request_payload, status="FAILED", error=message)
+            self._write_job_state(package_id, {
+                "package_id": package_id,
+                "status": "FAILED",
+                "error": message,
+            })
+            return RenderResult(package_id=package_id, status="FAILED", error=message)
         token = oauth.get_access_token(self.project, self.settings)
         client = MCPClient(
             self.config["mcp_url"],

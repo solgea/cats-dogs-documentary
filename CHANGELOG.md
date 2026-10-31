@@ -5,6 +5,10 @@ All notable changes to the Cats & Dogs Documentary project will be documented in
 The format is based on [Keep a Changelog](https://keepachangelog.com/) and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
+### Fixed
+- **ViewMade `invalid_input` rejection** (`src/cddocs/viewmade/adapter.py`, `dashboard.py`): The provider requires a 7-12 line English script for `language: en`. `_script_lines` now preserves explicit narration lines and splits long ones to reach the minimum, `validate_arguments_against_schema`/`validate_render_arguments` run a free local preflight against the bound tool schema before any paid call, and the dashboard blocks Turkish narration, shows per-field validation errors, and offers a "ViewMade yazsın" mode that omits the script so the provider writes the English narration from the topic.
+- **Retry after rejected submission** (`dashboard.py`): A `FAILED` request without a provider job id no longer locks the project; the panel shows that no credits were charged and re-opens the render form after the input is fixed.
+
 ### Added
 - **Content registry and YouTube matching** (`dashboard.py`): `content_registry.json` links ViewMade jobs, local packages, and YouTube videos by title tokens and provider IDs. All 6 published ViewMade productions now match their YouTube video IDs, and duplicates are blocked at suggestion, project creation, paid render, and upload.
 - **ViewMade ↔ YouTube matching panel** (`dashboard.py`): Table of every ViewMade production with local-copy status and the matching YouTube link, so published productions are never re-rendered or re-uploaded.

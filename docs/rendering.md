@@ -1,5 +1,20 @@
 # Rendering
 
+## Dashboard production rules
+
+The dashboard submits `viewmade_create_short` only after a free local preflight
+against the bound tool's advertised input schema:
+
+- narration language must be English (the binding sends `language: en`);
+- a supplied script must be 7-12 semantic lines and at most 1800 characters;
+- `topic`, `operation_key` and every enum field are checked locally;
+- Turkish narration is blocked in the panel before it can reach the provider.
+
+When no script is supplied ("ViewMade yazsın" mode), the `script` argument is
+omitted and the ViewMade writer produces the English narration from the topic.
+A submission rejected before a job id exists is marked `FAILED` and can be
+retried after fixing the input; no credits are charged for validation failures.
+
 ## Current state
 
 ViewMade OAuth, discovery, and render/status/download binding are complete for

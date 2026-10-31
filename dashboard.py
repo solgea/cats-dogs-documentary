@@ -920,12 +920,14 @@ def _split_narration(narration: str, parts: int = 5) -> List[str]:
     return chunks[:parts]
 
 
-def prepare_viewmade_package(project: Dict[str, Any], narration: str,
-                             duration_s: int = 45) -> Dict[str, Any]:
-    """Panel projesinden dürüst bir ViewMade istek paketi üretir (render göndermez)."""
-    narration = " ".join(str(narration or "").split())
-    if not narration:
-        raise ValueError("ViewMade anlatım metni boş olamaz.")
+def build_viewmade_request(project: Dict[str, Any], narration: str,
+                           duration_s: int = 45) -> Dict[str, Any]:
+    """ViewMade istek gövdesini üretir; dosyaya yazmaz, sağlayıcıya göndermez.
+
+    Boş anlatım geçerlidir: bu durumda senaryoyu ViewMade yazar (topic üzerinden).
+    """
+    narration = "\n".join(line.strip() for line in str(narration or "").splitlines()
+                          if line.strip())
     script = str(project.get("script") or "")
     title = extract_script_field(script, "Video başlığı (EN)") or str(
         project.get("title") or "Untitled documentary short")
@@ -938,39 +940,33 @@ def prepare_viewmade_package(project: Dict[str, Any], narration: str,
     project_key = re.sub(r"[^a-z0-9]+", "-", str(project.get("id") or "project").lower()).strip("-")
     slug = f"panel-{project_key}-{digest}"
 
-    folder = ROOT / "content" / "packages" / slug
-    folder.mkdir(parents=True, exist_ok=True)
-    request_path = folder / "viewmade-request.json"
-    existing = _read_json_file(request_path)
-    if existing.get("status") in {"SUBMITTED", "RENDERING", "COMPLETE", "STALE"}:
-        return {"slug": slug, "path": request_path, "request": existing, "reused": True}
-
     disclosure = "Real-footage montage using third-party clips for illustration; not documentary footage or scientific evidence."
     config = _read_json_file(ROOT / "config" / "viewmade.json")
     disclosure = str((config.get("render") or {}).get("disclosure") or disclosure)
 
-    chunks = _split_narration(narration, 5)
-    scene_duration = round(duration_s / 5, 2)
     scenes = []
-    cursor = 0.0
-    for index, chunk in enumerate(chunks):
-        scenes.append({
-            "id": f"s{index + 1}",
-            "start_s": round(cursor, 2),
-            "duration_s": scene_duration,
-            "narration": chunk,
-            "visual": {
-                "description": "Observational real pet footage illustrating the narration; natural light; calm behavior.",
-                "shot_type": "real footage montage",
-                "subject": "cats and dogs matching the narration",
-                "motion": "gentle documentary pacing",
-                "framing": "vertical 9:16, subject centered",
-                "continuity": "species-correct animals; no staged distress",
-                "avoid": ["text overlays", "watermarks", "distorted animals"],
-            },
-            "transition": "cut",
-        })
-        cursor += scene_duration
+    if narration:
+        chunks = _split_narration(narration, 5)
+        scene_duration = round(duration_s / 5, 2)
+        cursor = 0.0
+        for index, chunk in enumerate(chunks):
+            scenes.append({
+                "id": f"s{index + 1}",
+                "start_s": round(cursor, 2),
+                "duration_s": scene_duration,
+                "narration": chunk,
+                "visual": {
+                    "description": "Observational real pet footage illustrating the narration; natural light; calm behavior.",
+                    "shot_type": "real footage montage",
+                    "subject": "cats and dogs matching the narration",
+                    "motion": "gentle documentary pacing",
+                    "framing": "vertical 9:16, subject centered",
+                    "continuity": "species-correct animals; no staged distress",
+                    "avoid": ["text overlays", "watermarks", "distorted animals"],
+                },
+                "transition": "cut",
+            })
+            cursor += scene_duration
 
     now = datetime.now().isoformat(timespec="seconds")
     request_payload = {
@@ -1005,10 +1001,29 @@ def prepare_viewmade_package(project: Dict[str, Any], narration: str,
             "tags": tags,
         },
     }
+    return {"slug": slug, "request": request_payload, "narration": narration, "title": title}
+
+
+def prepare_viewmade_package(project: Dict[str, Any], narration: str,
+                             duration_s: int = 45) -> Dict[str, Any]:
+    """ViewMade istek paketini diske yazar (render göndermez)."""
+    built = build_viewmade_request(project, narration, duration_s)
+    slug = built["slug"]
+    request_payload = built["request"]
+    folder = ROOT / "content" / "packages" / slug
+    request_path = folder / "viewmade-request.json"
+    existing = _read_json_file(request_path)
+    if existing.get("status") in {"SUBMITTED", "RENDERING", "COMPLETE", "STALE"}:
+        return {"slug": slug, "path": request_path, "request": existing, "reused": True}
+
+    folder.mkdir(parents=True, exist_ok=True)
     request_path.write_text(json.dumps(request_payload, indent=2, ensure_ascii=False),
                             encoding="utf-8")
-    (folder / "script.md").write_text(
-        f"# {title}\n\n{narration}\n", encoding="utf-8")
+    if built["narration"]:
+        script_md = f"# {built['title']}\n\n{built['narration']}\n"
+    else:
+        script_md = f"# {built['title']}\n\nSenaryo: ViewMade yazacak (topic üzerinden).\n"
+    (folder / "script.md").write_text(script_md, encoding="utf-8")
     return {"slug": slug, "path": request_path, "request": request_payload, "reused": False}
 
 
@@ -1989,7 +2004,8 @@ def render_project_viewmade(item: Dict[str, Any], vm_status: Dict[str, Any]) -> 
                 st.link_button("ViewMade'de aç", view_url, width="stretch")
         return
 
-    if slug and request_status in {"FAILED", "STALE"}:
+    failed_without_job = request_status == "FAILED" and not state.get("job_id")
+    if slug and request_status in {"FAILED", "STALE"} and not failed_without_job:
         st.markdown(badge("RENDER TAMAMLANMADI", "err"), unsafe_allow_html=True)
         error_text = str(state.get("error") or "").strip()
         if error_text:
@@ -2041,33 +2057,87 @@ def render_project_viewmade(item: Dict[str, Any], vm_status: Dict[str, Any]) -> 
     # Yeni ücretli render formu
     if phase == "failed" and state.get("error"):
         st.warning(f"Önceki render denemesi başarısız: {str(state.get('error'))[:300]}")
+    if failed_without_job:
+        st.info("Önceki deneme sağlayıcı doğrulamasından döndü ve kredi harcanmadı. "
+                "İsteği düzeltip yeniden deneyebilirsiniz.")
     if registry_warning:
         st.warning(registry_warning)
+
     narration_key = f"vm_narration_{item['id']}"
     if narration_key not in st.session_state:
         st.session_state[narration_key] = default_viewmade_narration(item)
-    narration = st.text_area(
-        "Anlatım metni (İngilizce)",
-        key=narration_key,
-        height=150,
-        help="ViewMade İngilizce seslendirme yapar. Metni İngilizceye çevirip düzenleyin; "
-             "senaryo notları Türkçe kalabilir.",
+    default_narration = str(st.session_state.get(narration_key) or "")
+
+    script_mode = st.radio(
+        "Senaryo kaynağı",
+        options=["ViewMade yazsın (İngilizce)", "Kendi İngilizce metnim"],
+        index=0 if (not default_narration or narration_looks_turkish(default_narration)) else 1,
+        horizontal=True,
+        key=f"vm_script_mode_{item['id']}",
     )
-    if st.button("↺ Anlatımı senaryodan yenile", key=f"vm_reset_narr_{item['id']}"):
-        st.session_state[narration_key] = default_viewmade_narration(item)
-        st.rerun()
+
+    narration = ""
+    turkish_detected = False
+    english_confirmed = True
+    if script_mode == "Kendi İngilizce metnim":
+        narration = st.text_area(
+            "Anlatım metni (İngilizce)",
+            key=narration_key,
+            height=150,
+            help="Her satıra tam bir anlatım cümlesi koyun; ViewMade 7-12 satır İngilizce "
+                 "senaryo ister. Kısa metinler otomatik olarak satırlara bölünür.",
+        )
+        if st.button("↺ Anlatımı senaryodan yenile", key=f"vm_reset_narr_{item['id']}"):
+            st.session_state[narration_key] = default_viewmade_narration(item)
+            st.rerun()
+        turkish_detected = narration_looks_turkish(narration)
+        if turkish_detected:
+            st.error("Anlatım metni Türkçe görünüyor. ViewMade İngilizce seslendirme yapar ve "
+                     "Türkçe senaryoyu reddeder. Metni İngilizceye çevirin veya "
+                     "'ViewMade yazsın' seçeneğini kullanın.")
+            english_confirmed = False
+        else:
+            english_confirmed = st.checkbox(
+                "Anlatım metni İngilizce ve seslendirmeye uygun.",
+                value=True,
+                key=f"vm_english_{item['id']}",
+            )
+    else:
+        st.caption("İngilizce senaryoyu ViewMade yazar; konu başlığı tek ve net bir hikâye "
+                   "olmalı. Senaryo gönderilmez, kredi yalnızca render başlayınca harcanır.")
 
     duration_s = st.slider("Video süresi (sn)", min_value=30, max_value=60, value=45,
                            step=5, key=f"vm_duration_{item['id']}")
-    turkish_detected = narration_looks_turkish(narration)
-    if turkish_detected:
-        st.warning("Anlatım metni Türkçe görünüyor. ViewMade İngilizce seslendirme yapar; "
-                   "render başlatmadan önce metni İngilizceye çevirin.")
-    english_confirmed = st.checkbox(
-        "Anlatım metni İngilizce ve seslendirmeye uygun.",
-        value=not turkish_detected,
-        key=f"vm_english_{item['id']}",
-    )
+
+    # Ücretsiz ön doğrulama — sağlayıcı reddi ve kredi kaybı yaşanmaz
+    narration_to_send = "" if script_mode != "Kendi İngilizce metnim" else narration
+    preflight_problems: List[str] = []
+    if script_mode == "Kendi İngilizce metnim" and not narration.strip():
+        preflight_problems.append("Anlatım metni boş. Metin yazın veya 'ViewMade yazsın' seçin.")
+    elif not turkish_detected:
+        try:
+            adapter = get_viewmade_adapter()
+            if adapter is None:
+                preflight_problems.append("ViewMade adapter yüklenemedi.")
+            elif not adapter.binding_complete():
+                preflight_problems.append("ViewMade render araç eşlemesi eksik.")
+            else:
+                built = build_viewmade_request(item, narration_to_send, int(duration_s))
+                context = adapter._context(built["request"])
+                _, arguments = adapter._bound_arguments("render", context)
+                if not str(arguments.get("script") or "").strip():
+                    arguments.pop("script", None)
+                preflight_problems = adapter.validate_render_arguments(arguments)
+        except Exception as exc:
+            preflight_problems.append(f"Doğrulama yapılamadı: {exc}")
+
+    preflight_ok = not preflight_problems
+    if preflight_problems:
+        st.error("Ücretli render ön doğrulaması başarısız:\n\n" +
+                 "\n".join(f"• {problem}" for problem in preflight_problems))
+    else:
+        st.success("Ön doğrulama geçti · İngilizce · 7-12 satır senaryo · tahmini 20 kredi")
+
     st.markdown(
         '<div class="cd-publish-note" style="margin:8px 0 10px">'
         '<b>Ücretli işlem.</b> ViewMade render başına yaklaşık 20 kredi harcar ve '
@@ -2078,12 +2148,12 @@ def render_project_viewmade(item: Dict[str, Any], vm_status: Dict[str, Any]) -> 
     confirm = st.text_input("Onay için RENDER yazın", key=f"vm_confirm_{item['id']}",
                             placeholder="RENDER")
     can_start = (confirm.strip().upper() == "RENDER"
-                 and bool(narration.strip())
+                 and preflight_ok
                  and english_confirmed)
     if st.button("🎬 ViewMade render başlat", key=f"vm_start_{item['id']}",
                  type="primary", width="stretch", disabled=not can_start):
         try:
-            prepared = prepare_viewmade_package(item, narration, int(duration_s))
+            prepared = prepare_viewmade_package(item, narration_to_send, int(duration_s))
             fresh = load_pipeline()
             for updated in fresh:
                 if updated["id"] == item["id"]:
@@ -2099,7 +2169,7 @@ def render_project_viewmade(item: Dict[str, Any], vm_status: Dict[str, Any]) -> 
             st.rerun()
         except Exception as exc:
             st.error(f"Render başlatılamadı: {exc}")
-    st.caption("Onay kutusu yalnızca RENDER yazıldığında etkinleşir.")
+    st.caption("Render düğmesi ön doğrulama geçilmeden ve RENDER yazılmadan etkinleşmez.")
 
 
 def render_production() -> None:
