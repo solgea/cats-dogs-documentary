@@ -39,6 +39,14 @@ charged, so the adapter returns `DEFERRED`, leaves the request at
 ViewMade's first month allows one render at a time: wait a few minutes for the
 running job to finish instead of retrying in a loop.
 
+The Projects view reports progress from the provider, not from the local
+five-stage plan. The badge, step label, percentage and progress bar come from
+`viewmade_check_video_status` (`{"status", "progress": {"stage", "label",
+"pct", "eta"}}`, cached for 45 seconds), so a project can no longer look
+"Yayında" while ViewMade is still rendering. The human-readable `label` (for
+example "Polishing the final cut") is preferred over the machine stage key.
+Projects without a ViewMade package keep the local pipeline track.
+
 ## Current state
 
 ViewMade OAuth, discovery, and render/status/download binding are complete for

@@ -821,6 +821,7 @@ def viewmade_render_state(slug: str) -> Dict[str, Any]:
         "render_path": request.get("render_path") or job.get("render_path"),
         "error": dashboard_state.get("error") or request.get("error") or job.get("error"),
         "provider_busy": bool(dashboard_state.get("provider_busy") or job.get("provider_busy")),
+        "progress": dashboard_state.get("progress") or job.get("progress") or {},
         "media": job.get("media"),
         "provider_package": request.get("provider_package") or job.get("provider_package") or {},
     }
@@ -840,6 +841,88 @@ def viewmade_error_is_busy(message: Any) -> bool:
     except Exception:
         return "intro_concurrency_limit" in str(message or "").lower()
     return is_provider_busy_error(message)
+
+
+def project_viewmade_progress(item: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+    """Projenin durum ilerlemesini ViewMade bildiriminden üretir.
+
+    ViewMade paketi olmayan projeler için ``None`` döner; çağıran taraf yerel
+    beş aşamalı hattı göstermeye devam eder. ViewMade paketi olan projede ise
+    Planlama-Senaryo-Üretim-İnceleme-Yayın yerine sağlayıcının bildirdiği
+    gerçek durum (sırada / üretimde / hazır / başarısız), adım ve yüzde
+    kullanılır.
+    """
+    slug = str(item.get("viewmade_package") or "")
+    if not slug:
+        return None
+
+    state = viewmade_render_state(slug)
+    status = str(state.get("provider_state") or state.get("request_status") or "")
+    # Paket hazır ama iş gönderilmemiş kayıtlar da sağlayıcı sırasında bekler.
+    if status.strip().lower() in {"", "not_submitted", "ready_for_submission",
+                                  "blocked_unbound"}:
+        status = "queued"
+
+    probe: Dict[str, Any] = {
+        "status": status,
+        "progress": state.get("progress") or {},
+    }
+    job_id = str(state.get("job_id") or item.get("video_id") or "")
+
+    # Yalnızca hâlâ hareket edebilecek işlerde canlı sorgu yapılır; tamamlanmış
+    # ya da başarısız işler için sağlayıcıya gereksiz çağrı gönderilmez.
+    if job_id and str(probe["status"]).strip().lower() in {"queued", "submitted", "rendering"}:
+        live = get_viewmade_job_progress(job_id)
+        if live.get("ok"):
+            if live.get("status"):
+                probe["status"] = str(live["status"])
+            if live.get("progress"):
+                probe["progress"] = live["progress"]
+
+    # Meşgul sağlayıcı yüzünden yazılmış FAILED kayıtları "başarısız" değil
+    # "sırada" sayılır: iş gönderilmedi ve kredi harcanmadı.
+    busy = bool(state.get("provider_busy") or viewmade_error_is_busy(state.get("error")))
+    if busy and not job_id and str(probe["status"]).strip().lower() in {
+            "", "queued", "not_submitted", "failed"}:
+        probe["status"] = "queued"
+
+    return {
+        "slug": slug,
+        "state": state,
+        "probe": probe,
+        "progress": vm_stage_progress(probe),
+        "job_id": job_id,
+        "provider_busy": busy,
+    }
+
+
+def render_project_vm_progress(info: Dict[str, Any]) -> None:
+    """Beş aşamalı yerel hattın yerine ViewMade bildirimini çizer."""
+    progress = info["progress"]
+    state = info.get("state") or {}
+    pct = int(progress.get("percentage") or 0)
+    st.progress(
+        max(0.0, min(1.0, pct / 100.0)),
+        text=f"{progress.get('status_text')} · {progress.get('step')}",
+    )
+
+    notes = [f"ViewMade · {info['slug']}"]
+    provider_progress = (info.get("probe") or {}).get("progress") or {}
+    eta = str(provider_progress.get("eta") or "").strip()
+    if eta:
+        notes.append(f"Tahmini süre: {eta}")
+    last = str(state.get("finished_at") or state.get("started_at") or "").strip()
+    if last:
+        notes.append(f"Son bildirim: {last[:19].replace('T', ' ')}")
+    st.caption(" · ".join(notes))
+
+    if info.get("provider_busy"):
+        st.caption("İş gönderilmedi, kredi harcanmadı; sağlayıcı sırası açılınca "
+                   "tekrar deneyin.")
+    elif progress.get("is_failed"):
+        error_text = str(state.get("error") or "").strip()
+        if error_text:
+            st.caption(f"Sağlayıcı hatası: {error_text.splitlines()[0][:200]}")
 
 
 def sync_viewmade_projects(items: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
@@ -1820,27 +1903,19 @@ def render_project_viewmade(item: Dict[str, Any], vm_status: Dict[str, Any]) -> 
     render_path = str(state.get("render_path") or "")
     local_path = ROOT / render_path if render_path else None
 
-    # ViewMade üretim aşaması — gerçek sağlayıcı durumu (sırada/üretimde/hazır)
-    if slug:
-        stage_status = str(state.get("provider_state") or request_status or "")
-        busy_state = (state.get("provider_busy")
-                      or viewmade_error_is_busy(state.get("error")))
-        # Meşgul sağlayıcı yüzünden yazılmış FAILED kayıtları da "sırada" sayılır:
-        # iş hiç gönderilmedi, kredi harcanmadı.
-        if busy_state and not state.get("job_id") and stage_status in {"", "NOT_SUBMITTED", "FAILED"}:
-            stage_status = "queued"
-        stage_probe = {
-            "status": stage_status,
-            "progress": state.get("progress") or {},
-        }
-        st.markdown(render_vm_stage_indicator(stage_probe), unsafe_allow_html=True)
+    # ViewMade üretim aşaması — canlı sağlayıcı bildirimi (sırada/üretimde/hazır)
+    vm_progress = project_viewmade_progress(item) if slug else None
+    if vm_progress:
+        st.markdown(render_vm_stage_indicator(vm_progress["probe"]), unsafe_allow_html=True)
 
     if slug and (request_status in {"SUBMITTED", "RENDERING"} or phase in {"starting", "submitted"}):
         st.markdown(badge("RENDER SÜRÜYOR", "info"), unsafe_allow_html=True)
         started = str(state.get("started_at") or "")[:19].replace("T", " ")
+        probe_status = str((vm_progress or {}).get("probe", {}).get("status") or "")
+        pct = int((vm_progress or {}).get("progress", {}).get("percentage") or 0)
         st.caption(f"ViewMade işi arka planda çalışıyor. Başlangıç: {started or '—'} · "
-                   f"Sağlayıcı durumu: {state.get('provider_state') or 'sırada'}")
-        st.progress(0.45 if request_status == "SUBMITTED" else 0.75)
+                   f"Sağlayıcı durumu: {_viewmade_status_label(probe_status)}")
+        st.progress(max(0.0, min(1.0, pct / 100.0)))
         if st.button("🔄 Durumu kontrol et", key=f"vm_poll_{item['id']}", width="stretch"):
             st.rerun()
         st.caption("Render tamamlandığında video otomatik indirilir ve bu kartta önizlenir. "
@@ -2090,7 +2165,11 @@ def _viewmade_status_label(value: Any) -> str:
     return {
         "ready": "Hazır",
         "rendering": "Render sürüyor",
+        "queued": "Sırada",
+        "submitted": "Sırada",
+        "not_submitted": "Sırada",
         "failed": "Başarısız",
+        "stale": "Yeniden gerekli",
         "complete": "Tamamlandı",
         "completed": "Tamamlandı",
     }.get(str(value or "").lower(), str(value or "—"))
@@ -2717,6 +2796,7 @@ def render_projects_workspace(vm_status: Dict[str, Any],
         st.markdown('<div class="cd-panel" style="color:var(--muted)">Henüz proje yok. '
                     'Yukarıdaki formla ilk projeyi başlatın.</div>', unsafe_allow_html=True)
     for item in pipeline_items:
+        vm_progress = project_viewmade_progress(item)
         with st.container(border=True):
             head_left, head_right = st.columns([3, 2])
             with head_left:
@@ -2730,27 +2810,35 @@ def render_projects_workspace(vm_status: Dict[str, Any],
                 st.caption(f"Sağlayıcı: {provider_names.get(item.get('provider', ''), '—')} · "
                            f"Oluşturma: {item.get('created_at', '')}")
             with head_right:
-                state = "ok" if item["stage_index"] >= len(PIPELINE_STAGES) else (
-                    "info" if item["stage_index"] else "warn")
-                state_text = ("Yayında" if item["stage_index"] >= len(PIPELINE_STAGES)
-                              else f"Aşama {item['stage_index'] + 1}/{len(PIPELINE_STAGES)} · "
-                                   f"{PIPELINE_STAGES[min(item['stage_index'], len(PIPELINE_STAGES) - 1)]['name']}")
-                st.markdown(badge(state_text, state), unsafe_allow_html=True)
+                if vm_progress:
+                    # Durum artık ViewMade bildirimi: sırada / üretimde / hazır.
+                    st.markdown(render_vm_stage_indicator(vm_progress["probe"]),
+                                unsafe_allow_html=True)
+                else:
+                    state = "ok" if item["stage_index"] >= len(PIPELINE_STAGES) else (
+                        "info" if item["stage_index"] else "warn")
+                    state_text = ("Yayında" if item["stage_index"] >= len(PIPELINE_STAGES)
+                                  else f"Aşama {item['stage_index'] + 1}/{len(PIPELINE_STAGES)} · "
+                                       f"{PIPELINE_STAGES[min(item['stage_index'], len(PIPELINE_STAGES) - 1)]['name']}")
+                    st.markdown(badge(state_text, state), unsafe_allow_html=True)
 
-            track = st.columns(len(PIPELINE_STAGES))
-            for position, stage in enumerate(PIPELINE_STAGES):
-                with track[position]:
-                    state = stage_state(item["stage_index"], position)
-                    cls = {"done": "cd-stage cd-stage-done",
-                           "active": "cd-stage cd-stage-active"}.get(state, "cd-stage")
-                    st.markdown(
-                        f"""<div class="{cls}">
-                              <div class="cd-stage-icon">{stage['icon']}</div>
-                              <div class="cd-stage-name">{stage['name']}</div>
-                              <div class="cd-stage-state">{stage_label(state)}</div>
-                            </div>""",
-                        unsafe_allow_html=True,
-                    )
+            if vm_progress:
+                render_project_vm_progress(vm_progress)
+            else:
+                track = st.columns(len(PIPELINE_STAGES))
+                for position, stage in enumerate(PIPELINE_STAGES):
+                    with track[position]:
+                        state = stage_state(item["stage_index"], position)
+                        cls = {"done": "cd-stage cd-stage-done",
+                               "active": "cd-stage cd-stage-active"}.get(state, "cd-stage")
+                        st.markdown(
+                            f"""<div class="{cls}">
+                                  <div class="cd-stage-icon">{stage['icon']}</div>
+                                  <div class="cd-stage-name">{stage['name']}</div>
+                                  <div class="cd-stage-state">{stage_label(state)}</div>
+                                </div>""",
+                            unsafe_allow_html=True,
+                        )
 
             output_path = item.get("output_path", "")
             if output_path and os.path.exists(output_path) and item["stage_index"] >= 3:

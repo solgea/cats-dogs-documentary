@@ -130,8 +130,11 @@ def vm_stage_progress(item: dict) -> dict:
             pct = int(progress_data.get("pct") or 0)
         except (TypeError, ValueError):
             pct = 0
+        # ``stage`` is a machine key (e.g. "scenes"); ``label`` is the human
+        # readable step ViewMade shows to the user. Prefer the label and fall
+        # back to the key only when no label was sent.
         vm_stage_label = str(
-            progress_data.get("stage") or progress_data.get("label") or ""
+            progress_data.get("label") or progress_data.get("stage") or ""
         ).strip()
 
     # Map ViewMade status to pipeline stage
