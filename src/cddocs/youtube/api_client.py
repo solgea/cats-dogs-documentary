@@ -399,6 +399,93 @@ class YouTubeAPIClient:
             logger.error("List channels error: %s", str(e)[:200])
             raise
 
+    def get_all_channel_videos(self, max_results: int = 500) -> List[Dict[str, Any]]:
+        """Get ALL videos from the authenticated user's channel including
+        private, unlisted, and scheduled videos.
+
+        Uses search.list with forMine=true to find all videos owned by the
+        authenticated user, then fetches full details with videos.list.
+
+        Args:
+            max_results: Maximum number of videos to return
+
+        Returns:
+            List of dicts with video_id, title, published_at, privacy_status,
+            and scheduled_publish_time (if scheduled)
+        """
+        youtube = self.service
+
+        try:
+            # Step 1: Use search.list to find all videos owned by the user
+            self.check_quota("search.list")
+
+            video_ids = []
+            next_page_token = None
+
+            while len(video_ids) < max_results:
+                request = youtube.search().list(
+                    part="id",
+                    forMine=True,
+                    type="video",
+                    maxResults=min(50, max_results - len(video_ids)),
+                    pageToken=next_page_token,
+                    order="date",
+                )
+                response = request.execute()
+                self.consume_quota("search.list")
+
+                for item in response.get("items", []):
+                    video_id = item.get("id", {}).get("videoId")
+                    if video_id:
+                        video_ids.append(video_id)
+
+                next_page_token = response.get("nextPageToken")
+                if not next_page_token:
+                    break
+
+            if not video_ids:
+                return []
+
+            # Step 2: Fetch full details for all video IDs in batches of 50
+            videos = []
+            for i in range(0, len(video_ids), 50):
+                batch_ids = video_ids[i:i + 50]
+                self.check_quota("videos.list")
+                request = youtube.videos().list(
+                    part="snippet,status,contentDetails",
+                    id=",".join(batch_ids),
+                )
+                response = request.execute()
+                self.consume_quota("videos.list")
+
+                for item in response.get("items", []):
+                    snippet = item.get("snippet", {})
+                    status = item.get("status", {})
+                    content_details = item.get("contentDetails", {})
+
+                    privacy_status = status.get("privacyStatus", "private")
+                    published_at = snippet.get("publishedAt", "")
+                    scheduled_publish_time = status.get("publishAt", "")
+
+                    # Scheduled videos have privacyStatus="private" and a publishAt timestamp
+                    is_scheduled = bool(scheduled_publish_time and scheduled_publish_time != published_at)
+
+                    videos.append({
+                        "video_id": item.get("id"),
+                        "title": snippet.get("title", ""),
+                        "published_at": published_at,
+                        "privacy_status": privacy_status,
+                        "scheduled_publish_time": scheduled_publish_time,
+                        "is_scheduled": is_scheduled,
+                        "duration": content_details.get("duration"),
+                    })
+
+            return videos
+
+        except HttpError as e:
+            logger.error("Get all channel videos error: %s", str(e)[:200])
+            raise
+
     @property
     def quota_used_today(self) -> int:
         """Return estimated quota used today (approximate)."""

@@ -110,6 +110,15 @@ DEFAULT_SETTINGS: Dict[str, Any] = {
     "default_provider": "slideshow",
     "video_duration": 60,
     "aspect_ratio": "16:9",
+    # Yayın ajanı — render bitince denetler, karar verir, onaylarsa yükler.
+    "agent_enabled": True,
+    "agent_auto_publish": True,
+    "agent_privacy": "unlisted",
+    "agent_allow_public": False,
+    "agent_llm_enabled": False,
+    "agent_llm_model": "",
+    "agent_llm_base_url": "https://api.openai.com/v1",
+    "agent_llm_api_key_env": "OPENAI_API_KEY",
 }
 
 
@@ -213,16 +222,24 @@ if _ghx_code:
 # ============================================================================
 def publish_block_reason(entry: Dict[str, Any],
                          registry_entries: List[Dict[str, Any]]) -> str:
-    """Yayın kapısı: reddedilen pilot, tekrar yayın ve bozuk dosya kontrolü."""
+    """Yayın kapısı: reddedilen pilot, tekrar yayın (yayınlanmış + planlanmış + private/unlisted) ve bozuk dosya kontrolü."""
     lowered = f"{entry.get('name', '')} {entry.get('title', '')}".lower()
     if "dog-guilty-look" in lowered or "guilty look" in lowered:
         return ("Bu pilot yayın için reddedildi: kaynakları eğlence/derleme "
                 "klipleri, görünür filigran ve yerel kanıt kaydıyla uyuşmayan "
                 "anlatım içeriyor. Yayınlamayın; yeni ve onaylı bir render kullanın.")
     registry_entry = registry_find(registry_entries, str(entry.get("title") or ""))
-    if registry_state(registry_entry) == "published":
+    state = registry_state(registry_entry)
+    if state == "published":
         return ("Bu video YouTube kanalınızda zaten yayında. Aynı video tekrar "
                 "yüklenmez; yeni bir sürüm için farklı içerik üretin.")
+    if state == "scheduled":
+        scheduled_time = registry_entry.get("scheduled_publish_time", "")
+        return (f"Bu video YouTube'da planlanmış ({scheduled_time[:16]}). "
+                "Zamanlı yayınlanacak video tekrar yüklenmez; yeni bir sürüm için farklı içerik üretin.")
+    if state in ("private", "unlisted"):
+        return (f"Bu video YouTube'da {state} olarak mevcut. "
+                "Aynı video tekrar yüklenmez; yeni bir sürüm için farklı içerik üretin.")
     probe = entry.get("probe") or {}
     if not probe.get("ok") or probe.get("issues"):
         return ("Video dosyası doğrulanamadı. Dosya bozuk veya eksik olabilir; "
@@ -1065,6 +1082,181 @@ def upload_history_entries(limit: int = 5) -> List[Dict[str, Any]]:
 
 
 # ============================================================================
+# Yayın ajanı — kural kapıları, isteğe bağlı LLM ve otonom yükleme
+# ============================================================================
+PUBLISH_VERDICT_META: Dict[str, tuple] = {
+    "APPROVE": ("ONAYLANDI", "ok"),
+    "REJECT": ("REDDEDİLDİ", "err"),
+    "NEEDS_REVIEW": ("İNCELEME GEREKLİ", "warn"),
+    "DISABLED": ("AJAN KAPALI", "muted"),
+    "ERROR": ("HATA", "err"),
+}
+
+
+def agent_candidate_from_entry(entry: Dict[str, Any]) -> Dict[str, Any]:
+    """Panel çıktısını yayın ajanının beklediği adaya çevirir."""
+    return {
+        "path": str(entry.get("path") or ""),
+        "name": str(entry.get("name") or ""),
+        "title": str(entry.get("title") or "").strip(),
+        "description": publish_description(entry),
+        "tags": list(entry.get("tags") or []),
+        "sources": list(entry.get("sources") or []),
+        "attributions": list(entry.get("attributions") or []),
+        "provider_status": str(entry.get("provider_status") or ""),
+        "job_id": str(entry.get("job_id") or ""),
+        "scene_count": entry.get("scene_count"),
+    }
+
+
+def agent_last_decision(entry: Dict[str, Any]) -> Dict[str, Any]:
+    """Bu dosya için ajanın son kararını döndürür (yoksa boş sözlük)."""
+    try:
+        from cddocs.config import Project
+        from cddocs.publish_agent import recent_decisions
+
+        rows = recent_decisions(Project.open(ROOT), limit=50)
+    except Exception:
+        return {}
+    source = str(entry.get("path") or "").strip()
+    if not source:
+        return {}
+    try:
+        target = Path(source).resolve()
+    except OSError:
+        return {}
+    for row in rows:
+        if not isinstance(row, dict) or not row.get("file"):
+            continue
+        try:
+            if Path(str(row["file"])).resolve() == target:
+                return row
+        except OSError:
+            continue
+    return {}
+
+
+def apply_agent_upload(entry: Dict[str, Any], outcome: Dict[str, Any]) -> str:
+    """Ajanın yüklediği videoyu sicile ve proje hattına işler."""
+    upload = outcome.get("upload") or {}
+    video_id = str((upload or {}).get("video_id") or "")
+    if not video_id:
+        return ""
+    title = str(entry.get("title") or "").strip()
+    target = Path(str(entry.get("path") or "")).resolve()
+    fresh = load_pipeline()
+    changed = False
+    for item in fresh:
+        output = str(item.get("output_path") or "")
+        if output and Path(output).resolve() == target:
+            item["video_id"] = video_id
+            item["stage_index"] = len(PIPELINE_STAGES)
+            item["updated_at"] = datetime.now().strftime("%d.%m.%Y %H:%M")
+            changed = True
+    if changed:
+        save_pipeline(fresh)
+    registry = load_registry()
+    if registry_merge(registry, title, source="upload", youtube_id=video_id,
+                      viewmade_id=str(entry.get("job_id") or "") or None,
+                      status="uploaded"):
+        save_registry(registry)
+    channel_videos_index.clear()
+    log_activity(f"Yayın ajanı videoyu yükledi: {title} "
+                 f"({outcome.get('privacy') or '—'})", "ok")
+    st.session_state["publish_notice"] = (
+        f"Yayın ajanı yükledi · {outcome.get('privacy')} · Video kimliği: {video_id}")
+    st.session_state["publish_video_path"] = str(entry.get("path") or "")
+    return video_id
+
+
+def render_publish_agent_panel(entry: Dict[str, Any],
+                               published_youtube_url: str = "") -> None:
+    """Yayın Merkezi'nde ajan durumunu, son kararı ve çalıştırma düğmesini çizer."""
+    from cddocs.config import Project
+    from cddocs.publish_agent import (agent_privacy, llm_configured,
+                                      run_agent)
+
+    settings = SETTINGS
+    enabled = settings.get("agent_enabled", True) is not False
+    auto_publish = bool(settings.get("agent_auto_publish", True))
+    privacy = agent_privacy(settings)
+    llm_on = llm_configured(settings)
+    key = (re.sub(r"[^a-zA-Z0-9_-]", "_", str(entry.get("name") or "video")) + "_" +
+           hashlib.sha256(str(entry.get("path")).encode("utf-8")).hexdigest()[:8])
+    fresh = st.session_state.get(f"agent_result_{key}") or agent_last_decision(entry)
+    already_published = bool(published_youtube_url)
+
+    st.markdown(
+        " ".join([
+            badge("🤖 YAYIN AJANI", "info", dot=False),
+            badge("AÇIK" if enabled else "KAPALI", "ok" if enabled else "muted"),
+            badge("OTONOM YÜKLEME" if auto_publish else "YALNIZ ÖN KONTROL",
+                  "ok" if auto_publish else "muted", dot=False),
+            badge(f"GİZLİLİK: {privacy.upper()}", "muted", dot=False),
+            badge("LLM İKİNCİ GÖRÜŞ AÇIK" if llm_on else "YALNIZ KURALLAR",
+                  "info" if llm_on else "muted", dot=False),
+        ]),
+        unsafe_allow_html=True,
+    )
+
+    if fresh:
+        verdict = str(fresh.get("verdict") or "").upper()
+        label, tone = PUBLISH_VERDICT_META.get(verdict, ("KARAR YOK", "muted"))
+        decided = str(fresh.get("decided_at") or "").replace("T", " ")[:19]
+        uploaded_id = str(((fresh.get("upload") or {}) if isinstance(fresh.get("upload"), dict)
+                           else {}).get("video_id") or "")
+        st.markdown(
+            " ".join([
+                badge(label, tone),
+                badge(f"SON KARAR · {decided}" if decided else "SON KARAR",
+                      "muted", dot=False),
+                badge(f"YÜKLENDİ · {uploaded_id}", "ok") if uploaded_id else "",
+            ]),
+            unsafe_allow_html=True,
+        )
+        if fresh.get("llm_used"):
+            st.caption(f"LLM ikinci görüşü: {fresh.get('llm_verdict') or '—'} "
+                       f"· model: {fresh.get('llm_model') or '—'}")
+        reasons = [str(reason) for reason in (fresh.get("reasons") or []) if str(reason).strip()]
+        if reasons:
+            st.markdown("\n".join(f"- {escape(reason)}" for reason in reasons[:6]))
+        checks = [check for check in (fresh.get("checks") or []) if isinstance(check, dict)]
+        if checks:
+            with st.expander(f"Ajan denetim raporu · {len(checks)} kontrol"):
+                icons = {"PASS": "✅", "WARN": "⚠️", "FAIL": "❌"}
+                for check in checks:
+                    status = str(check.get("status") or "").upper()
+                    st.markdown(
+                        f"{icons.get(status, '•')} **{escape(str(check.get('label') or ''))}** — "
+                        f"{escape(str(check.get('detail') or ''))}",
+                        unsafe_allow_html=True,
+                    )
+    else:
+        st.caption("Bu çıktı için henüz ajan kararı yok. Render tamamlandığında ajan "
+                   "otomatik çalışır; buradan da elle çalıştırabilirsiniz.")
+
+    if already_published:
+        st.caption("Bu video YouTube'da yayında; ajan tekrar yüklemeyecek.")
+    elif not enabled:
+        st.caption("Yayın ajanı Ayarlar'dan kapatılmış. Açmadan elle yükleme akışını "
+                   "kullanabilirsiniz.")
+    else:
+        if st.button("🤖 Ajanı çalıştır ve karar ver", width="stretch",
+                     key=f"agent_run_{key}"):
+            try:
+                project = Project.open(ROOT)
+                with st.spinner("Yayın ajanı dosyayı, meta veriyi ve kaynakları denetliyor…"):
+                    outcome = run_agent(project, agent_candidate_from_entry(entry), settings)
+            except Exception as exc:  # noqa: BLE001 - panel hatayı göstermeli
+                st.error(f"Ajan çalıştırılamadı: {exc}")
+            else:
+                apply_agent_upload(entry, outcome)
+                st.session_state[f"agent_result_{key}"] = outcome
+                st.cache_data.clear()
+                st.rerun()
+
+
+# ============================================================================
 # İçerik sicili — ViewMade ↔ YouTube eşleşmesi ve tekrar üretim engeli
 # ============================================================================
 REGISTRY_FILE = ROOT / "content_registry.json"
@@ -1222,6 +1414,16 @@ def registry_state(entry: Optional[Dict[str, Any]]) -> str:
     if not entry:
         return "new"
     if entry.get("youtube_id"):
+        # Check detailed status for YouTube videos
+        status = str(entry.get("status") or "").lower()
+        is_scheduled = entry.get("is_scheduled", False)
+        privacy = str(entry.get("privacy_status") or "").lower()
+        if is_scheduled:
+            return "scheduled"
+        if privacy == "private":
+            return "private"
+        if privacy == "unlisted":
+            return "unlisted"
         return "published"
     if entry.get("rejected"):
         return "rejected"
@@ -1238,9 +1440,17 @@ def registry_state(entry: Optional[Dict[str, Any]]) -> str:
 
 @st.cache_data(ttl=600, show_spinner=False)
 def channel_videos_index() -> List[Dict[str, str]]:
+    """YouTube kanalındaki TÜM videoları getirir (public + private + unlisted + scheduled)."""
     try:
-        reporter = get_reporter()
-        rows = reporter.get_recent_videos(max_results=50)
+        from cddocs.youtube.api_client import YouTubeAPIClient
+        from cddocs.youtube.token_manager import TokenManager
+        from cddocs.youtube.config import YouTubeConfig
+
+        tokens = TokenManager(config=YouTubeConfig())
+        if not tokens.load_credentials():
+            return []
+        client = YouTubeAPIClient(tokens, config=YouTubeConfig())
+        rows = client.get_all_channel_videos(max_results=500)
     except Exception:
         return []
     clean = []
@@ -1250,17 +1460,44 @@ def channel_videos_index() -> List[Dict[str, str]]:
                 "video_id": str(row["video_id"]),
                 "title": str(row["title"]),
                 "published_at": str(row.get("published_at") or ""),
+                "privacy_status": str(row.get("privacy_status") or "private"),
+                "scheduled_publish_time": str(row.get("scheduled_publish_time") or ""),
+                "is_scheduled": bool(row.get("is_scheduled")),
             })
     return clean
 
 
+def channel_published_videos() -> List[Dict[str, str]]:
+    """Sadece yayınlanmış (public/unlisted) videoları döndürür - geriye uyumluluk için."""
+    return [v for v in channel_videos_index() if not v.get("is_scheduled")]
+
+
 def sync_content_registry() -> List[Dict[str, Any]]:
-    """YouTube kanalı, ViewMade üretimleri ve yerel paketleri tek sicilde eşler."""
+    """YouTube kanalı, ViewMade üretimleri ve yerel paketleri tek sicilde eşler.
+    Scheduled/private/unlisted videolar da dahil edilir."""
     entries = load_registry()
     changed = False
     for video in channel_videos_index():
-        changed |= registry_merge(entries, video["title"], source="youtube",
-                                  youtube_id=video["video_id"], status="youtube")
+        status = "youtube"
+        if video.get("is_scheduled"):
+            status = "scheduled"
+        elif video.get("privacy_status") == "private":
+            status = "private"
+        elif video.get("privacy_status") == "unlisted":
+            status = "unlisted"
+        changed |= registry_merge(
+            entries, video["title"], source="youtube",
+            youtube_id=video["video_id"],
+            status=status,
+        )
+        # Store additional metadata in the entry
+        if changed:
+            for entry in entries:
+                if entry.get("youtube_id") == video["video_id"]:
+                    entry["privacy_status"] = video.get("privacy_status", "")
+                    entry["scheduled_publish_time"] = video.get("scheduled_publish_time", "")
+                    entry["is_scheduled"] = video.get("is_scheduled", False)
+                    break
     vm_list = list_viewmade_videos()
     if vm_list.get("ok"):
         for item in vm_list.get("items", []):
@@ -2977,6 +3214,8 @@ def render_publish_center(registry_entries: List[Dict[str, Any]],
         unsafe_allow_html=True,
     )
 
+    render_publish_agent_panel(entry, published_youtube_url)
+
     preview_col, meta_col = st.columns([2, 3], gap="large")
     with preview_col:
         st.video(str(entry["path"]), alt=f"Yayın önizlemesi: {entry['title']}",
@@ -4058,6 +4297,129 @@ def render_settings() -> None:
         save_settings(SETTINGS)
         log_activity("Video üretim ayarları güncellendi", "ok")
         st.success("Üretim ayarları kaydedildi.")
+
+    st.markdown("<div style='height:18px'></div>", unsafe_allow_html=True)
+
+    # Yayın ajanı
+    panel_open("YAYIN AJANI · OTONOM KONTROL")
+    st.caption("Render tamamlandığında ajan dosyayı, meta veriyi, kaynak atıflarını, "
+               "tekrar durumunu ve kotayı denetler. Kurallar her zaman çalışır; LLM "
+               "ikinci görüşü isteğe bağlıdır. Yalnızca ONAY kararı YouTube'a yükler.")
+    agent_col_1, agent_col_2 = st.columns(2)
+    with agent_col_1:
+        agent_enabled = st.toggle(
+            "Yayın ajanı açık",
+            value=SETTINGS.get("agent_enabled", True) is not False,
+            help="Kapalıysa render sonrası otomatik denetim ve yükleme yapılmaz.",
+        )
+        agent_auto = st.toggle(
+            "Render bitince otomatik yükle",
+            value=bool(SETTINGS.get("agent_auto_publish", True)),
+            help="Kapalıysa ajan yalnızca karar üretir; yükleme Yayın Merkezi'nden "
+                 "elle başlatılır.",
+        )
+        agent_privacy_options = ["private", "unlisted", "public"]
+        current_agent_privacy = SETTINGS.get("agent_privacy", "unlisted")
+        agent_privacy = st.selectbox(
+            "Ajan yükleme gizliliği",
+            options=agent_privacy_options,
+            index=(agent_privacy_options.index(current_agent_privacy)
+                   if current_agent_privacy in agent_privacy_options else 1),
+            format_func=lambda value: {"private": "Gizli",
+                                       "unlisted": "Liste dışı",
+                                       "public": "Herkese açık"}[value],
+            help="Varsayılan liste dışıdır. Herkese açık yükleme ayrıca izin ister.",
+        )
+        agent_allow_public = st.checkbox(
+            "Herkese açık yüklemeye izin ver",
+            value=bool(SETTINGS.get("agent_allow_public", False)),
+            help="Bu kutu işaretlenmedikçe 'public' seçimi liste dışına düşürülür.",
+        )
+    with agent_col_2:
+        agent_llm_enabled = st.toggle(
+            "LLM ikinci görüşü",
+            value=bool(SETTINGS.get("agent_llm_enabled", False)),
+            help="Kurallar geçse bile model videoyu ve meta veriyi denetler. Model "
+                 "reddederse veya yanıt veremezse yükleme yapılmaz.",
+        )
+        # NVIDIA model presets for vision-capable multimodal models
+        nvidia_presets = {
+            "": "Özel model (aşağıya yazın)",
+            "nemotron-3.5-super-vl": "Nemotron 3.5 Super VL (120B, vision) — NVIDIA NIM",
+            "nemotron-3.5-super-vl-deepinfra": "Nemotron 3.5 Super VL — DeepInfra",
+            "nemotron-3-nano-omni": "Nemotron 3 Nano Omni (30B, video+audio+image) — OpenRouter (free)",
+            "nemotron-nano-12b-vl": "Nemotron Nano 12B V2 VL — OpenRouter",
+            "nemotron-3-ultra": "Nemotron 3 Ultra (550B, text-only) — NVIDIA NIM",
+        }
+        # Auto-detect recommended preset based on available API keys
+        env_keys = {k: os.environ.get(k) for k in ("NVIDIA_API_KEY", "DEEPINFRA_API_KEY", "OPENROUTER_API_KEY")}
+        recommended = ""
+        if env_keys.get("NVIDIA_API_KEY"):
+            recommended = "nemotron-3.5-super-vl"
+        elif env_keys.get("DEEPINFRA_API_KEY"):
+            recommended = "nemotron-3.5-super-vl-deepinfra"
+        elif env_keys.get("OPENROUTER_API_KEY"):
+            recommended = "nemotron-3-nano-omni"
+
+        current_model = str(SETTINGS.get("agent_llm_model") or "").strip()
+        current_preset = current_model if current_model in nvidia_presets else ""
+        preset_index = list(nvidia_presets.keys()).index(current_preset) if current_preset else (
+            list(nvidia_presets.keys()).index(recommended) if recommended else 0
+        )
+
+        agent_llm_preset = st.selectbox(
+            "NVIDIA model önerisi (otomatik seçim için boş bırakın)",
+            options=list(nvidia_presets.keys()),
+            format_func=lambda k: nvidia_presets[k],
+            index=preset_index,
+            help="API anahtarı varsa önerilen model otomatik seçilir. Boş bırakırsanız "
+                 "aşağıdaki 'LLM modeli' alanı kullanılır.",
+        )
+        # Determine final model: preset takes priority if selected, else text input
+        if agent_llm_preset:
+            agent_llm_model = nvidia_presets[agent_llm_preset].split("—")[0].strip()
+            # Actually use the preset key as model identifier for _llm_config
+            agent_llm_model = agent_llm_preset
+        else:
+            agent_llm_model = st.text_input(
+                "LLM modeli (özel)", value=current_model,
+                placeholder="örn. gpt-4o-mini",
+            )
+        agent_llm_base_url = st.text_input(
+            "LLM uç noktası", value=str(SETTINGS.get("agent_llm_base_url")
+                                        or "https://api.openai.com/v1"),
+            help="OpenAI uyumlu /chat/completions uç noktası. NVIDIA preset seçilirse otomatik dolur.",
+        )
+        agent_llm_api_key_env = st.text_input(
+            "API anahtarı ortam değişkeni",
+            value=str(SETTINGS.get("agent_llm_api_key_env") or "OPENAI_API_KEY"),
+            help="Anahtarın kendisi değil, okunacağı ortam değişkeninin adı saklanır. NVIDIA preset seçilirse otomatik dolur.",
+        )
+        # Show which API keys are available
+        key_status_lines = []
+        for name, env_key in [("NVIDIA NIM", "NVIDIA_API_KEY"),
+                               ("DeepInfra", "DEEPINFRA_API_KEY"),
+                               ("OpenRouter", "OPENROUTER_API_KEY"),
+                               ("OpenAI", "OPENAI_API_KEY")]:
+            status = "🟢" if os.environ.get(env_key) else "⚫"
+            key_status_lines.append(f"{status} {name} ({env_key})")
+        st.caption("Mevcut API anahtarları: " + " · ".join(key_status_lines))
+        st.caption("Anahtar panelde tutulmaz; yalnızca ortam değişkeninden okunur. "
+                   "LLM kapalıyken ajan deterministik kurallarla karar verir.")
+    if st.button("💾 Yayın Ajanı Ayarlarını Kaydet", type="primary"):
+        SETTINGS["agent_enabled"] = bool(agent_enabled)
+        SETTINGS["agent_auto_publish"] = bool(agent_auto)
+        SETTINGS["agent_privacy"] = agent_privacy
+        SETTINGS["agent_allow_public"] = bool(agent_allow_public)
+        SETTINGS["agent_llm_enabled"] = bool(agent_llm_enabled)
+        SETTINGS["agent_llm_model"] = agent_llm_model.strip()
+        SETTINGS["agent_llm_base_url"] = (agent_llm_base_url.strip()
+                                          or "https://api.openai.com/v1")
+        SETTINGS["agent_llm_api_key_env"] = (agent_llm_api_key_env.strip()
+                                             or "OPENAI_API_KEY")
+        save_settings(SETTINGS)
+        log_activity("Yayın ajanı ayarları güncellendi", "ok")
+        st.success("Yayın ajanı ayarları kaydedildi.")
 
     st.markdown("<div style='height:18px'></div>", unsafe_allow_html=True)
 
