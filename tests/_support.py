@@ -38,9 +38,30 @@ def copy_project(tmp_path: str | Path) -> Project:
     destination = Path(tmp_path).resolve()
     destination.mkdir(parents=True, exist_ok=True)
     shutil.copytree(ROOT / "config", destination / "config")
-    shutil.copytree(ROOT / "content" / "packages", destination / "content" / "packages")
+    packages_dir = destination / "content" / "packages"
+    shutil.copytree(ROOT / "content" / "packages", packages_dir)
     shutil.copytree(ROOT / "content" / "batches", destination / "content" / "batches")
     for report in (destination / "content" / "batches").rglob("render-report.json"):
         report.unlink()
+
+    # Bir istek render_path bildiriyorsa dosya da kopyalanmalı; aksi hâlde QA
+    # doğrulaması (haklı olarak) kayıp çıktı raporlar. Yalnızca referans verilen
+    # çıktılar kopyalanır, renders/ klasörünün tamamı değil.
+    for request_file in packages_dir.rglob("viewmade-request.json"):
+        try:
+            request = load_json(request_file)
+        except (OSError, ValueError):
+            continue
+        declared = str(request.get("render_path") or "").strip()
+        if not declared:
+            continue
+        source = Path(declared)
+        if not source.is_absolute():
+            source = ROOT / declared
+        target = destination / declared
+        if source.is_file() and not target.exists():
+            target.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copyfile(source, target)
+
     (destination / "state").mkdir(parents=True, exist_ok=True)
     return Project(root=destination, state_dir=(destination / "state").resolve())

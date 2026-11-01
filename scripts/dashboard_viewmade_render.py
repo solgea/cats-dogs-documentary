@@ -116,9 +116,18 @@ def main(argv: list[str] | None = None) -> int:
         return 1
 
     payload = result.to_dict()
+    if result.status == "DEFERRED":
+        phase = "deferred"
+        note = "Sağlayıcı meşgul; render gönderilmedi, kredi harcanmadı."
+    elif result.status == "COMPLETE":
+        phase = "complete"
+        note = "Render tamamlandı."
+    else:
+        phase = "failed"
+        note = "Render başarısız."
     state.update(
         {
-            "phase": "complete" if result.status == "COMPLETE" else "failed",
+            "phase": phase,
             "finished_at": _now(),
             "updated_at": _now(),
             "request_status": result.status,
@@ -127,10 +136,11 @@ def main(argv: list[str] | None = None) -> int:
             "render_path": result.render_path,
             "media": payload.get("media"),
             "error": result.error,
+            "provider_busy": result.status == "DEFERRED",
         }
     )
     _write_state(state_path, state)
-    _log(state_path, f"Render bitti: {result.status} · {result.render_path or '—'}")
+    _log(state_path, f"Render bitti: {result.status} · {note}")
     return 0 if result.status == "COMPLETE" else 1
 
 

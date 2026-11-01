@@ -32,6 +32,13 @@ omitted and the ViewMade writer produces the English narration from the topic.
 A submission rejected before a job id exists is marked `FAILED` and can be
 retried after fixing the input; no credits are charged for validation failures.
 
+A provider-side concurrency refusal (`intro_concurrency_limit`, `rate_limit`,
+HTTP 429) is **not** a failure. The job was never submitted and no credits were
+charged, so the adapter returns `DEFERRED`, leaves the request at
+`NOT_SUBMITTED`, and the panel shows the project as "Sırada" with a retry hint.
+ViewMade's first month allows one render at a time: wait a few minutes for the
+running job to finish instead of retrying in a loop.
+
 ## Current state
 
 ViewMade OAuth, discovery, and render/status/download binding are complete for

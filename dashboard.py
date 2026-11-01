@@ -26,6 +26,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 BASE_DIR = Path(__file__).resolve().parent
+sys.path.insert(0, str(BASE_DIR))
 sys.path.insert(0, str(BASE_DIR / "src" / "cddocs"))
 sys.path.insert(0, str(BASE_DIR / "src"))
 
@@ -50,6 +51,34 @@ try:
     PRODUCTION_READY = True
 except ImportError:
     PRODUCTION_READY = False
+
+# Streamlit ana betiği her kayıtta yeniden çalıştırır ama alt modülleri
+# sys.modules içinde tutar; ui.* dosyaları değişse bile süreç eski kopyayı
+# kullanmaya devam eder ve yeni isimler ImportError verir. Eksik isim varsa
+# modülü yerinde tazeliyoruz; böylece tam yeniden başlatma gerekmez.
+import importlib
+
+
+def _reload_ui_module(module_name: str, required: tuple) -> None:
+    """Bellekteki eski bir alt modülü, eksik isim varsa yerinde tazeler."""
+    module = importlib.import_module(module_name)
+    if any(not hasattr(module, name) for name in required):
+        importlib.reload(module)
+
+
+_reload_ui_module("ui.components", (
+    "badge", "empty_state", "fmt_int", "focus_card", "gate_row", "goto",
+    "kpi_card", "page_header", "panel_open",
+    "STAGE_COLORS", "STAGE_ICONS", "VIEWMADE_STAGES",
+    "render_vm_stage_indicator", "vm_stage_progress", "vm_stage_summary",
+))
+_reload_ui_module("ui.theme", ("THEMES", "theme_css"))
+
+from ui.components import (badge, empty_state, fmt_int, focus_card, gate_row,
+                          goto, kpi_card, page_header, panel_open,
+                          STAGE_COLORS, render_vm_stage_indicator, vm_stage_progress,
+                          vm_stage_summary, VIEWMADE_STAGES)
+from ui.theme import THEMES, theme_css
 
 # ============================================================================
 # Kalıcı Ayarlar
@@ -144,608 +173,18 @@ SETTINGS = load_settings()
 # ============================================================================
 # Tema Sistemi
 # ============================================================================
-THEMES: Dict[str, Dict[str, str]] = {
-    "standart": {
-        "label": "🎛️ Kontrol Odası (Standart)",
-        "bg": "#06080c", "s1": "#0c1017", "s2": "#10151e", "s3": "#151b26",
-        "inset": "#080b10", "line": "rgba(151,167,195,.13)", "line2": "rgba(151,167,195,.24)",
-        "text": "#edf1f7", "t2": "#b9c3d4", "muted": "#7d889d",
-        "accent": "#ff4d5e", "accent2": "#ff6b7a", "soft": "rgba(255,77,94,.12)",
-        "ok": "#3ddc97", "ok_soft": "rgba(61,220,151,.11)",
-        "warn": "#ffc247", "warn_soft": "rgba(255,194,71,.11)",
-        "info": "#6ea8ff", "info_soft": "rgba(110,168,255,.11)",
-        "purple": "#c47bff", "purple_soft": "rgba(196,123,255,.10)",
-        "sidebar_bg": "#080b11", "card": "#0c1017",
-    },
-    "aydinlik": {
-        "label": "☀️ Aydınlık Stüdyo",
-        "bg": "#f5f6f8", "s1": "#ffffff", "s2": "#eef0f4", "s3": "#e4e8ee",
-        "inset": "#ffffff", "line": "rgba(20,30,50,.10)", "line2": "rgba(20,30,50,.20)",
-        "text": "#141821", "t2": "#3c4657", "muted": "#6b7688",
-        "accent": "#e11d48", "accent2": "#f43f5e", "soft": "rgba(225,29,72,.10)",
-        "ok": "#0a9b64", "ok_soft": "rgba(10,155,100,.10)",
-        "warn": "#b45309", "warn_soft": "rgba(180,83,9,.10)",
-        "info": "#2563eb", "info_soft": "rgba(37,99,235,.10)",
-        "purple": "#7c3aed", "purple_soft": "rgba(124,58,237,.10)",
-        "sidebar_bg": "#ffffff", "card": "#ffffff",
-    },
-    "okyanus": {
-        "label": "🌊 Okyanus",
-        "bg": "#050a12", "s1": "#0a1220", "s2": "#0e1828", "s3": "#132034",
-        "inset": "#04080f", "line": "rgba(120,170,220,.13)", "line2": "rgba(120,170,220,.26)",
-        "text": "#e9f1fa", "t2": "#aec4da", "muted": "#6f85a0",
-        "accent": "#4da3ff", "accent2": "#79bcff", "soft": "rgba(77,163,255,.13)",
-        "ok": "#34d399", "ok_soft": "rgba(52,211,153,.11)",
-        "warn": "#fbbf24", "warn_soft": "rgba(251,191,36,.11)",
-        "info": "#38bdf8", "info_soft": "rgba(56,189,248,.11)",
-        "purple": "#a78bfa", "purple_soft": "rgba(167,139,250,.10)",
-        "sidebar_bg": "#060c17", "card": "#0a1220",
-    },
-    "orman": {
-        "label": "🌿 Orman",
-        "bg": "#060b09", "s1": "#0b1410", "s2": "#0f1a15", "s3": "#14211b",
-        "inset": "#040806", "line": "rgba(130,190,160,.13)", "line2": "rgba(130,190,160,.26)",
-        "text": "#eaf4ee", "t2": "#b2c8bc", "muted": "#75897d",
-        "accent": "#2dd4a0", "accent2": "#5fe3ba", "soft": "rgba(45,212,160,.12)",
-        "ok": "#2dd4a0", "ok_soft": "rgba(45,212,160,.12)",
-        "warn": "#fbbf24", "warn_soft": "rgba(251,191,36,.11)",
-        "info": "#5eead4", "info_soft": "rgba(94,234,212,.10)",
-        "purple": "#c4b5fd", "purple_soft": "rgba(196,181,253,.10)",
-        "sidebar_bg": "#070e0b", "card": "#0b1410",
-    },
-}
-
 THEME = THEMES.get(SETTINGS.get("theme", "standart"), THEMES["standart"])
 
 # ============================================================================
 # CSS — Kontrol Odası tasarım dili (editoryal, tek vurgu rengi, ince hatlar)
 # ============================================================================
-_CSS_TEMPLATE = """
-<style>
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
-
-:root {
-  --bg: __BG__; --s1: __S1__; --s2: __S2__; --s3: __S3__; --inset: __INSET__;
-  --line: __LINE__; --line2: __LINE2__;
-  --text: __TEXT__; --t2: __T2__; --muted: __MUTED__;
-  --accent: __ACCENT__; --accent2: __ACCENT2__; --soft: __SOFT__;
-  --ok: __OK__; --ok-soft: __OK_SOFT__; --warn: __WARN__; --warn-soft: __WARN_SOFT__;
-  --info: __INFO__; --info-soft: __INFO_SOFT__; --purple: __PURPLE__; --purple-soft: __PURPLE_SOFT__;
-  --sans: "Inter", ui-sans-serif, system-ui, "Segoe UI", sans-serif;
-  --mono: "JetBrains Mono", ui-monospace, "Cascadia Mono", monospace;
-}
-
-.stApp { background: var(--bg); color: var(--text); font-family: var(--sans); }
-#MainMenu, footer, [data-testid="stToolbar"], [data-testid="stDecoration"], [data-testid="stStatusWidget"] { visibility: hidden !important; }
-
-/* Kenar çubuğu aç/kapa kontrolleri — her durumda görünür */
-[data-testid="stExpandSidebarButton"] {
-  visibility: visible !important; display: flex !important; opacity: 1 !important;
-  z-index: 100100 !important;
-  background: var(--s2) !important; border: 1px solid var(--line2) !important;
-  border-radius: 9px !important; color: var(--t2) !important;
-  box-shadow: 0 6px 18px rgba(0,0,0,.25) !important;
-}
-[data-testid="stExpandSidebarButton"]:hover { border-color: var(--accent) !important; color: var(--accent) !important; }
-[data-testid="stExpandSidebarButton"] svg { stroke: currentColor !important; fill: currentColor !important; }
-[data-testid="stSidebarCollapseButton"] {
-  visibility: visible !important; opacity: 1 !important; color: var(--t2) !important;
-}
-[data-testid="stSidebarCollapseButton"]:hover { color: var(--accent) !important; }
-.block-container { padding: 2.4rem 2.6rem 4rem !important; max-width: 1480px; }
-
-h1, h2, h3, h4 { color: var(--text) !important; font-family: var(--sans) !important; letter-spacing: -0.02em; }
-h1 { font-weight: 800 !important; font-size: 1.72rem !important; }
-h2 { font-weight: 700 !important; font-size: 1.22rem !important; }
-h3 { font-weight: 600 !important; font-size: 1.02rem !important; }
-p, span, label { color: var(--t2); }
-hr { border-color: var(--line) !important; }
-a { color: var(--accent); }
-
-/* Sol panel */
-section[data-testid="stSidebar"] {
-  background: var(--sidebar-bg) !important;
-  border-right: 1px solid var(--line) !important;
-}
-section[data-testid="stSidebar"] .block-container { padding: 1.6rem 1.2rem 2rem !important; }
-
-/* Navigasyon (radio → menü öğesi) */
-section[data-testid="stSidebar"] div[role="radiogroup"] { gap: 2px !important; }
-section[data-testid="stSidebar"] div[role="radiogroup"] label {
-  background: transparent; border: 1px solid transparent; border-radius: 9px;
-  padding: 7px 12px !important; margin: 0 !important; width: 100%;
-  transition: background .15s ease, border-color .15s ease;
-}
-section[data-testid="stSidebar"] div[role="radiogroup"] label:hover { background: var(--s3); }
-section[data-testid="stSidebar"] div[role="radiogroup"] label > div:first-child { display: none; }
-section[data-testid="stSidebar"] div[role="radiogroup"] label { color: var(--t2); font-size: .93rem; font-weight: 500; }
-section[data-testid="stSidebar"] div[role="radiogroup"] label[data-checked="true"],
-section[data-testid="stSidebar"] div[role="radiogroup"] label:has(input:checked) {
-  background: var(--soft) !important; border-color: var(--accent) !important; color: var(--text) !important;
-}
-
-/* Butonlar */
-.stButton > button, .stDownloadButton > button, .stFormSubmitButton > button {
-  border-radius: 9px !important; font-weight: 600 !important; font-family: var(--sans) !important;
-  border: 1px solid var(--line2) !important;
-  background: var(--s2) !important; color: var(--text) !important;
-  transition: all .15s ease !important;
-}
-.stButton > button:hover, .stDownloadButton > button:hover { border-color: var(--accent) !important; color: var(--accent) !important; }
-.stButton > button[kind="primary"], .stButton > button[data-testid="baseButton-primary"] {
-  background: var(--accent) !important; color: #fff !important; border-color: var(--accent) !important;
-}
-.stButton > button[kind="primary"]:hover { background: var(--accent2) !important; }
-
-/* Form öğeleri */
-.stTextInput input, .stTextArea textarea, .stNumberInput input, .stDateInput input, .stTimeInput input {
-  background: var(--s2) !important; color: var(--text) !important;
-  border: 1px solid var(--line2) !important; border-radius: 9px !important;
-  font-family: var(--sans) !important;
-}
-.stTextInput input:focus, .stTextArea textarea:focus { border-color: var(--accent) !important; box-shadow: 0 0 0 1px var(--soft) !important; }
-div[data-baseweb="select"] > div {
-  background: var(--s2) !important; color: var(--text) !important;
-  border: 1px solid var(--line2) !important; border-radius: 9px !important;
-}
-div[data-baseweb="popover"] > div { background: var(--s2) !important; border: 1px solid var(--line2) !important; }
-.stTextInput label, .stTextArea label, .stSelectbox label, .stNumberInput label, .stCheckbox label { color: var(--t2) !important; font-size: .88rem !important; }
-
-/* Sekme benzeri açılır paneller */
-details[data-testid="stExpander"] {
-  background: var(--s1) !important; border: 1px solid var(--line) !important;
-  border-radius: 11px !important; overflow: hidden;
-}
-details[data-testid="stExpander"] summary { color: var(--text) !important; font-weight: 600; }
-
-/* Uyarı kutuları */
-div[data-testid="stAlert"] { background: var(--s2) !important; border: 1px solid var(--line2) !important; border-radius: 10px !important; }
-div[data-testid="stAlert"] p { color: var(--t2) !important; }
-
-/* Tablo */
-.stDataFrame { border: 1px solid var(--line) !important; border-radius: 11px !important; overflow: hidden !important; }
-div[data-testid="stDataFrame"] { border-radius: 11px !important; }
-
-/* Serbest içerik tipografisi */
-.stMarkdown { font-family: var(--sans); }
-
-/* Kaydırma çubuğu */
-::-webkit-scrollbar { width: 9px; height: 9px; }
-::-webkit-scrollbar-track { background: var(--bg); }
-::-webkit-scrollbar-thumb { background: var(--s3); border-radius: 6px; }
-::-webkit-scrollbar-thumb:hover { background: var(--line2); }
-
-/* Panel bileşenleri */
-.cd-kpi {
-  background: var(--card); border: 1px solid var(--line); border-radius: 13px;
-  padding: 18px 20px; position: relative; overflow: hidden;
-}
-.cd-kpi::before {
-  content: ""; position: absolute; inset: 0 auto 0 0; width: 3px;
-  background: var(--kc, var(--accent));
-}
-.cd-kpi .cd-kpi-label {
-  font-family: var(--mono); font-size: .72rem; font-weight: 600;
-  letter-spacing: .09em; text-transform: uppercase; color: var(--muted); margin-bottom: 8px;
-}
-.cd-kpi .cd-kpi-value { font-size: 1.85rem; font-weight: 800; color: var(--text); line-height: 1.1; }
-.cd-kpi .cd-kpi-sub { font-size: .8rem; color: var(--muted); margin-top: 6px; }
-
-.cd-panel {
-  background: var(--card); border: 1px solid var(--line); border-radius: 13px; padding: 20px 22px;
-}
-.cd-panel-title {
-  font-family: var(--mono); font-size: .74rem; font-weight: 700; letter-spacing: .12em;
-  text-transform: uppercase; color: var(--muted); margin-bottom: 12px;
-  display: flex; align-items: center; gap: 8px;
-}
-.cd-panel-title::before { content: ""; width: 7px; height: 7px; border-radius: 2px; background: var(--accent); }
-
-.cd-badge {
-  display: inline-flex; align-items: center; gap: 6px;
-  font-family: var(--mono); font-size: .72rem; font-weight: 600;
-  padding: 3px 10px; border-radius: 999px; border: 1px solid var(--bc, var(--line2));
-  background: var(--bsoft, var(--s2)); color: var(--bcolor, var(--t2));
-}
-.cd-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--bcolor, var(--muted)); }
-
-.cd-agent {
-  background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 16px 18px;
-  transition: border-color .15s ease;
-}
-.cd-agent:hover { border-color: var(--line2); }
-.cd-agent .cd-agent-head { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
-.cd-agent .cd-agent-icon {
-  width: 34px; height: 34px; border-radius: 9px; display: flex; align-items: center; justify-content: center;
-  background: var(--soft); font-size: 1.05rem; border: 1px solid var(--line2);
-}
-.cd-agent .cd-agent-name { font-weight: 700; font-size: .95rem; color: var(--text); }
-.cd-agent .cd-agent-role { font-family: var(--mono); font-size: .7rem; color: var(--muted); letter-spacing: .06em; }
-.cd-agent .cd-agent-desc { font-size: .82rem; color: var(--t2); line-height: 1.45; }
-
-/* İçerik ajanı paneli */
-.cd-agent-panel {
-  background: linear-gradient(135deg, var(--soft) 0%, transparent 48%), var(--card);
-  border: 1px solid var(--line2); border-radius: 14px; padding: 18px 20px;
-}
-.cd-agent-panel-head { display: flex; align-items: center; gap: 12px; }
-.cd-agent-panel-icon {
-  width: 42px; height: 42px; border-radius: 11px; flex-shrink: 0;
-  display: flex; align-items: center; justify-content: center; font-size: 1.3rem;
-  background: var(--soft); border: 1px solid var(--line2);
-}
-.cd-agent-panel-name { font-weight: 800; font-size: 1.02rem; color: var(--text); }
-.cd-agent-panel-role {
-  font-family: var(--mono); font-size: .66rem; color: var(--muted);
-  letter-spacing: .1em; text-transform: uppercase;
-}
-.cd-agent-panel-desc { color: var(--t2); font-size: .87rem; line-height: 1.6; margin-top: 11px; }
-
-/* Ajan öneri kartı */
-.cd-proposal {
-  background: var(--card); border: 1px solid var(--line2); border-radius: 14px;
-  padding: 22px 24px; position: relative; overflow: hidden;
-}
-.cd-proposal::before {
-  content: ""; position: absolute; inset: 0 auto 0 0; width: 3px;
-  background: linear-gradient(var(--accent), var(--purple));
-}
-.cd-proposal-kicker {
-  font-family: var(--mono); font-size: .68rem; font-weight: 600; letter-spacing: .12em;
-  text-transform: uppercase; color: var(--accent); margin-bottom: 7px;
-}
-.cd-proposal-name { font-size: 1.2rem; font-weight: 800; color: var(--text); letter-spacing: -.01em; }
-.cd-proposal-title { font-family: var(--mono); font-size: .8rem; color: var(--info); margin-top: 5px; }
-.cd-hook {
-  margin-top: 15px; padding: 12px 15px; border-radius: 10px;
-  background: var(--s1); border: 1px solid var(--line);
-  color: var(--t2); font-size: .9rem; line-height: 1.6; font-style: italic;
-}
-.cd-scenes { margin-top: 14px; }
-.cd-scene {
-  display: flex; gap: 14px; padding: 9px 0; border-bottom: 1px dashed var(--line);
-  font-size: .86rem; color: var(--t2); line-height: 1.5;
-}
-.cd-scene:last-child { border-bottom: none; padding-bottom: 0; }
-.cd-scene-time {
-  font-family: var(--mono); font-size: .68rem; font-weight: 600;
-  color: var(--accent); min-width: 58px; padding-top: 2px;
-}
-.cd-meta-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 15px; }
-.cd-meta { background: var(--s1); border: 1px solid var(--line); border-radius: 10px; padding: 11px 13px; }
-.cd-meta-label {
-  font-family: var(--mono); font-size: .63rem; letter-spacing: .1em;
-  text-transform: uppercase; color: var(--muted); margin-bottom: 5px;
-}
-.cd-meta-value { font-size: .82rem; color: var(--t2); line-height: 1.45; }
-
-/* ViewMade bağlantı ve önizleme kartları */
-.cd-conn {
-  background: linear-gradient(135deg, var(--ok-soft) 0%, transparent 55%), var(--card);
-  border: 1px solid var(--line2); border-radius: 14px; padding: 18px 20px;
-}
-.cd-conn.is-warn { background: linear-gradient(135deg, var(--warn-soft) 0%, transparent 55%), var(--card); }
-.cd-conn-head { display: flex; align-items: center; gap: 12px; }
-.cd-conn-icon {
-  width: 42px; height: 42px; border-radius: 11px; flex-shrink: 0;
-  display: flex; align-items: center; justify-content: center; font-size: 1.25rem;
-  background: var(--ok-soft); border: 1px solid var(--ok);
-}
-.cd-conn.is-warn .cd-conn-icon { background: var(--warn-soft); border-color: var(--warn); }
-.cd-conn-name { font-weight: 800; font-size: 1rem; color: var(--text); }
-.cd-conn-sub { font-family: var(--mono); font-size: .67rem; color: var(--muted); letter-spacing: .08em; }
-.cd-conn-stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; margin-top: 14px; }
-.cd-conn-stat { background: var(--s1); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; }
-.cd-conn-label {
-  font-family: var(--mono); font-size: .62rem; letter-spacing: .09em;
-  text-transform: uppercase; color: var(--muted); margin-bottom: 4px;
-}
-.cd-conn-value { font-size: .84rem; font-weight: 600; color: var(--text); }
-.cd-video-card {
-  background: var(--card); border: 1px solid var(--line); border-radius: 13px;
-  padding: 16px 18px;
-}
-.cd-video-title { font-weight: 700; font-size: .94rem; color: var(--text); line-height: 1.35; }
-.cd-video-sub {
-  font-family: var(--mono); font-size: .68rem; color: var(--muted);
-  margin-top: 5px; letter-spacing: .03em;
-}
-.cd-publish-note {
-  background: var(--s1); border: 1px solid var(--line2); border-left: 3px solid var(--warn);
-  border-radius: 0 10px 10px 0; padding: 12px 14px; color: var(--t2);
-  font-size: .84rem; line-height: 1.55;
-}
-
-/* Üretim masası — görünüm seçici */
-div[data-testid="stSegmentedControl"] { margin: 2px 0 18px; }
-div[data-testid="stSegmentedControl"] button {
-  font-family: var(--mono); font-size: .74rem; letter-spacing: .03em;
-}
-
-/* ViewMade üretim künyesi */
-.cd-prod-info {
-  background: var(--card); border: 1px solid var(--line); border-radius: 14px;
-  padding: 20px 22px; margin-top: 4px;
-}
-.cd-prod-kicker {
-  font-family: var(--mono); font-size: .64rem; font-weight: 700; letter-spacing: .13em;
-  text-transform: uppercase; color: var(--accent); margin-bottom: 7px;
-}
-.cd-prod-title { font-size: 1.18rem; font-weight: 800; color: var(--text); line-height: 1.35; }
-.cd-prod-sub {
-  font-family: var(--mono); font-size: .69rem; color: var(--muted);
-  letter-spacing: .03em; margin-top: 6px;
-}
-.cd-prod-desc { color: var(--t2); font-size: .88rem; line-height: 1.65; margin-top: 13px; }
-.cd-chip-row { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 13px; }
-.cd-chip {
-  display: inline-flex; align-items: center; padding: 3px 9px; border-radius: 999px;
-  background: var(--s1); border: 1px solid var(--line2);
-  font-family: var(--mono); font-size: .66rem; color: var(--t2);
-}
-.cd-spec-grid {
-  display: grid; grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 9px; margin-top: 15px;
-}
-.cd-spec {
-  background: var(--s1); border: 1px solid var(--line); border-radius: 10px;
-  padding: 9px 11px; min-width: 0;
-}
-.cd-spec-label {
-  font-family: var(--mono); font-size: .59rem; letter-spacing: .1em;
-  text-transform: uppercase; color: var(--muted); margin-bottom: 4px;
-}
-.cd-spec-value {
-  font-size: .8rem; font-weight: 650; color: var(--text); line-height: 1.35;
-  overflow-wrap: anywhere;
-}
-.cd-info-section {
-  background: var(--card); border: 1px solid var(--line); border-radius: 12px;
-  padding: 16px 18px; margin-top: 10px;
-}
-.cd-info-section-title {
-  font-family: var(--mono); font-size: .65rem; font-weight: 700; letter-spacing: .1em;
-  text-transform: uppercase; color: var(--muted); margin-bottom: 10px;
-}
-.cd-source-item {
-  display: flex; gap: 10px; padding: 7px 0; border-bottom: 1px dashed var(--line);
-  font-size: .81rem; line-height: 1.5;
-}
-.cd-source-item:last-child { border-bottom: none; padding-bottom: 0; }
-.cd-source-index {
-  font-family: var(--mono); font-size: .63rem; color: var(--accent);
-  min-width: 22px; padding-top: 2px;
-}
-.cd-source-item a { color: var(--t2); text-decoration: none; }
-.cd-source-item a:hover { color: var(--text); text-decoration: underline; }
-.cd-source-url {
-  display: block; font-family: var(--mono); font-size: .62rem;
-  color: var(--muted); margin-top: 2px; overflow-wrap: anywhere;
-}
-.cd-attr {
-  font-size: .79rem; color: var(--t2); line-height: 1.55; padding: 6px 0;
-  border-bottom: 1px dashed var(--line);
-}
-.cd-attr:last-child { border-bottom: none; padding-bottom: 0; }
-.cd-subject-note {
-  background: var(--info-soft); border: 1px solid var(--info); border-radius: 11px;
-  padding: 13px 15px; margin-top: 10px; color: var(--t2);
-  font-size: .82rem; line-height: 1.6;
-}
-.cd-subject-note b {
-  display: block; font-family: var(--mono); font-size: .62rem; letter-spacing: .1em;
-  text-transform: uppercase; color: var(--info); margin-bottom: 5px;
-}
-@media (max-width: 900px) {
-  .cd-conn-stats { grid-template-columns: 1fr 1fr; }
-  .cd-meta-grid { grid-template-columns: 1fr; }
-  .cd-spec-grid { grid-template-columns: 1fr 1fr; }
-}
-
-.cd-stage {
-  display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 12px 8px;
-  border: 1px solid var(--line); border-radius: 11px; background: var(--s1);
-}
-.cd-stage.cd-stage-done { border-color: var(--ok); background: var(--ok-soft); }
-.cd-stage.cd-stage-active { border-color: var(--accent); background: var(--soft); }
-.cd-stage .cd-stage-icon { font-size: 1.25rem; }
-.cd-stage .cd-stage-name { font-size: .78rem; font-weight: 600; color: var(--text); }
-.cd-stage .cd-stage-state { font-family: var(--mono); font-size: .66rem; color: var(--muted); }
-
-.cd-log {
-  font-family: var(--mono); font-size: .78rem; padding: 8px 12px;
-  border-left: 2px solid var(--line2); margin-bottom: 6px; background: var(--s1); border-radius: 0 8px 8px 0;
-}
-.cd-log .cd-log-ts { color: var(--muted); margin-right: 10px; }
-.cd-log.cd-log-ok { border-left-color: var(--ok); }
-.cd-log.cd-log-warn { border-left-color: var(--warn); }
-.cd-log.cd-log-err { border-left-color: var(--accent); }
-
-.cd-brand { display: flex; align-items: center; gap: 11px; margin-bottom: 18px; }
-.cd-brand-mark {
-  width: 38px; height: 38px; border-radius: 10px; background: var(--accent);
-  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
-}
-.cd-brand-name { font-weight: 800; font-size: .98rem; color: var(--text); line-height: 1.15; }
-.cd-brand-sub { font-family: var(--mono); font-size: .64rem; color: var(--muted); letter-spacing: .14em; text-transform: uppercase; }
-
-.cd-hero {
-  background: linear-gradient(135deg, var(--soft) 0%, transparent 55%), var(--card);
-  border: 1px solid var(--line); border-radius: 16px; padding: 26px 30px; margin-bottom: 22px;
-}
-.cd-hero h1 { margin: 0 0 6px 0 !important; }
-.cd-hero p { margin: 0; color: var(--t2); font-size: .92rem; }
-.cd-hero.cd-hero-compact { padding: 20px 24px; margin-bottom: 16px; }
-.cd-page-kicker {
-  font-family: var(--mono); font-size: .66rem; font-weight: 700; letter-spacing: .13em;
-  text-transform: uppercase; color: var(--accent); margin-bottom: 7px;
-}
-.cd-hero .cd-chip-row { margin-top: 12px; }
-
-/* Odak kartları — "şimdi ne yapmalıyım" kuyruğu */
-.cd-focus {
-  background: var(--card); border: 1px solid var(--line); border-radius: 13px;
-  padding: 16px 18px; min-height: 128px; position: relative; overflow: hidden;
-}
-.cd-focus::before {
-  content: ""; position: absolute; inset: 0 auto 0 0; width: 3px;
-  background: var(--fc, var(--accent));
-}
-.cd-focus.focus-warn { --fc: var(--warn); }
-.cd-focus.focus-ok { --fc: var(--ok); }
-.cd-focus.focus-info { --fc: var(--info); }
-.cd-focus.focus-muted { --fc: var(--muted); }
-.cd-focus.is-idle { opacity: .66; }
-.cd-focus-kicker {
-  font-family: var(--mono); font-size: .62rem; font-weight: 700; letter-spacing: .11em;
-  text-transform: uppercase; color: var(--muted); margin-bottom: 7px;
-}
-.cd-focus-title { font-size: .98rem; font-weight: 750; color: var(--text); line-height: 1.35; }
-.cd-focus-meta { font-size: .78rem; color: var(--muted); line-height: 1.5; margin-top: 6px; }
-
-/* Beş aşamalı yaşam döngüsü */
-.cd-lifecycle { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px; }
-.cd-lc {
-  background: var(--s1); border: 1px solid var(--line); border-radius: 11px; padding: 13px 14px;
-}
-.cd-lc.is-bottleneck { border-color: var(--warn); background: var(--warn-soft); }
-.cd-lc.is-zero { opacity: .55; }
-.cd-lc-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
-.cd-lc-icon { font-size: 1rem; }
-.cd-lc-count { font-family: var(--mono); font-size: 1.12rem; font-weight: 700; color: var(--text); }
-.cd-lc-label { font-weight: 650; font-size: .8rem; color: var(--text); margin-top: 6px; }
-.cd-lc-meta {
-  font-family: var(--mono); font-size: .61rem; color: var(--muted);
-  letter-spacing: .05em; margin-top: 2px;
-}
-
-/* Adım şeridi — yayın sihirbazı ve otomasyon döngüsü */
-.cd-stepbar {
-  display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0;
-  border: 1px solid var(--line); border-radius: 12px; overflow: hidden;
-  margin-bottom: 14px; background: var(--card);
-}
-.cd-stepbar.cd-stepbar-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
-.cd-step {
-  display: flex; align-items: center; gap: 10px; padding: 12px 14px;
-  border-right: 1px solid var(--line);
-}
-.cd-step:last-child { border-right: none; }
-.cd-step-num {
-  width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center;
-  justify-content: center; font-family: var(--mono); font-size: .7rem; font-weight: 700;
-  border: 1px solid var(--line2); color: var(--muted); background: var(--s1); flex-shrink: 0;
-}
-.cd-step.is-done .cd-step-num { background: var(--ok-soft); border-color: var(--ok); color: var(--ok); }
-.cd-step.is-active .cd-step-num { background: var(--accent); border-color: var(--accent); color: #fff; }
-.cd-step-label { font-size: .81rem; font-weight: 650; color: var(--text); }
-.cd-step-meta { font-family: var(--mono); font-size: .61rem; color: var(--muted); letter-spacing: .04em; }
-
-/* Yayın kapıları */
-.cd-gates { border: 1px solid var(--line); border-radius: 12px; overflow: hidden; margin: 12px 0; }
-.cd-gate {
-  display: flex; align-items: flex-start; gap: 10px; padding: 9px 14px;
-  border-bottom: 1px solid var(--line); background: var(--card);
-}
-.cd-gate:last-child { border-bottom: none; }
-.cd-gate-icon { font-family: var(--mono); font-size: .72rem; font-weight: 700; width: 18px; text-align: center; }
-.cd-gate.is-ok .cd-gate-icon { color: var(--ok); }
-.cd-gate.is-no .cd-gate-icon { color: var(--warn); }
-.cd-gate-label { font-size: .81rem; font-weight: 650; color: var(--text); }
-.cd-gate-detail { font-size: .73rem; color: var(--muted); margin-top: 1px; }
-
-/* Boş durum */
-.cd-empty { background: var(--s1); border: 1px dashed var(--line2); border-radius: 12px; padding: 18px 20px; }
-.cd-empty-title { font-weight: 700; color: var(--text); font-size: .9rem; }
-.cd-empty-body { color: var(--t2); font-size: .82rem; line-height: 1.6; margin-top: 4px; }
-
-/* Sistem mini paneli (kenar çubuğu) */
-.cd-sys { border: 1px solid var(--line); border-radius: 11px; background: var(--s1); padding: 10px 12px; margin: 4px 0 12px; }
-.cd-sys-row {
-  display: flex; align-items: center; justify-content: space-between; gap: 8px;
-  padding: 4px 0; font-size: .76rem;
-}
-.cd-sys-label {
-  color: var(--muted); font-family: var(--mono); font-size: .63rem;
-  letter-spacing: .06em; text-transform: uppercase;
-}
-.cd-sys-value { color: var(--text); font-weight: 600; }
-.cd-sys-dot { width: 6px; height: 6px; border-radius: 50%; display: inline-block; margin-right: 5px; background: var(--ok); }
-.cd-sys-dot.is-warn { background: var(--warn); }
-.cd-sys-dot.is-off { background: var(--muted); }
-
-/* Ajan aşama haritası */
-.cd-agentmap { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; margin-bottom: 14px; }
-.cd-agentmap .cd-stage {
-  align-items: flex-start; padding: 10px 12px;
-  background: var(--s1); border-color: var(--line);
-}
-.cd-agentmap .cd-stage.is-off { opacity: .55; }
-.cd-agentmap .cd-stage-name { font-size: .74rem; }
-.cd-agentmap .cd-stage-state { font-size: .64rem; text-align: left; line-height: 1.45; }
-
-/* Tema önizleme kartları */
-.cd-theme { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 13px 14px; }
-.cd-theme.is-active { border-color: var(--accent); background: var(--soft); }
-.cd-theme-sw { display: flex; gap: 5px; margin-bottom: 9px; }
-.cd-theme-sw span {
-  width: 18px; height: 18px; border-radius: 5px;
-  border: 1px solid rgba(127,127,127,.25);
-}
-.cd-theme-name { font-weight: 700; font-size: .82rem; color: var(--text); }
-.cd-theme-state {
-  font-family: var(--mono); font-size: .6rem; letter-spacing: .09em;
-  color: var(--muted); margin-top: 3px;
-}
-
-/* Yayındaki içerik satırları */
-.cd-pub-row {
-  display: flex; align-items: baseline; justify-content: space-between; gap: 12px;
-  padding: 8px 0; border-bottom: 1px dashed var(--line); font-size: .82rem;
-}
-.cd-pub-row:last-child { border-bottom: none; padding-bottom: 0; }
-.cd-pub-row a { color: var(--t2); text-decoration: none; }
-.cd-pub-row a:hover { color: var(--text); text-decoration: underline; }
-.cd-pub-date { font-family: var(--mono); font-size: .63rem; color: var(--muted); white-space: nowrap; }
-
-@media (max-width: 1100px) {
-  .cd-lifecycle { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-  .cd-agentmap { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-  .cd-stepbar, .cd-stepbar.cd-stepbar-4 { grid-template-columns: 1fr 1fr; }
-}
-@media (max-width: 760px) {
-  .cd-lifecycle, .cd-agentmap { grid-template-columns: 1fr 1fr; }
-  .cd-stepbar, .cd-stepbar.cd-stepbar-4 { grid-template-columns: 1fr; }
-  .cd-step { border-right: none; border-bottom: 1px solid var(--line); }
-}
-</style>
-"""
-
-
-def theme_css() -> str:
-    css = _CSS_TEMPLATE
-    replacements = {
-        "__BG__": THEME["bg"], "__S1__": THEME["s1"], "__S2__": THEME["s2"],
-        "__S3__": THEME["s3"], "__INSET__": THEME["inset"], "__LINE__": THEME["line"],
-        "__LINE2__": THEME["line2"], "__TEXT__": THEME["text"], "__T2__": THEME["t2"],
-        "__MUTED__": THEME["muted"], "__ACCENT__": THEME["accent"], "__ACCENT2__": THEME["accent2"],
-        "__SOFT__": THEME["soft"], "__OK__": THEME["ok"], "__OK_SOFT__": THEME["ok_soft"],
-        "__WARN__": THEME["warn"], "__WARN_SOFT__": THEME["warn_soft"],
-        "__INFO__": THEME["info"], "__INFO_SOFT__": THEME["info_soft"],
-        "__PURPLE__": THEME["purple"], "__PURPLE_SOFT__": THEME["purple_soft"],
-    }
-    for key, value in replacements.items():
-        css = css.replace(key, value)
-    return css
-
-
 st.set_page_config(
     page_title="YouTube Otomasyon Stüdyosu",
     page_icon="🎛️",
     layout="wide",
     initial_sidebar_state="expanded",
 )
-st.markdown(theme_css(), unsafe_allow_html=True)
+st.markdown(theme_css(THEME), unsafe_allow_html=True)
 
 # ============================================================================
 # OAuth dönüşü — Google ?code= ile panele geri dönerse otomatik tamamlama
@@ -770,73 +209,8 @@ if _ghx_code:
 
 
 # ============================================================================
-# UI yardımcıları
+# Yayın kapısı yardımcıları — tekrar, reddedilen pilot ve dosya doğrulaması
 # ============================================================================
-def kpi_card(label: str, value: Any, sub: str = "", color: str = "accent") -> str:
-    return f"""
-    <div class="cd-kpi" style="--kc: var(--{color});">
-      <div class="cd-kpi-label">{label}</div>
-      <div class="cd-kpi-value">{value}</div>
-      <div class="cd-kpi-sub">{sub}</div>
-    </div>"""
-
-
-def badge(text: str, color: str = "ok", dot: bool = True) -> str:
-    color_map = {
-        "ok": ("var(--ok)", "var(--ok-soft)"), "warn": ("var(--warn)", "var(--warn-soft)"),
-        "err": ("var(--accent)", "var(--soft)"), "info": ("var(--info)", "var(--info-soft)"),
-        "muted": ("var(--muted)", "var(--s2)"),
-    }
-    bc, bsoft = color_map.get(color, color_map["muted"])
-    dot_html = '<span class="cd-dot"></span>' if dot else ""
-    return (f'<span class="cd-badge" style="--bcolor:{bc}; --bsoft:{bsoft}; --bc:{bc}">'
-            f'{dot_html}{text}</span>')
-
-
-def panel_open(title: str) -> None:
-    st.markdown(f'<div class="cd-panel-title">{title}</div>', unsafe_allow_html=True)
-
-
-def page_header(title: str, subtitle: str, chips: Optional[List[str]] = None,
-                kicker: str = "", compact: bool = False) -> None:
-    """Her sayfada aynı başlık dili: amaç, durum çipleri ve tek odak."""
-    chip_html = ('<div class="cd-chip-row">' + "".join(chips) + "</div>") if chips else ""
-    kicker_html = f'<div class="cd-page-kicker">{escape(kicker)}</div>' if kicker else ""
-    compact_class = " cd-hero-compact" if compact else ""
-    st.markdown(
-        f'<div class="cd-hero{compact_class}">{kicker_html}'
-        f"<h1>{escape(title)}</h1><p>{escape(subtitle)}</p>{chip_html}</div>",
-        unsafe_allow_html=True,
-    )
-
-
-def focus_card(kicker: str, title: str, meta: str, tone: str = "accent",
-               idle: bool = False) -> str:
-    return (
-        f'<div class="cd-focus focus-{tone}{" is-idle" if idle else ""}">'
-        f'<div class="cd-focus-kicker">{escape(kicker)}</div>'
-        f'<div class="cd-focus-title">{escape(title)}</div>'
-        f'<div class="cd-focus-meta">{escape(meta)}</div></div>'
-    )
-
-
-def gate_row(label: str, ok: bool, detail: str = "") -> str:
-    return (
-        f'<div class="cd-gate {"is-ok" if ok else "is-no"}">'
-        f'<div class="cd-gate-icon">{"✓" if ok else "✕"}</div>'
-        f'<div><div class="cd-gate-label">{escape(label)}</div>'
-        f'<div class="cd-gate-detail">{escape(detail)}</div></div></div>'
-    )
-
-
-def empty_state(title: str, body: str) -> None:
-    st.markdown(
-        f'<div class="cd-empty"><div class="cd-empty-title">{escape(title)}</div>'
-        f'<div class="cd-empty-body">{escape(body)}</div></div>',
-        unsafe_allow_html=True,
-    )
-
-
 def publish_block_reason(entry: Dict[str, Any],
                          registry_entries: List[Dict[str, Any]]) -> str:
     """Yayın kapısı: reddedilen pilot, tekrar yayın ve bozuk dosya kontrolü."""
@@ -860,18 +234,6 @@ def publishable_entries(entries: List[Dict[str, Any]],
                         registry_entries: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     return [entry for entry in entries
             if not publish_block_reason(entry, registry_entries)]
-
-
-def fmt_int(value: Any) -> str:
-    try:
-        return f"{int(value):,}".replace(",", ".")
-    except (TypeError, ValueError):
-        return str(value)
-
-
-def goto(page: str) -> None:
-    """on_click geri çağrısı — widget'a bağlı olmayan düz nav anahtarını günceller."""
-    st.session_state["nav"] = page
 
 
 # ============================================================================
@@ -1088,6 +450,36 @@ def list_viewmade_videos() -> Dict[str, Any]:
         return {"ok": True, "items": clean, "error": ""}
     except Exception as exc:
         return {"ok": False, "error": str(exc)[:400], "items": []}
+
+
+@st.cache_data(ttl=45, show_spinner=False)
+def get_viewmade_job_progress(video_id: str) -> Dict[str, Any]:
+    """Süren bir ViewMade üretiminin aşama ve yüzde ilerlemesini salt-okuma ile okur.
+
+    ``viewmade_check_video_status`` aracını kullanır ve
+    ``{"status": ..., "progress": {"stage", "pct", "eta", "label"}}`` döndürür.
+    """
+    identifier = str(video_id or "").strip()
+    if not identifier:
+        return {"ok": False, "error": "Video kimliği boş.", "status": "", "progress": {}}
+    adapter = get_viewmade_adapter()
+    if adapter is None:
+        return {"ok": False, "error": "ViewMade adapter yüklenemedi.",
+                "status": "", "progress": {}}
+    try:
+        from cddocs.viewmade.adapter import _tool_payload
+        payload = _tool_payload(adapter._call_bound("status", {"job_id": identifier}))
+        if not isinstance(payload, dict):
+            return {"ok": False, "error": "ViewMade durum verisi okunamadı.",
+                    "status": "", "progress": {}}
+        return {
+            "ok": True,
+            "status": str(payload.get("status") or ""),
+            "progress": payload.get("progress") if isinstance(payload.get("progress"), dict) else {},
+            "error": "",
+        }
+    except Exception as exc:
+        return {"ok": False, "error": str(exc)[:300], "status": "", "progress": {}}
 
 
 def _viewmade_local_sidecar(video_id: str) -> Dict[str, Any]:
@@ -1428,9 +820,26 @@ def viewmade_render_state(slug: str) -> Dict[str, Any]:
         "job_id": request.get("job_id") or job.get("job_id"),
         "render_path": request.get("render_path") or job.get("render_path"),
         "error": dashboard_state.get("error") or request.get("error") or job.get("error"),
+        "provider_busy": bool(dashboard_state.get("provider_busy") or job.get("provider_busy")),
         "media": job.get("media"),
         "provider_package": request.get("provider_package") or job.get("provider_package") or {},
     }
+
+
+VIEWMADE_BUSY_MESSAGE = (
+    "ViewMade ilk ay kuralı: aynı anda yalnızca bir render çalışır. "
+    "Şu anda başka bir üretim sürüyor; bu istek gönderilmedi ve kredi harcanmadı. "
+    "Birkaç dakika sonra tekrar deneyin — panel kendiliğinden tekrar denemez."
+)
+
+
+def viewmade_error_is_busy(message: Any) -> bool:
+    """Hata metni yalnızca 'sağlayıcı meşgul' anlamına mı geliyor?"""
+    try:
+        from cddocs.viewmade.adapter import is_provider_busy_error
+    except Exception:
+        return "intro_concurrency_limit" in str(message or "").lower()
+    return is_provider_busy_error(message)
 
 
 def sync_viewmade_projects(items: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
@@ -2411,6 +1820,21 @@ def render_project_viewmade(item: Dict[str, Any], vm_status: Dict[str, Any]) -> 
     render_path = str(state.get("render_path") or "")
     local_path = ROOT / render_path if render_path else None
 
+    # ViewMade üretim aşaması — gerçek sağlayıcı durumu (sırada/üretimde/hazır)
+    if slug:
+        stage_status = str(state.get("provider_state") or request_status or "")
+        busy_state = (state.get("provider_busy")
+                      or viewmade_error_is_busy(state.get("error")))
+        # Meşgul sağlayıcı yüzünden yazılmış FAILED kayıtları da "sırada" sayılır:
+        # iş hiç gönderilmedi, kredi harcanmadı.
+        if busy_state and not state.get("job_id") and stage_status in {"", "NOT_SUBMITTED", "FAILED"}:
+            stage_status = "queued"
+        stage_probe = {
+            "status": stage_status,
+            "progress": state.get("progress") or {},
+        }
+        st.markdown(render_vm_stage_indicator(stage_probe), unsafe_allow_html=True)
+
     if slug and (request_status in {"SUBMITTED", "RENDERING"} or phase in {"starting", "submitted"}):
         st.markdown(badge("RENDER SÜRÜYOR", "info"), unsafe_allow_html=True)
         started = str(state.get("started_at") or "")[:19].replace("T", " ")
@@ -2513,9 +1937,18 @@ def render_project_viewmade(item: Dict[str, Any], vm_status: Dict[str, Any]) -> 
                             "yeni render bu planın yerini alır.")
 
     # Yeni ücretli render formu
-    if phase == "failed" and state.get("error"):
+    busy_error = (state.get("provider_busy")
+                  or viewmade_error_is_busy(state.get("error")))
+    if busy_error:
+        st.info(VIEWMADE_BUSY_MESSAGE, icon="⏳")
+        last_attempt = str(state.get("finished_at") or state.get("started_at") or "")
+        if last_attempt:
+            st.caption(f"Son deneme: {last_attempt[:19].replace('T', ' ')}")
+        with st.expander("Sağlayıcı yanıtı", expanded=False):
+            st.code(str(state.get("error") or "")[:800], language="text")
+    elif phase == "failed" and state.get("error"):
         st.warning(f"Önceki render denemesi başarısız: {str(state.get('error'))[:300]}")
-    if failed_without_job:
+    if failed_without_job and not busy_error:
         st.info("Önceki deneme sağlayıcı doğrulamasından döndü ve kredi harcanmadı. "
                 "İsteği düzeltip yeniden deneyebilirsiniz.")
     if registry_warning:
@@ -2626,7 +2059,10 @@ def render_project_viewmade(item: Dict[str, Any], vm_status: Dict[str, Any]) -> 
                 "Ücretli ViewMade render arka planda başladı. Durumu bu karttan izleyin.")
             st.rerun()
         except Exception as exc:
-            st.error(f"Render başlatılamadı: {exc}")
+            if viewmade_error_is_busy(str(exc)):
+                st.info(VIEWMADE_BUSY_MESSAGE, icon="⏳")
+            else:
+                st.error(f"Render başlatılamadı: {exc}")
     st.caption("Render düğmesi ön doğrulama geçilmeden ve RENDER yazılmadan etkinleşmez.")
 
 
@@ -2865,7 +2301,39 @@ def render_viewmade_workspace(vm_status: Dict[str, Any], registry_entries: List[
         with st.expander("Bağlantı ayrıntıları · OAuth, araç eşlemesi ve MCP testi", expanded=True):
             render_viewmade_connection_details(vm_status)
         return
-    vm_items = [item for item in vm_list.get("items", []) if item.get("status") == "ready"]
+    all_items = [item for item in vm_list.get("items", []) if isinstance(item, dict)]
+    vm_items = [item for item in all_items if item.get("status") == "ready"]
+    # Üretim durumu şeridi — sırada / üretimde / hazır dağılımı
+    summary = vm_stage_summary(all_items)
+    if summary["total"] > 0:
+        st.markdown("### Viewmade Üretim Durumu")
+        cols = st.columns(5)
+        for i, col in enumerate(cols):
+            with col:
+                count = summary["by_stage"].get(i + 1, 0)
+                color = STAGE_COLORS.get(i + 1, "muted")
+                st.markdown(badge(f"{VIEWMADE_STAGES[i]}: {count}", color), unsafe_allow_html=True)
+        st.caption(f"Sırada: {summary['queued']} · Üretimde: {summary['rendering']} · "
+                   f"Hazır: {summary['complete']} · Başarısız: {summary['stalled']}")
+
+    # Süren üretimler — her biri gerçek aşama, durum ve yüzde ile
+    in_progress = [item for item in all_items if item.get("status") in {"queued", "rendering"}]
+    if in_progress:
+        st.markdown("#### Süren Üretimler")
+        for item in in_progress:
+            stage_probe = dict(item)
+            progress_result = get_viewmade_job_progress(str(item.get("id") or ""))
+            if progress_result.get("ok"):
+                if progress_result.get("status"):
+                    stage_probe["status"] = progress_result["status"]
+                if progress_result.get("progress"):
+                    stage_probe["progress"] = progress_result["progress"]
+            row_info, row_stage = st.columns([3, 2])
+            with row_info:
+                created = str(item.get("created_at") or "")[:16].replace("T", " ")
+                st.markdown(f"**{item.get('title') or 'Başlıksız'}** · {created or '—'}")
+            with row_stage:
+                st.markdown(render_vm_stage_indicator(stage_probe), unsafe_allow_html=True)
     if not vm_items:
         st.info("ViewMade hesabında hazır video bulunmuyor.", icon="🎬")
         with st.expander("Bağlantı ayrıntıları · OAuth, araç eşlemesi ve MCP testi", expanded=False):
@@ -4133,6 +3601,46 @@ def render_stats() -> None:
 # ============================================================================
 # Otomasyon
 # ============================================================================
+ACTIVITY_KIND_LABELS: Dict[str, str] = {
+    "ok": "Başarılı", "warn": "Uyarı", "hata": "Hata", "info": "Bilgi",
+}
+
+
+def activity_run_rows(activity: List[Dict[str, Any]]) -> List[Dict[str, str]]:
+    """Etkinlik kaydını filtrelenebilir çalıştırma geçmişi satırlarına çevirir."""
+    rows: List[Dict[str, str]] = []
+    for entry in activity:
+        if not isinstance(entry, dict):
+            continue
+        kind = str(entry.get("kind") or "info").lower()
+        rows.append({
+            "Zaman": str(entry.get("ts") or ""),
+            "Durum": ACTIVITY_KIND_LABELS.get(kind, "Bilgi"),
+            "Olay": str(entry.get("msg") or ""),
+        })
+    return rows
+
+
+def agent_run_rows(activity: List[Dict[str, Any]]) -> List[Dict[str, str]]:
+    """Her ajan için etkinlik kaydından son çalışma zamanı ve sonucunu çıkarır."""
+    rows: List[Dict[str, str]] = []
+    for agent in AGENTS:
+        name = str(agent["name"])
+        matched = next(
+            (entry for entry in activity
+             if isinstance(entry, dict) and name in str(entry.get("msg") or "")),
+            None,
+        )
+        kind = str((matched or {}).get("kind") or "").lower()
+        rows.append({
+            "Ajan": f"{agent['icon']} {name}",
+            "Aşama": PIPELINE_STAGES[AGENT_STAGE_INDEX.get(agent["id"], 0)]["name"],
+            "Son Çalışma": str((matched or {}).get("ts") or "—"),
+            "Son Sonuç": ACTIVITY_KIND_LABELS.get(kind, "Kayıt yok"),
+        })
+    return rows
+
+
 def render_automation() -> None:
     enabled = SETTINGS.get("agents_enabled", {})
     pipeline_items = load_pipeline()
@@ -4253,30 +3761,78 @@ def render_automation() -> None:
     st.markdown("<div style='height:20px'></div>", unsafe_allow_html=True)
 
     # --- 3) İZLEME ---
+    activity: List[Dict[str, Any]] = []
+    if ACTIVITY_FILE.exists():
+        try:
+            activity = json.loads(ACTIVITY_FILE.read_text(encoding="utf-8"))
+        except (json.JSONDecodeError, OSError):
+            activity = []
+    run_rows = activity_run_rows(activity)
+    run_counts = {
+        "Tümü": len(run_rows),
+        "Başarılı": sum(1 for row in run_rows if row["Durum"] == "Başarılı"),
+        "Uyarı": sum(1 for row in run_rows if row["Durum"] == "Uyarı"),
+        "Hata": sum(1 for row in run_rows if row["Durum"] == "Hata"),
+    }
+
+    panel_open("3 · İZLEME — ÇALIŞTIRMA GEÇMİŞİ")
+    st.markdown(
+        '<div class="cd-chip-row" style="margin-bottom:10px">'
+        + " ".join([
+            badge(f"{run_counts['Tümü']} Kayıt", "info", dot=False),
+            badge(f"{run_counts['Başarılı']} Başarılı", "ok"),
+            badge(f"{run_counts['Uyarı']} Uyarı", "warn") if run_counts["Uyarı"]
+            else badge("Uyarı Yok", "muted"),
+            badge(f"{run_counts['Hata']} Hata", "err") if run_counts["Hata"]
+            else badge("Hata Yok", "muted"),
+        ])
+        + "</div>",
+        unsafe_allow_html=True,
+    )
+    filter_options = ["Tümü", "Başarılı", "Uyarı", "Hata"]
+    log_filter = st.segmented_control(
+        "Kayıt filtresi", filter_options, default="Tümü",
+        key="automation_log_filter", label_visibility="collapsed",
+    ) or "Tümü"
+    filtered_rows = [row for row in run_rows
+                     if log_filter == "Tümü" or row["Durum"] == log_filter]
+    if filtered_rows:
+        table = pd.DataFrame(filtered_rows)[["Zaman", "Durum", "Olay"]]
+        st.dataframe(table, hide_index=True, use_container_width=True,
+                     height=min(360, 40 + 35 * len(table)))
+    else:
+        empty_state("Bu filtrede kayıt yok",
+                    "Farklı bir durum filtresi seçin veya panelde işlem yaparak "
+                    "yeni çalıştırma kayıtları oluşturun.")
+
     mon_col, dev_col = st.columns([1, 1])
     with mon_col:
-        panel_open("3 · İZLEME — ETKİNLİK KAYDI")
-        activity: List[Dict[str, Any]] = []
-        if ACTIVITY_FILE.exists():
-            try:
-                activity = json.loads(ACTIVITY_FILE.read_text(encoding="utf-8"))
-            except (json.JSONDecodeError, OSError):
-                activity = []
-        if activity:
-            for entry in activity[:15]:
-                kind = entry.get("kind", "info")
-                cls_map = {"ok": "cd-log cd-log-ok", "hata": "cd-log cd-log-err", "warn": "cd-log cd-log-warn"}
-                cls = cls_map.get(kind, "cd-log")
-                st.markdown(f'<div class="{cls}"><span class="cd-log-ts">{entry.get("ts", "")}</span>'
-                            f'{entry.get("msg", "")}</div>', unsafe_allow_html=True)
-            if st.button("🗑️ Kayıtları Temizle", key="clear_logs"):
-                try:
-                    ACTIVITY_FILE.unlink()
-                except OSError:
-                    pass
-                st.rerun()
-        else:
-            st.caption("Kayıt yok.")
+        panel_open("AJAN ÇALIŞTIRMA ÖZETİ")
+        agent_rows = agent_run_rows(activity)
+        st.dataframe(pd.DataFrame(agent_rows), hide_index=True, use_container_width=True)
+        st.caption("Her ajanın etkinlik kaydındaki son görünümü; 'Kayıt yok' henüz "
+                   "o ajanın iş üretmediğini gösterir.")
+        with st.expander("Ham kayıt akışı ve temizleme"):
+            if activity:
+                for entry in activity[:15]:
+                    kind = str(entry.get("kind") or "info")
+                    cls_map = {"ok": "cd-log cd-log-ok", "hata": "cd-log cd-log-err",
+                               "warn": "cd-log cd-log-warn"}
+                    cls = cls_map.get(kind, "cd-log")
+                    st.markdown(
+                        f'<div class="{cls}"><span class="cd-log-ts">'
+                        f'{escape(str(entry.get("ts", "")))}</span>'
+                        f'{escape(str(entry.get("msg", "")))}</div>',
+                        unsafe_allow_html=True,
+                    )
+                if st.button("🗑️ Kayıtları Temizle", key="clear_logs"):
+                    try:
+                        ACTIVITY_FILE.unlink()
+                    except OSError:
+                        pass
+                    st.rerun()
+            else:
+                st.caption("Kayıt yok.")
 
     # --- 4) GELİŞTİRME ---
     with dev_col:

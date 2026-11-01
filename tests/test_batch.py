@@ -23,28 +23,31 @@ class BatchFlowTests(unittest.TestCase):
     def test_build_validate_package_and_refuse_live_without_gate(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             project = copy_project(Path(tmp) / "project")
-            request_path = project.package_path("dog-guilty-look") / "viewmade-request.json"
-            request = load_json(request_path)
-            request.update(
-                {
-                    "status": "NOT_SUBMITTED",
-                    "submission_allowed": False,
-                    "job_id": None,
-                    "provider_state": None,
-                    "render_path": None,
-                    "render_sha256": None,
-                    "normalization": None,
-                    "provider_package": None,
-                    "error": None,
-                    "submission": None,
-                }
-            )
-            write_json(request_path, request)
-            # The test requires a clean request state; reset editorial_review
-            # so the build/validate flow starts from a neutral state.
-            request = load_json(request_path)
-            request["editorial_review"] = None
-            write_json(request_path, request)
+            # Bu test sıfırdan bir üretim akışı doğrular: fixture'da daha önce
+            # render edilmiş paketler varsa onları da temiz duruma getir ki
+            # hiçbir pakette hazır çıktı kalmasın.
+            for slug in ("dog-guilty-look", "cat-sweetness"):
+                request_path = project.package_path(slug) / "viewmade-request.json"
+                request = load_json(request_path)
+                request.update(
+                    {
+                        "status": "NOT_SUBMITTED",
+                        "submission_allowed": False,
+                        "job_id": None,
+                        "provider_state": None,
+                        "render_path": None,
+                        "render_sha256": None,
+                        "normalization": None,
+                        "provider_package": None,
+                        "error": None,
+                        "submission": None,
+                        # The test requires a clean request state; reset
+                        # editorial_review so the build/validate flow starts
+                        # from a neutral state.
+                        "editorial_review": None,
+                    }
+                )
+                write_json(request_path, request)
             outcome = build_batch(project, BATCH_ID)
             self.assertEqual(outcome.status, "PASS", outcome.to_dict())
             self.assertEqual(len(outcome.results), 6)

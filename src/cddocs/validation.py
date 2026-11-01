@@ -659,13 +659,15 @@ def validate_package(
     # --- rendered artifact, if one exists ----------------------------
     render_path = None
     request_payload = None
+    declared_render = ""
     request_path = folder / "viewmade-request.json"
     if request_path.is_file():
         try:
             request_payload = read_json(request_path)
             rendered = request_payload.get("render_path")
             if rendered:
-                candidate = Path(str(rendered))
+                declared_render = str(rendered)
+                candidate = Path(declared_render)
                 if not candidate.is_absolute():
                     candidate = folder.parents[2] / candidate
                 if candidate.is_file():
@@ -676,6 +678,10 @@ def validate_package(
         fallback = folder / "render.mp4"
         if fallback.is_file():
             render_path = fallback
+    request_complete = (
+        isinstance(request_payload, dict)
+        and str(request_payload.get("status") or "").upper() == "COMPLETE"
+    )
     if render_path is not None and render_path.is_file():
         from .media_probe import validate_render
 
@@ -692,6 +698,17 @@ def validate_package(
             "Rendered MP4 is valid, vertical, and has audio",
             _status_ok(not issues),
             "; ".join(issues) if issues else str(info.to_dict() if info else "verified"),
+        )
+    elif declared_render or request_complete:
+        # The request claims a render that is not on disk. Reporting SKIP here
+        # would hide a lost/corrupt artifact and hand the package a false PASS.
+        result.render_status = "FAIL"
+        add(
+            "render.artifact",
+            "Rendered MP4 is valid, vertical, and has audio",
+            "FAIL",
+            f"request declares {declared_render or 'a completed render'} "
+            "but the file is missing",
         )
     else:
         result.render_status = "NOT_RENDERED"

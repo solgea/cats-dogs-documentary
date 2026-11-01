@@ -56,6 +56,30 @@ ALLOWED_PLACEHOLDERS = {
 PLACEHOLDER_RE = re.compile(r"^\$([a-z_]+)$")
 BINDING_KEYS = ("render", "status", "download")
 
+# ViewMade's first month runs a single render at a time. These markers mean the
+# provider was merely busy: nothing was submitted and no credits were spent, so
+# the request must stay retryable instead of being parked in FAILED.
+PROVIDER_BUSY_MARKERS = (
+    "intro_concurrency_limit",
+    "concurrency_limit",
+    "concurrency limit",
+    "one render at a time",
+    "rate_limit",
+    "rate limit",
+    "too many requests",
+    "provider is busy",
+)
+
+
+def is_provider_busy_error(message: Any) -> bool:
+    """True when the provider refused only because another render is running."""
+    text = str(message or "").lower()
+    if not text:
+        return False
+    if any(marker in text for marker in PROVIDER_BUSY_MARKERS):
+        return True
+    return bool(re.search(r"\b429\b", text))
+
 
 class ViewMadeBlocked(PipelineError):
     """The render gate is closed. This is never a successful render."""
@@ -666,8 +690,24 @@ class ViewMadeAdapter:
         except MCPAuthError:
             raise
         except MCPError as exc:
-            self._update_request(package_id, request_payload, status="FAILED", error=str(exc))
-            return RenderResult(package_id=package_id, status="FAILED", error=str(exc))
+            message = str(exc)
+            if is_provider_busy_error(message):
+                # Sağlayıcı meşgul: iş gönderilmedi, kredi harcanmadı.
+                # FAILED yazmak paketi kilitler; NOT_SUBMITTED bırakıp
+                # nedeni kaydediyoruz ki birkaç dakika sonra tekrar denenebilsin.
+                self._update_request(
+                    package_id, request_payload, status="NOT_SUBMITTED", error=message
+                )
+                self._write_job_state(package_id, {
+                    "package_id": package_id,
+                    "status": "NOT_SUBMITTED",
+                    "provider_busy": True,
+                    "checked_at": utc_now_iso(),
+                    "error": message,
+                })
+                return RenderResult(package_id=package_id, status="DEFERRED", error=message)
+            self._update_request(package_id, request_payload, status="FAILED", error=message)
+            return RenderResult(package_id=package_id, status="FAILED", error=message)
 
         submit_payload = _tool_payload(submit)
         job_id = _extract_path(
