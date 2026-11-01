@@ -52,3 +52,23 @@ upload_history.json
 content_registry.json
 state/dashboard-render-*.json
 state/dashboard-render-*.log
+
+# Panel-created runtime packages and render reports
+content/packages/panel-prj-*/
+content/batches/*/render-report.json
+
+# Repository-root scratch files (ad-hoc scripts and notes, not part of the app)
+# These patterns are anchored to the root on purpose: tests/ and src/ must keep
+# matching normal test and module discovery.
+/check_*.py
+/render_*.py
+/test_*.py
+/poll_video.py
+/retry_render.py
+/select_channel.py
+/oauth_test.py
+/create_test_video.py
+/make_test_video.py
+/*.txt
+/*.bak
+/*.bak-*
