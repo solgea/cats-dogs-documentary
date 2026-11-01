@@ -48,6 +48,10 @@ REJECT = "REJECT"
 NEEDS_REVIEW = "NEEDS_REVIEW"
 DISABLED = "DISABLED"
 
+# Human approval record constants
+APPROVAL_FILE = "publish-approvals.json"
+APPROVAL_SCHEMA_VERSION = 1
+
 
 @dataclass
 class Check:
@@ -119,6 +123,142 @@ def _sha256_file(path: Path) -> str:
         for chunk in iter(lambda: handle.read(1024 * 1024), b""):
             digest.update(chunk)
     return digest.hexdigest()
+
+
+def _metadata_hash(candidate: Dict[str, Any]) -> str:
+    """Compute a deterministic hash of the upload-relevant metadata."""
+    # Only include fields that affect the actual YouTube upload
+    meta = {
+        "title": str(candidate.get("title") or "").strip(),
+        "description": str(candidate.get("description") or "").strip(),
+        "tags": sorted(str(tag).strip() for tag in (candidate.get("tags") or []) if str(tag).strip()),
+        "privacy": str(candidate.get("privacy") or "unlisted").strip().lower(),
+        "category_id": str(candidate.get("category_id") or "15").strip(),
+    }
+    serialized = json.dumps(meta, sort_keys=True, ensure_ascii=False, separators=(",", ":"))
+    return hashlib.sha256(serialized.encode("utf-8")).hexdigest()
+
+
+def _load_approvals(project: Project) -> List[Dict[str, Any]]:
+    """Load approval records from state directory."""
+    return _read_json_safe(project.state_dir / APPROVAL_FILE, [])
+
+
+def _save_approvals(project: Project, approvals: List[Dict[str, Any]]) -> None:
+    """Save approval records to state directory."""
+    project.state_dir.mkdir(parents=True, exist_ok=True)
+    write_json(project.state_dir / APPROVAL_FILE, approvals)
+
+
+def create_approval_record(
+    project: Project,
+    candidate: Dict[str, Any],
+    reviewer: str,
+) -> Dict[str, Any]:
+    """Create a human approval record for the given candidate.
+
+    The record binds the approval to the exact file SHA-256 and metadata hash.
+    Returns the created approval record.
+    """
+    path = Path(str(candidate.get("path") or ""))
+    if not path.is_absolute():
+        path = project.root / path
+
+    file_sha256 = _sha256_file(path) if path.is_file() else ""
+    meta_hash = _metadata_hash(candidate)
+
+    approval = {
+        "schema_version": APPROVAL_SCHEMA_VERSION,
+        "created_at": datetime.now().isoformat(timespec="seconds"),
+        "reviewer": str(reviewer or "unknown").strip(),
+        "file_sha256": file_sha256,
+        "metadata_hash": meta_hash,
+        "title": str(candidate.get("title") or "").strip(),
+        "file_name": path.name,
+        "file_path": str(path),
+        "revoked": False,
+        "revoked_at": None,
+        "revoked_by": None,
+    }
+    approvals = _load_approvals(project)
+    approvals.insert(0, approval)
+    _save_approvals(project, approvals[:100])
+    return approval
+
+
+def find_approval_record(
+    project: Project,
+    candidate: Dict[str, Any],
+) -> Optional[Dict[str, Any]]:
+    """Find a valid (non-revoked) approval record matching the candidate's file and metadata."""
+    path = Path(str(candidate.get("path") or ""))
+    if not path.is_absolute():
+        path = project.root / path
+
+    file_sha256 = _sha256_file(path) if path.is_file() else ""
+    meta_hash = _metadata_hash(candidate)
+
+    if not file_sha256:
+        return None
+
+    approvals = _load_approvals(project)
+    for approval in approvals:
+        if not isinstance(approval, dict):
+            continue
+        if approval.get("revoked"):
+            continue
+        if approval.get("file_sha256") != file_sha256:
+            continue
+        if approval.get("metadata_hash") != meta_hash:
+            continue
+        return approval
+    return None
+
+
+def revoke_approval_record(
+    project: Project,
+    file_sha256: str,
+    revoked_by: str,
+) -> bool:
+    """Revoke all approval records for a given file hash."""
+    approvals = _load_approvals(project)
+    changed = False
+    for approval in approvals:
+        if approval.get("file_sha256") == file_sha256 and not approval.get("revoked"):
+            approval["revoked"] = True
+            approval["revoked_at"] = datetime.now().isoformat(timespec="seconds")
+            approval["revoked_by"] = str(revoked_by or "unknown").strip()
+            changed = True
+    if changed:
+        _save_approvals(project, approvals)
+    return changed
+
+
+def validate_approval_for_upload(
+    project: Project,
+    candidate: Dict[str, Any],
+) -> Tuple[bool, str, Optional[Dict[str, Any]]]:
+    """Validate that a human approval exists and matches the current artifact.
+
+    Returns (is_valid, reason, approval_record).
+    """
+    approval = find_approval_record(project, candidate)
+    if not approval:
+        return False, "İnsan onayı bulunamadı: bu dosya ve meta veri kombinasyonu için geçerli bir onay kaydı yok.", None
+
+    path = Path(str(candidate.get("path") or ""))
+    if not path.is_absolute():
+        path = project.root / path
+
+    current_sha256 = _sha256_file(path) if path.is_file() else ""
+    if current_sha256 != approval.get("file_sha256"):
+        return False, f"Dosya değişmiş: onay kaydedildiğinde SHA-256 {approval.get('file_sha256')[:16]}... idi, şimdi {current_sha256[:16]}...", approval
+
+    current_meta_hash = _metadata_hash(candidate)
+    if current_meta_hash != approval.get("metadata_hash"):
+        return False, "Meta veri değişmiş: başlık, açıklama, etiketler veya gizlilik onaylanandan beri değiştirildi.", approval
+
+    return True, "İnsan onayı geçerli.", approval
 
 
 def load_agent_settings(project: Project) -> Dict[str, Any]:
@@ -660,7 +800,7 @@ def run_agent(
     candidate: Dict[str, Any],
     settings: Optional[Dict[str, Any]] = None,
     *,
-    allow_upload: bool = True,
+    allow_upload: bool = False,
     token_valid: Optional[bool] = None,
     registry: Optional[List[Dict[str, Any]]] = None,
     upload_history: Optional[Dict[str, Any]] = None,
@@ -711,17 +851,24 @@ def run_agent(
     outcome["error"] = ""
 
     if allow_upload and decision.verdict == APPROVE:
-        try:
-            outcome["upload"] = upload_candidate(
-                project,
-                candidate,
-                privacy=outcome["privacy"],
-                category_id=str(settings.get("category_id") or "15"),
-            )
-        except Exception as exc:  # noqa: BLE001 - panel/scroll hatayı göstermeli
-            outcome["error"] = f"{type(exc).__name__}: {exc}"
+        # Phase 1B: Require explicit human approval record with SHA-256 and metadata hash binding
+        approval_valid, approval_reason, approval_record = validate_approval_for_upload(project, candidate)
+        if not approval_valid:
+            outcome["error"] = f"Yükleme reddedildi: {approval_reason}"
             outcome["verdict"] = NEEDS_REVIEW
-            outcome["reasons"].append(f"Yükleme başarısız: {exc}")
+            outcome["reasons"].append(f"İnsan onayı doğrulaması başarısız: {approval_reason}")
+        else:
+            try:
+                outcome["upload"] = upload_candidate(
+                    project,
+                    candidate,
+                    privacy=outcome["privacy"],
+                    category_id=str(settings.get("category_id") or "15"),
+                )
+            except Exception as exc:  # noqa: BLE001 - panel/scroll hatayı göstermeli
+                outcome["error"] = f"{type(exc).__name__}: {exc}"
+                outcome["verdict"] = NEEDS_REVIEW
+                outcome["reasons"].append(f"Yükleme başarısız: {exc}")
 
     record_decision(project, candidate, outcome)
     return outcome

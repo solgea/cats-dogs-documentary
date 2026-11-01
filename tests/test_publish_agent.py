@@ -156,8 +156,12 @@ class PublishAgentRunTests(unittest.TestCase):
         kwargs.setdefault("token_valid", True)
         kwargs.setdefault("registry", [])
         kwargs.setdefault("upload_history", {})
-        return run_agent(self.project, candidate_for(self.project),
-                         settings or {}, **kwargs)
+        kwargs.setdefault("allow_upload", True)
+        # Mock approval validation to pass by default for tests that expect uploads
+        with mock.patch.object(publish_agent, "validate_approval_for_upload",
+                               return_value=(True, "Test approval valid", {"file_sha256": "test", "metadata_hash": "test"})):
+            return run_agent(self.project, candidate_for(self.project),
+                             settings or {}, **kwargs)
 
     def test_approve_triggers_upload_with_unlisted_privacy(self) -> None:
         settings = {"agent_enabled": True, "agent_privacy": "public"}
@@ -302,22 +306,30 @@ class BackgroundRenderAgentWiringTests(unittest.TestCase):
         self.assertFalse((self.project.state_dir / publish_agent.DECISION_FILE).exists())
 
     def test_approved_render_is_uploaded_and_logged(self) -> None:
+        # Background render path uses allow_upload=False (Phase 1A safety)
+        # It should evaluate and log decision, but NOT upload
+        approval_mock = (True, "Test approval", {"file_sha256": "test", "metadata_hash": "test"})
         with mock.patch.object(publish_agent, "youtube_token_valid", return_value=True), \
+                mock.patch.object(publish_agent, "validate_approval_for_upload",
+                                  return_value=approval_mock), \
                 mock.patch.object(publish_agent, "upload_candidate",
                                   return_value={"video_id": "yt-wire",
                                                 "video_url": "https://youtu.be/yt-wire"}) as upload:
             summary = self.run_script_agent()
         self.assertEqual(summary["verdict"], APPROVE)
-        self.assertTrue(summary["uploaded"])
-        self.assertEqual(summary["video_id"], "yt-wire")
-        self.assertEqual(upload.call_args.kwargs["privacy"], "unlisted")
+        self.assertFalse(summary["uploaded"])  # Background path does NOT upload
+        self.assertEqual(summary["video_id"], "")  # Empty string when not uploaded
+        upload.assert_not_called()
         recorded = publish_agent.recent_decisions(self.project)
         self.assertEqual(recorded[0]["verdict"], APPROVE)
         activity = json.loads((self.project.root / "activity_log.json").read_text(encoding="utf-8"))
-        self.assertTrue(any("yükledi" in row["msg"] for row in activity))
+        self.assertTrue(any("APPROVE" in row["msg"] for row in activity))
 
     def test_invalid_token_blocks_upload(self) -> None:
+        approval_mock = (True, "Test approval", {"file_sha256": "test", "metadata_hash": "test"})
         with mock.patch.object(publish_agent, "youtube_token_valid", return_value=False), \
+                mock.patch.object(publish_agent, "validate_approval_for_upload",
+                                  return_value=approval_mock), \
                 mock.patch.object(publish_agent, "upload_candidate") as upload:
             summary = self.run_script_agent()
         self.assertEqual(summary["verdict"], REJECT)

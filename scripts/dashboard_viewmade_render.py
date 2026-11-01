@@ -125,7 +125,10 @@ def _run_publish_agent(project: Project, slug: str, request_payload: dict,
         return {}
 
     candidate = _publish_candidate(project, slug, request_payload, result)
-    outcome = run_agent(project, candidate, settings)
+    # Phase 1A: Background render path MUST NOT upload without explicit human approval.
+    # allow_upload=False is the safe default; only the manual dashboard path with
+    # explicit approval record should ever pass allow_upload=True.
+    outcome = run_agent(project, candidate, settings, allow_upload=False)
     verdict = outcome.get("verdict") or "REJECT"
     upload = outcome.get("upload") or {}
     video_id = str((upload or {}).get("video_id") or "")

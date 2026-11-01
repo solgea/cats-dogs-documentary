@@ -111,8 +111,8 @@ DEFAULT_SETTINGS: Dict[str, Any] = {
     "video_duration": 60,
     "aspect_ratio": "16:9",
     # Yayın ajanı — render bitince denetler, karar verir, onaylarsa yükler.
-    "agent_enabled": True,
-    "agent_auto_publish": True,
+    "agent_enabled": False,
+    "agent_auto_publish": False,
     "agent_privacy": "unlisted",
     "agent_allow_public": False,
     "agent_llm_enabled": False,
@@ -127,6 +127,9 @@ def load_settings() -> Dict[str, Any]:
     if SETTINGS_FILE.exists():
         try:
             stored = json.loads(SETTINGS_FILE.read_text(encoding="utf-8"))
+            if not isinstance(stored, dict):
+                # Corrupt settings file - fail closed, use defaults
+                return data
             for key, value in stored.items():
                 if key == "agents_enabled" and isinstance(value, dict):
                     merged = dict(DEFAULT_SETTINGS["agents_enabled"])
@@ -135,6 +138,7 @@ def load_settings() -> Dict[str, Any]:
                 else:
                     data[key] = value
         except (json.JSONDecodeError, OSError):
+            # Missing or unreadable settings file - fail closed, use defaults
             pass
     return data
 
@@ -1174,7 +1178,7 @@ def render_publish_agent_panel(entry: Dict[str, Any],
     """Yayın Merkezi'nde ajan durumunu, son kararı ve çalıştırma düğmesini çizer."""
     from cddocs.config import Project
     from cddocs.publish_agent import (agent_privacy, llm_configured,
-                                      run_agent)
+                                      run_agent, record_decision)
 
     settings = SETTINGS
     enabled = settings.get("agent_enabled", True) is not False
@@ -1241,16 +1245,19 @@ def render_publish_agent_panel(entry: Dict[str, Any],
         st.caption("Yayın ajanı Ayarlar'dan kapatılmış. Açmadan elle yükleme akışını "
                    "kullanabilirsiniz.")
     else:
-        if st.button("🤖 Ajanı çalıştır ve karar ver", width="stretch",
+        if st.button("🤖 Ajanı çalıştır ve karar ver (değerlendirme)", width="stretch",
                      key=f"agent_run_{key}"):
             try:
                 project = Project.open(ROOT)
                 with st.spinner("Yayın ajanı dosyayı, meta veriyi ve kaynakları denetliyor…"):
-                    outcome = run_agent(project, agent_candidate_from_entry(entry), settings)
+                    # Panel evaluation path: only review, never upload.
+                    # Upload requires explicit human approval via the manual publish flow.
+                    outcome = run_agent(project, agent_candidate_from_entry(entry), settings, allow_upload=False)
             except Exception as exc:  # noqa: BLE001 - panel hatayı göstermeli
                 st.error(f"Ajan çalıştırılamadı: {exc}")
             else:
-                apply_agent_upload(entry, outcome)
+                # Record the evaluation result without uploading
+                record_decision(project, agent_candidate_from_entry(entry), outcome)
                 st.session_state[f"agent_result_{key}"] = outcome
                 st.cache_data.clear()
                 st.rerun()
@@ -3363,19 +3370,64 @@ def render_publish_center(registry_entries: List[Dict[str, Any]],
     st.caption(f"Hedef kanal: {channel_text} · Bugünkü YouTube API kotası: "
                f"{quota_used} / {quota_limit} · Seçili gizlilik: {privacy}")
 
+    # Phase 1B: Human approval record validation
+    # Build the candidate metadata as it would be uploaded
+    upload_candidate = {
+        "path": str(entry["path"]),
+        "title": title_value.strip(),
+        "description": description_value.strip(),
+        "tags": [part.strip() for part in re.split(r"[,\n]", tags_value) if part.strip()],
+        "privacy": privacy,
+        "category_id": str(SETTINGS.get("category_id", "15")),
+    }
+
+    from cddocs.publish_agent import (
+        validate_approval_for_upload,
+        create_approval_record,
+        _metadata_hash,
+        _sha256_file,
+    )
+    from cddocs.config import Project
+    project = Project.open(ROOT)
+
+    # Check existing approval
+    approval_valid, approval_reason, approval_record = validate_approval_for_upload(project, upload_candidate)
+
+    # Determine upload readiness
+    human_reviewed = reviewed and confirm_text.strip().upper() == "YAYINLA"
     upload_allowed = (
         not blocked_reason
         and target_channel is not None
-        and reviewed
-        and confirm_text.strip().upper() == "YAYINLA"
+        and human_reviewed
         and bool(title_value.strip())
+        and approval_valid
     )
+
+    # Show approval status
+    if approval_record:
+        st.info(f"✅ İnsan onayı geçerli: {approval_record.get('reviewer', 'bilinmeyen')} · "
+                f"{approval_record.get('created_at', '')[:19]} · "
+                f"SHA-256: {approval_record.get('file_sha256', '')[:16]}...")
+    else:
+        st.warning("⚠️ İnsan onayı kaydı yok. Yükleme butonuna basıldığında onay kaydı oluşturulacak.")
+
     if st.button("🚀 YouTube'a yükle", type="primary", width="stretch",
                  disabled=not upload_allowed, key=f"pub_upload_{safe_key}"):
         if len(title_value) > 100:
             st.error("Başlık 100 karakteri aşamaz.")
         else:
             tags = [part.strip() for part in re.split(r"[,\n]", tags_value) if part.strip()]
+            # Re-verify file and metadata hasn't changed since button render
+            current_approval_valid, current_reason, _ = validate_approval_for_upload(project, upload_candidate)
+            if not current_approval_valid:
+                st.error(f"Yükleme engellendi: {current_reason}")
+                st.rerun()
+
+            # Create approval record at the moment of human upload decision
+            # This binds the human's explicit action to the exact file and metadata
+            reviewer = "dashboard_operator"  # Could be enhanced with actual user identity
+            create_approval_record(project, upload_candidate, reviewer)
+
             try:
                 with st.spinner("YouTube'a yükleniyor… Bu işlem birkaç dakika sürebilir."):
                     manager = get_upload_manager()
